@@ -15,14 +15,8 @@ trait ClientTraits {
     fn meta_data(&self) -> ClientMetaData;
     fn set_evaluation_context(&mut self,eval_ctx: components::EvaluationContext);
     fn evaluation_context(&self) -> components::EvaluationContext;
-    fn boolean_value(&self,flag: String, default_value: bool, eval_ctx: components::EvaluationContext) -> Result<bool>;
-    fn string_value(&self,flag: String, default_value: String, eval_ctx: components::EvaluationContext) -> Result<String>;
-    fn float_value(&self,flag: String, default_value: f64, eval_ctx: components::EvaluationContext) -> Result<f64>;
-    fn int_value(&self,flag: String, default_value: i64, eval_ctx: components::EvaluationContext) -> Result<i64>;
-    fn boolean_value_details(&self,flag: String, default_value: String, eval_ctx: components::EvaluationContext) -> (BoolEvaluationDetails,Result<bool>);
-    fn string_value_details(&self,flag: String, default_value: String, eval_ctx: components::EvaluationContext) -> (StringEvaluationDetails,Result<String>);
-    fn float_value_details(&self,flag: String, default_value: f64, eval_ctx: components::EvaluationContext) -> (FloatEvaluationDetails,Result<f64>);
-    fn int_value_details(&self,flag: String, default_value: i64, eval_ctx: components::EvaluationContext) -> (IntEvaluationDetails,Result<i64>);
+    fn value<T>(&self,flag: String, default_value: T, eval_ctx: components::EvaluationContext) -> Result<T>;
+    fn value_details<T>(&self,flag: String, default_value: T, eval_ctx: components::EvaluationContext) -> (EvaluationDetails<T>,Result<bool>);
 }
 struct Client {  
     meta_data: ClientMetaData,
@@ -32,43 +26,7 @@ struct Client {
 struct ClientMetaData {
     name: String
 }
-struct BoolEvaluationDetails {
-    value: bool,
-    flag_key: String,
-    flag_type: Type,
-    variant: String,
-    reason: String,
-    error_code: String,
-    error_message: String,
-}
-struct StringEvaluationDetails {
-    value: String,
-    flag_key: String,
-    flag_type: Type,
-    variant: String,
-    reason: String,
-    error_code: String,
-    error_message: String,
-}
-struct FloatEvaluationDetails {
-    value: f64,
-    flag_key: String,
-    flag_type: Type,
-    variant: String,
-    reason: String,
-    error_code: String,
-    error_message: String,
-}
-struct IntEvaluationDetails {
-    value: i64,
-    flag_key: String,
-    flag_type: Type,
-    variant: String,
-    reason: String,
-    error_code: String,
-    error_message: String,
-}
-struct DynamicEvaluationDetails<T> {
+struct EvaluationDetails<T> {
     value: T,
     flag_key: String,
     flag_type: Type,
@@ -89,7 +47,7 @@ impl Client {
     pub fn evaluate<T>(flag: String, flagType: Type, defaultValue: T,
          eval_ctx: components::EvaluationContext) -> Result<String,Error> {
              
-            let eval_details = DynamicEvaluationDetails {
+            let eval_details = EvaluationDetails {
                 value: defaultValue,
                 flag_key: flag,
                 flag_type: flagType,
@@ -141,38 +99,13 @@ impl ClientTraits for Client {
         return self.evaluation_context.clone();
     }
 
-    fn boolean_value(&self,flag: String, default_value: bool, eval_ctx: components::EvaluationContext) -> Result<bool> {
+    fn value<T>(&self,flag: String, default_value: T, eval_ctx: components::EvaluationContext) -> Result<T> {
         todo!()
     }
 
-    fn string_value(&self,flag: String, default_value: String, eval_ctx: components::EvaluationContext) -> Result<String> {
+    fn value_details<T>(&self,flag: String, default_value: T, eval_ctx: components::EvaluationContext) -> (EvaluationDetails<T>,Result<bool>) {
         todo!()
     }
-
-    fn float_value(&self,flag: String, default_value: f64, eval_ctx: components::EvaluationContext) -> Result<f64> {
-        todo!()
-    }
-
-    fn int_value(&self,flag: String, default_value: i64, eval_ctx: components::EvaluationContext) -> Result<i64> {
-        todo!()
-    }
-
-    fn boolean_value_details(&self,flag: String, default_value: String, eval_ctx: components::EvaluationContext) -> (BoolEvaluationDetails,Result<bool>) {
-        todo!()
-    }
-
-    fn string_value_details(&self,flag: String, default_value: String, eval_ctx: components::EvaluationContext) -> (StringEvaluationDetails,Result<String>) {
-        todo!()
-    }
-
-    fn float_value_details(&self,flag: String, default_value: f64, eval_ctx: components::EvaluationContext) -> (FloatEvaluationDetails,Result<f64>) {
-        todo!()
-    }
-
-    fn int_value_details(&self,flag: String, default_value: i64, eval_ctx: components::EvaluationContext) -> (IntEvaluationDetails,Result<i64>) {
-        todo!()
-    }
-
 }
 
 
