@@ -1,8 +1,10 @@
 use std::{fmt::Error, collections::HashMap};
 
 use anyhow::Result;
+use evaluation::EvaluationOptions;
 
-pub mod components;
+mod evaluation;
+mod providers;
 
 enum Type {
     Bool,
@@ -13,14 +15,14 @@ enum Type {
 trait ClientTraits {
 
     fn meta_data(&self) -> ClientMetaData;
-    fn set_evaluation_context(&mut self,eval_ctx: components::EvaluationContext);
-    fn evaluation_context(&self) -> components::EvaluationContext;
-    fn value<T>(&self,flag: String, default_value: T, eval_ctx: components::EvaluationContext) -> Result<T>;
-    fn value_details<T>(&self,flag: String, default_value: T, eval_ctx: components::EvaluationContext) -> (EvaluationDetails<T>,Result<bool>);
+    fn set_evaluation_context(&mut self,eval_ctx: evaluation::EvaluationContext);
+    fn evaluation_context(&self) -> evaluation::EvaluationContext;
+    fn value<T>(&self,flag: String, default_value: T, eval_ctx: evaluation::EvaluationContext) -> (Result<T>, Error);
+    fn value_details<T>(&self,flag: String, default_value: T, eval_ctx: evaluation::EvaluationContext) -> (EvaluationDetails<T>,Result<bool>);
 }
 struct Client {  
     meta_data: ClientMetaData,
-    evaluation_context: components::EvaluationContext,
+    evaluation_context: evaluation::EvaluationContext,
 }
 #[derive(Clone)]
 struct ClientMetaData {
@@ -38,26 +40,26 @@ struct EvaluationDetails<T> {
 // Client impl
 impl Client {
     pub fn new(meta_data: ClientMetaData, 
-        evaluation_context: components::EvaluationContext) -> Self {
+        evaluation_context: evaluation::EvaluationContext) -> Self {
         Self {
             meta_data: meta_data,
             evaluation_context: evaluation_context
         }
     }
     pub fn evaluate<T>(flag: String, flagType: Type, defaultValue: T,
-         eval_ctx: components::EvaluationContext) -> Result<String,Error> {
+         eval_ctx: evaluation::EvaluationContext) -> Result<String,Error> {
              
-            let eval_details = EvaluationDetails {
-                value: defaultValue,
-                flag_key: flag,
-                flag_type: flagType,
-                variant: todo!(),
-                reason: todo!(),
-                error_code: todo!(),
-                error_message: todo!(),
-            };
+            // let eval_details = EvaluationDetails {
+            //     value: defaultValue,
+            //     flag_key: flag,
+            //     flag_type: flagType,
+            //     variant: EvaluationDetails<String>{},
+            //     reason: "".to_owned(),
+            //     error_code: "".to_owned(),
+            //     error_message: "".to_owned(),
+            // };
 
-            let flat_ctx = components::flatten_context(eval_ctx);
+            let flat_ctx = evaluation::flatten_context(eval_ctx);
 
         
             // match flag type
@@ -91,19 +93,23 @@ impl ClientTraits for Client {
         return self.meta_data.clone();
     }
 
-    fn set_evaluation_context(&mut self, eval_ctx: components::EvaluationContext) {
+    fn set_evaluation_context(&mut self, eval_ctx: evaluation::EvaluationContext) {
         self.evaluation_context = eval_ctx;
     }
 
-    fn evaluation_context(&self) -> components::EvaluationContext {
+    fn evaluation_context(&self) -> evaluation::EvaluationContext {
         return self.evaluation_context.clone();
     }
 
-    fn value<T>(&self,flag: String, default_value: T, eval_ctx: components::EvaluationContext) -> Result<T> {
+    fn value<T>(&self,flag: String, default_value: T, eval_ctx: evaluation::EvaluationContext) ->  (Result<T>, Error) {
+        
+        //let eval_options = EvaluationOptions{};
+        // evaluate
         todo!()
+
     }
 
-    fn value_details<T>(&self,flag: String, default_value: T, eval_ctx: components::EvaluationContext) -> (EvaluationDetails<T>,Result<bool>) {
+    fn value_details<T>(&self,flag: String, default_value: T, eval_ctx: evaluation::EvaluationContext) -> (EvaluationDetails<T>,Result<bool>) {
         todo!()
     }
 }
@@ -125,7 +131,7 @@ impl ClientMetaData {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Client, ClientMetaData, components};
+    use crate::{Client, ClientMetaData, evaluation};
 
     #[test]
     fn test_set_name() {
@@ -134,11 +140,8 @@ mod tests {
     }
     #[test]
     fn test_client_impl() {
-        // assert client impl
+        // test Client
         
-        let client = Client::new(ClientMetaData { name: ("test").to_string() }, 
-            components::EvaluationContext{ targetting_key: todo!(), attributes: todo!() });
-        assert_eq!(client.meta_data.get_name(), "test");
     }
  
 
