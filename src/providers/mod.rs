@@ -21,10 +21,30 @@ const ErrorReason: &str = "ERROR";
 const TargetingKey: &str = "targetingKey"; // eva
 
 trait FeatureProvider {
+    fn new() -> Self;
     fn meta_data(&self) -> Metadata;
-    fn evaluation<T>(&self,flag: String, default_value: T, eval_ctx: FlattenedContext) -> ResolutionDetails<T>;
+    fn evaluation<T>(&self,flag: String, default_value: T,
+         eval_ctx: FlattenedContext) -> ResolutionDetails<T>;
 }
 
+pub struct Provider {}
+
+impl FeatureProvider for Provider {
+    fn new() -> Self {
+        // Rust has a real lack of OO programming which means we have a single provider type that has
+        // to infer the type of the value it is returning. This is a bit of a hack to get around that.
+        Self {}
+    }
+
+    fn meta_data(&self) -> Metadata {
+        todo!()
+    }
+
+    fn evaluation<T>(&self,flag: String, default_value: T,
+         eval_ctx: FlattenedContext) -> ResolutionDetails<T> {
+        todo!()
+    }
+}
 struct Metadata {
     name: String,
 }

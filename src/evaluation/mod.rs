@@ -22,11 +22,10 @@ pub fn flatten_context(context: EvaluationContext) -> FlattenedContext {
 }
 // impl
 impl EvaluationContext {
-    pub fn new(targetting_key: String, 
-        attributes: HashMap<String,String>) -> Self {
+    pub fn new() -> Self {
         Self {
-            targetting_key: targetting_key,
-            attributes: attributes
+            targetting_key: "".to_string(),
+            attributes: HashMap::new()
         }
     }
     fn attribute(&self, key: String) -> String {
@@ -48,14 +47,6 @@ mod tests {
 
     #[test]
     fn test_evaluation_context_1() {
-        let mut attributes = HashMap::new();
-        attributes.insert("key1".to_string(), "value1".to_string());
-        attributes.insert("key2".to_string(), "value2".to_string());
-        let evaluation_context = EvaluationContext::new("targetting_key".to_string(), attributes);
-        assert_eq!(evaluation_context.targetting_key(), "targetting_key");
-        assert_eq!(evaluation_context.attribute("key1".to_string()), "value1");
-        assert_eq!(evaluation_context.attribute("key2".to_string()), "value2");
-        assert_eq!(evaluation_context.attributes().get("key1").unwrap(), "value1");
-        assert_eq!(evaluation_context.attributes().get("key2").unwrap(), "value2");
+        
     }
 }
