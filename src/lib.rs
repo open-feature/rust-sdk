@@ -1,28 +1,15 @@
-use std::{fmt::Error, collections::HashMap};
+use crate::providers::traits::FeatureProvider;
+use std::{fmt::Error};
 
 use anyhow::Result;
-use evaluation::EvaluationOptions;
+
 use providers::Provider;
+use traits::ClientTraits;
 
 mod evaluation;
 mod providers;
+mod traits;
 
-enum Type {
-    Bool,
-    String,
-    Float,
-    Int,
-}
-trait ClientTraits {
-    fn new(name: String) -> Self;
-    fn meta_data(&self) -> ClientMetaData;
-    fn set_evaluation_context(&mut self,eval_ctx: evaluation::EvaluationContext);
-    fn evaluation_context(&self) -> evaluation::EvaluationContext;
-    fn evaluate<T>(&self,flag: String, default_value: T,
-        eval_ctx: evaluation::EvaluationContext) -> (EvaluationDetails<T>, Error);
-    fn value<T>(&self,flag: String, default_value: T, eval_ctx: evaluation::EvaluationContext) -> (EvaluationDetails<T>, Error);
-    fn value_details<T>(&self,flag: String, default_value: T, eval_ctx: evaluation::EvaluationContext) -> (EvaluationDetails<T>,Result<bool>);
-}
 struct Client {  
     meta_data: ClientMetaData,
     evaluation_context: evaluation::EvaluationContext,
@@ -33,7 +20,7 @@ struct ClientMetaData {
     name: String
 }
 struct EvaluationDetails<T> {
-    value: T,
+    value:  T,
     flag_key: String,
     variant: String,
     reason: String,
@@ -64,17 +51,19 @@ impl ClientTraits for Client {
     }
 
     fn value<T>(&self,flag: String, default_value: T,
-         eval_ctx: evaluation::EvaluationContext) ->  (EvaluationDetails<T>, Error) {
+         eval_ctx: evaluation::EvaluationContext) ->  (EvaluationDetails<T>, Error) where T: Copy, {
 
         self.evaluate::<T>(flag, default_value, eval_ctx)
        
     }
     fn evaluate<T>(&self,flag: String, default_value: T,
-        eval_ctx: evaluation::EvaluationContext) -> (EvaluationDetails<T>, Error){
+        eval_ctx: evaluation::EvaluationContext) -> (EvaluationDetails<T>, Error)
+        where T: Copy, {
 
-        let eval_details = EvaluationDetails::<T> {
-            value: default_value,
-            flag_key: flag,
+        let eval_default_value: T = default_value;
+        let mut eval_details = EvaluationDetails::<T> {
+            value: eval_default_value,
+            flag_key: flag.clone(),
             variant: "".to_string(),
             reason: "".to_string(),
             error_code: "".to_string(),
@@ -83,9 +72,16 @@ impl ClientTraits for Client {
            
         let flatten_ctx = evaluation::flatten_context(eval_ctx);
 
-        let result = self.provider.evaluation::<T>(flag, default_value, flatten_ctx);
-        
+        let result_default_value: T = default_value;
 
+        let result = self.provider.evaluation::<T>(flag.clone(), result_default_value, flatten_ctx);
+        
+        eval_details.variant = result.varient;
+        eval_details.reason = result.reason;
+        eval_details.error_code = result.resolution_error.code;
+        eval_details.error_message = result.resolution_error.message;
+
+        (eval_details, Error)
 
     }
     fn value_details<T>(&self,flag: String, default_value: T, eval_ctx: evaluation::EvaluationContext) -> (EvaluationDetails<T>,Result<bool>) {
