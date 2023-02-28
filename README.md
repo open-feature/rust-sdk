@@ -16,5 +16,17 @@ rust-sdk = { git = "https://github.com/open-feature/rust-sdk", branch = "main" }
 ### Initialization
 
 ```rust
+use rust_sdk::Client;
+use rust_sdk::providers;
+use rust_sdk::providers::traits::FeatureProvider;
+use rust_sdk::traits::ClientTraits;
 
+fn main() {
+    
+    let client = Client::<providers::NoOProvider>::new(
+        "test".to_string(),
+        providers::NoOProvider::new(),
+    );
+    client.evaluate::<f64>("test".to_string(), 1.0, client.evaluation_context());
+}
 ```
