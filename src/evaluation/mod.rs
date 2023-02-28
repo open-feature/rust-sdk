@@ -25,8 +25,8 @@ pub fn flatten_context(context: EvaluationContext) -> FlattenedContext {
 impl EvaluationContext {
     pub fn new(targetting_key: String, attributes: HashMap<String, String>) -> Self {
         Self {
-            targetting_key: targetting_key,
-            attributes: attributes,
+            targetting_key,
+            attributes,
         }
     }
     fn attribute(&self, key: String) -> String {

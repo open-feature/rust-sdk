@@ -37,8 +37,9 @@ where
     fn new(name: String, provider: C) -> Self {
         Self {
             meta_data: ClientMetaData { name: name.clone() },
-            evaluation_context: evaluation::EvaluationContext::new(name.clone(), HashMap::new()),
-            provider: provider,
+            evaluation_context: evaluation::EvaluationContext::new(name,
+                 HashMap::new()),
+            provider,
         }
     }
     fn meta_data(&self) -> ClientMetaData {
@@ -85,7 +86,7 @@ where
 
         let flatten_ctx = evaluation::flatten_context(eval_ctx);
 
-        let result_default_value: T = default_value.clone();
+        let result_default_value: T = default_value;
 
         let result = self
             .provider
@@ -111,7 +112,7 @@ where
 // ClientMetaData impl
 impl ClientMetaData {
     pub fn new(name: String) -> Self {
-        Self { name: name }
+        Self { name }
     }
     fn get_name(&self) -> String {
         self.name.clone()
