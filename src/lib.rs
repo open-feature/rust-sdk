@@ -136,7 +136,7 @@ mod tests {
 
     #[test]
     fn test_evaluate_bool() {
-        let mut client = Client::<providers::NoOProvider>::new(
+        let client = Client::<providers::NoOProvider>::new(
             "test".to_string(),
             providers::NoOProvider::new(),
         );
@@ -151,7 +151,7 @@ mod tests {
     }
     #[test]
     fn test_evaluate_string() {
-        let mut client = Client::<providers::NoOProvider>::new(
+        let client = Client::<providers::NoOProvider>::new(
             "test".to_string(),
             providers::NoOProvider::new(),
         );
@@ -165,7 +165,7 @@ mod tests {
     }
     #[test]
     fn test_evaluate_i64() {
-        let mut client = Client::<providers::NoOProvider>::new(
+        let client = Client::<providers::NoOProvider>::new(
             "test".to_string(),
             providers::NoOProvider::new(),
         );
@@ -175,7 +175,7 @@ mod tests {
     }
     #[test]
     fn test_evaluate_f64() {
-        let mut client = Client::<providers::NoOProvider>::new(
+        let client = Client::<providers::NoOProvider>::new(
             "test".to_string(),
             providers::NoOProvider::new(),
         );
