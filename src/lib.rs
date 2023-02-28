@@ -136,7 +136,7 @@ mod tests {
 
     #[test]
     fn test_evaluate_bool() {
-        let client = Client::<providers::NoOProvider>::new(
+        let  client = Client::<providers::NoOProvider>::new(
             "test".to_string(),
             providers::NoOProvider::new(),
         );

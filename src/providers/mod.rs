@@ -8,20 +8,21 @@ use self::{
 pub mod traits;
 pub mod types;
 // DefaultReason - the resolved value was configured statically, or otherwise fell back to a pre-configured value.
-pub const DefaultReason: &str = "DEFAULT";
-pub const TargetingMatchReason: &str = "TARGETING_MATCH";
+pub const DEFAULT_REASON: &str = "DEFAULT";
+
+pub const TARGETING_MATCH_REASON: &str = "TARGETING_MATCH";
 // SplitReason - the resolved value was the result of pseudorandom assignment.
-pub const SplitReason: &str = "SPLIT";
+pub const SPLIT_REASON: &str = "SPLIT";
 // DisabledReason - the resolved value was the result of the flag being disabled in the management system.
-pub const DisabledReason: &str = "DISABLED";
+pub const DISABLED_REASON: &str = "DISABLED";
 // StaticReason - the resolved value is static (no dynamic evaluation)
-pub const StaticReason: &str = "STATIC";
+pub const STATIC_REASON: &str = "STATIC";
 // CachedReason - the resolved value was retrieved from cache
-pub const CachedReason: &str = "CACHED";
+pub const CACHED_REASON: &str = "CACHED";
 // UnknownReason - the reason for the resolved value could not be determined.
-pub const UnknownReason: &str = "UNKNOWN";
+pub const UNKNOWN_REASON: &str = "UNKNOWN";
 // ErrorReason - the resolved value was the result of an error.
-pub const ErrorReason: &str = "ERROR";
+pub const ERROR_REASON: &str = "ERROR";
 
 pub const TARGETING_KEY: &str = "targetingKey"; // eva
 
