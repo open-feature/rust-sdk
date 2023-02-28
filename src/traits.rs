@@ -29,5 +29,7 @@ where
         flag: String,
         default_value: T,
         eval_ctx: evaluation::EvaluationContext,
-    ) -> (EvaluationDetails<T>, anyhow::Error) where T: Clone;
+    ) -> (EvaluationDetails<T>, anyhow::Error)
+    where
+        T: Clone;
 }

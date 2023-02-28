@@ -3,9 +3,9 @@ use std::collections::HashMap;
 use traits::ClientTraits;
 
 pub mod evaluation;
+mod hooks;
 pub mod providers;
 pub mod traits;
-mod hooks;
 
 pub struct Client<C>
 where
@@ -35,8 +35,7 @@ where
     fn new(name: String, provider: C) -> Self {
         Self {
             meta_data: ClientMetaData { name: name.clone() },
-            evaluation_context: evaluation::EvaluationContext::new(name,
-                 HashMap::new()),
+            evaluation_context: evaluation::EvaluationContext::new(name, HashMap::new()),
             provider,
         }
     }
@@ -61,7 +60,8 @@ where
     where
         T: Clone,
     {
-        let (eval_details, err): (EvaluationDetails<T>, anyhow::Error) = self.evaluate(flag, default_value, eval_ctx);
+        let (eval_details, err): (EvaluationDetails<T>, anyhow::Error) =
+            self.evaluate(flag, default_value, eval_ctx);
         (eval_details.value, err)
     }
     fn evaluate<T>(
@@ -87,9 +87,9 @@ where
 
         let result_default_value: T = default_value;
 
-        let (result, err) = self
-            .provider
-            .evaluation::<T>(flag.clone(), result_default_value, flatten_ctx);
+        let (result, err) =
+            self.provider
+                .evaluation::<T>(flag.clone(), result_default_value, flatten_ctx);
 
         eval_details.variant = result.variant;
         eval_details.reason = result.reason;
@@ -103,9 +103,12 @@ where
         flag: String,
         default_value: T,
         eval_ctx: evaluation::EvaluationContext,
-    ) -> (EvaluationDetails<T>, anyhow::Error) where T: Clone{
-        
-        let (eval_details, err): (EvaluationDetails<T>, anyhow::Error) = self.evaluate(flag, default_value, eval_ctx);
+    ) -> (EvaluationDetails<T>, anyhow::Error)
+    where
+        T: Clone,
+    {
+        let (eval_details, err): (EvaluationDetails<T>, anyhow::Error) =
+            self.evaluate(flag, default_value, eval_ctx);
         (eval_details, err)
     }
 }
@@ -138,7 +141,7 @@ mod tests {
 
     #[test]
     fn test_evaluate_bool() {
-        let  client = Client::<providers::NoOProvider>::new(
+        let client = Client::<providers::NoOProvider>::new(
             "test".to_string(),
             providers::NoOProvider::new(),
         );
@@ -187,53 +190,57 @@ mod tests {
     }
     #[test]
     fn test_evaluate_detail() {
-
         let client = Client::<providers::NoOProvider>::new(
             "test".to_string(),
             providers::NoOProvider::new(),
         );
         assert_eq!(client.meta_data().name(), "test");
-        let (eval_details, _err) = client.value_details::<String>("test".to_string(), "test".to_string(), 
-        client.evaluation_context());
+        let (eval_details, _err) = client.value_details::<String>(
+            "test".to_string(),
+            "test".to_string(),
+            client.evaluation_context(),
+        );
         assert_eq!(eval_details.flag_key, "test");
         assert_eq!(eval_details.variant, "");
     }
 
     #[test]
     fn test_client_value_i64() {
-
         let client = Client::<providers::NoOProvider>::new(
             "test".to_string(),
             providers::NoOProvider::new(),
         );
         assert_eq!(client.meta_data().name(), "test");
 
-        let (result, _error) = client.value::<i64>("test".to_string(), 1, client.evaluation_context());
+        let (result, _error) =
+            client.value::<i64>("test".to_string(), 1, client.evaluation_context());
         assert_eq!(result, 1);
     }
     #[test]
     fn test_client_value_string() {
-
         let client = Client::<providers::NoOProvider>::new(
             "test".to_string(),
             providers::NoOProvider::new(),
         );
         assert_eq!(client.meta_data().name(), "test");
 
-        let (result, _error) = client.value::<String>("test".to_string(), "test".to_string(), client.evaluation_context());
+        let (result, _error) = client.value::<String>(
+            "test".to_string(),
+            "test".to_string(),
+            client.evaluation_context(),
+        );
         assert_eq!(result, "test");
-
     }
     #[test]
     fn test_client_value_f64() {
-
         let client = Client::<providers::NoOProvider>::new(
             "test".to_string(),
             providers::NoOProvider::new(),
         );
         assert_eq!(client.meta_data().name(), "test");
 
-        let (result, _error) = client.value::<f64>("test".to_string(), 1.0, client.evaluation_context());
+        let (result, _error) =
+            client.value::<f64>("test".to_string(), 1.0, client.evaluation_context());
         assert_eq!(result, 1.0);
     }
 }

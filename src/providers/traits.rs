@@ -1,10 +1,10 @@
 use crate::evaluation::FlattenedContext;
 
-use super::types::{Metadata, ResolutionDetails};
+use super::types::{ProviderMetadata, ResolutionDetails};
 
 pub trait FeatureProvider {
     fn new() -> Self;
-    fn meta_data(&self) -> Metadata;
+    fn meta_data(&self) -> ProviderMetadata;
     fn evaluation<T>(
         &self,
         flag: String,

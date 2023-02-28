@@ -1,4 +1,5 @@
-pub struct Metadata {
+#[derive(Clone)]
+pub struct ProviderMetadata {
     pub name: String,
 }
 

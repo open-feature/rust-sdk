@@ -2,7 +2,7 @@ use crate::evaluation::FlattenedContext;
 
 use self::{
     traits::FeatureProvider,
-    types::{Metadata, ResolutionDetails, ResolutionError},
+    types::{ProviderMetadata, ResolutionDetails, ResolutionError},
 };
 
 pub mod traits;
@@ -24,7 +24,7 @@ pub const UNKNOWN_REASON: &str = "UNKNOWN";
 // ErrorReason - the resolved value was the result of an error.
 pub const ERROR_REASON: &str = "ERROR";
 
-pub const TARGETING_KEY: &str = "targetingKey"; 
+pub const TARGETING_KEY: &str = "targetingKey";
 
 // NoOProvider - a provider that does nothing
 pub struct NoOProvider {}
@@ -34,8 +34,8 @@ impl FeatureProvider for NoOProvider {
         return NoOProvider {};
     }
 
-    fn meta_data(&self) -> Metadata {
-        return Metadata {
+    fn meta_data(&self) -> ProviderMetadata {
+        return ProviderMetadata {
             name: "NoOProvider".to_string(),
         };
     }
@@ -54,15 +54,15 @@ impl FeatureProvider for NoOProvider {
             message: "".to_string(),
         };
         let reason = DEFAULT_REASON.to_string();
-        let  variant = "".to_string();
-        let  value = default_value;
-        let  resolution_details = ResolutionDetails {
+        let variant = "".to_string();
+        let value = default_value;
+        let resolution_details = ResolutionDetails {
             value,
             variant,
             reason,
             resolution_error,
         };
-        let  error = anyhow::Error::msg("NoOProvider");
+        let error = anyhow::Error::msg("NoOProvider");
 
         return (resolution_details, error);
     }
