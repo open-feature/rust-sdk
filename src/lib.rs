@@ -1,8 +1,5 @@
 use crate::providers::traits::FeatureProvider;
-use std::{collections::HashMap, fmt::Error};
-
-use anyhow::{Result, Ok};
-
+use std::collections::HashMap;
 use traits::ClientTraits;
 
 pub mod evaluation;
@@ -97,7 +94,7 @@ where
         eval_details.reason = result.reason;
         eval_details.error_code = result.resolution_error.code;
         eval_details.error_message = result.resolution_error.message;
-
+        eval_details.flag_key = flag.clone();
         (eval_details, err)
     }
     fn value_details<T>(
@@ -117,7 +114,7 @@ impl ClientMetaData {
     pub fn new(name: String) -> Self {
         Self { name }
     }
-    fn get_name(&self) -> String {
+    fn name(&self) -> String {
         self.name.clone()
     }
 }
@@ -135,7 +132,7 @@ mod tests {
     #[test]
     fn test_set_name_client_meta_data() {
         let client_meta_data = ClientMetaData::new("test".to_string());
-        assert_eq!(client_meta_data.get_name(), "test");
+        assert_eq!(client_meta_data.name(), "test");
     }
 
     #[test]
@@ -144,12 +141,12 @@ mod tests {
             "test".to_string(),
             providers::NoOProvider::new(),
         );
-        assert_eq!(client.meta_data().get_name(), "test");
+        assert_eq!(client.meta_data().name(), "test");
 
         let mut attributes = HashMap::new();
         attributes.insert("test".to_string(), "test".to_string());
 
-        let (eval_details, error) =
+        let (eval_details, _error) =
             client.evaluate::<bool>("test".to_string(), true, client.evaluation_context());
         assert_eq!(eval_details.value, true);
     }
@@ -159,7 +156,7 @@ mod tests {
             "test".to_string(),
             providers::NoOProvider::new(),
         );
-        assert_eq!(client.meta_data().get_name(), "test");
+        assert_eq!(client.meta_data().name(), "test");
 
         client.evaluate::<String>(
             "test".to_string(),
@@ -173,7 +170,7 @@ mod tests {
             "test".to_string(),
             providers::NoOProvider::new(),
         );
-        assert_eq!(client.meta_data().get_name(), "test");
+        assert_eq!(client.meta_data().name(), "test");
 
         client.evaluate::<i64>("test".to_string(), 1, client.evaluation_context());
     }
@@ -183,7 +180,7 @@ mod tests {
             "test".to_string(),
             providers::NoOProvider::new(),
         );
-        assert_eq!(client.meta_data().get_name(), "test");
+        assert_eq!(client.meta_data().name(), "test");
 
         client.evaluate::<f64>("test".to_string(), 1.0, client.evaluation_context());
     }
@@ -194,8 +191,8 @@ mod tests {
             "test".to_string(),
             providers::NoOProvider::new(),
         );
-        assert_eq!(client.meta_data().get_name(), "test");
-        let (eval_details, err) = client.value_details::<String>("test".to_string(), "test".to_string(), 
+        assert_eq!(client.meta_data().name(), "test");
+        let (eval_details, _err) = client.value_details::<String>("test".to_string(), "test".to_string(), 
         client.evaluation_context());
         assert_eq!(eval_details.flag_key, "test");
         assert_eq!(eval_details.variant, "");
@@ -208,9 +205,9 @@ mod tests {
             "test".to_string(),
             providers::NoOProvider::new(),
         );
-        assert_eq!(client.meta_data().get_name(), "test");
+        assert_eq!(client.meta_data().name(), "test");
 
-        let (result, error) = client.value::<i64>("test".to_string(), 1, client.evaluation_context());
+        let (result, _error) = client.value::<i64>("test".to_string(), 1, client.evaluation_context());
         assert_eq!(result, 1);
     }
     #[test]
@@ -220,9 +217,9 @@ mod tests {
             "test".to_string(),
             providers::NoOProvider::new(),
         );
-        assert_eq!(client.meta_data().get_name(), "test");
+        assert_eq!(client.meta_data().name(), "test");
 
-        let (result, error) = client.value::<String>("test".to_string(), "test".to_string(), client.evaluation_context());
+        let (result, _error) = client.value::<String>("test".to_string(), "test".to_string(), client.evaluation_context());
         assert_eq!(result, "test");
 
     }
@@ -233,9 +230,9 @@ mod tests {
             "test".to_string(),
             providers::NoOProvider::new(),
         );
-        assert_eq!(client.meta_data().get_name(), "test");
+        assert_eq!(client.meta_data().name(), "test");
 
-        let (result, error) = client.value::<f64>("test".to_string(), 1.0, client.evaluation_context());
+        let (result, _error) = client.value::<f64>("test".to_string(), 1.0, client.evaluation_context());
         assert_eq!(result, 1.0);
     }
 }

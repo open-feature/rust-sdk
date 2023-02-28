@@ -24,8 +24,9 @@ pub const UNKNOWN_REASON: &str = "UNKNOWN";
 // ErrorReason - the resolved value was the result of an error.
 pub const ERROR_REASON: &str = "ERROR";
 
-pub const TARGETING_KEY: &str = "targetingKey"; // eva
+pub const TARGETING_KEY: &str = "targetingKey"; 
 
+// NoOProvider - a provider that does nothing
 pub struct NoOProvider {}
 
 impl FeatureProvider for NoOProvider {
@@ -41,32 +42,27 @@ impl FeatureProvider for NoOProvider {
 
     fn evaluation<T>(
         &self,
-        flag: String,
+        _flag: String,
         default_value: T,
-        eval_ctx: FlattenedContext,
+        _eval_ctx: FlattenedContext,
     ) -> (ResolutionDetails<T>, anyhow::Error)
     where
         T: Clone,
     {
-        let mut resolution_error = ResolutionError {
+        let resolution_error = ResolutionError {
             code: 0.to_string(),
             message: "".to_string(),
         };
-
-        let mut reason = DEFAULT_REASON.to_string();
-
-        let mut variant = "".to_string();
-
-        let mut value = default_value;
-
-        let mut resolution_details = ResolutionDetails {
+        let reason = DEFAULT_REASON.to_string();
+        let  variant = "".to_string();
+        let  value = default_value;
+        let  resolution_details = ResolutionDetails {
             value,
             variant,
             reason,
             resolution_error,
         };
-
-        let mut error = anyhow::Error::msg("NoOProvider");
+        let  error = anyhow::Error::msg("NoOProvider");
 
         return (resolution_details, error);
     }

@@ -1,5 +1,4 @@
 use crate::{evaluation, providers::traits::FeatureProvider, ClientMetaData, EvaluationDetails};
-use anyhow::Result;
 
 pub trait ClientTraits<C>
 where
