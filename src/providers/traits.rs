@@ -2,8 +2,6 @@ use crate::evaluation::FlattenedContext;
 
 use super::types::{Metadata, ResolutionDetails};
 
-
-
 pub trait FeatureProvider {
     fn new() -> Self;
     fn meta_data(&self) -> Metadata;

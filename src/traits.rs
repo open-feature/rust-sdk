@@ -1,9 +1,9 @@
 use std::fmt::Error;
 use anyhow::Result;
-use crate::{ClientMetaData, evaluation, EvaluationDetails};
+use crate::{ClientMetaData, evaluation, EvaluationDetails, providers::traits::FeatureProvider};
 
-pub trait ClientTraits {
-    fn new(name: String) -> Self;
+pub trait ClientTraits<C> where C: FeatureProvider {
+    fn new(name: String, provider: C) -> Self;
     fn meta_data(&self) -> ClientMetaData;
     fn set_evaluation_context(&mut self,eval_ctx: evaluation::EvaluationContext);
     fn evaluation_context(&self) -> evaluation::EvaluationContext;

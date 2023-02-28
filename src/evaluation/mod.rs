@@ -22,10 +22,10 @@ pub fn flatten_context(context: EvaluationContext) -> FlattenedContext {
 }
 // impl
 impl EvaluationContext {
-    pub fn new() -> Self {
+    pub fn new(targetting_key: String, attributes: HashMap<String,String>) -> Self {
         Self {
-            targetting_key: "".to_string(),
-            attributes: HashMap::new()
+            targetting_key: targetting_key,
+            attributes: attributes
         }
     }
     fn attribute(&self, key: String) -> String {

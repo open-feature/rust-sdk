@@ -1,25 +1,24 @@
 use crate::providers::traits::FeatureProvider;
-use std::{fmt::Error};
+use std::{fmt::Error, collections::HashMap};
 
 use anyhow::Result;
 
-use providers::Provider;
 use traits::ClientTraits;
 
 mod evaluation;
 mod providers;
 mod traits;
 
-struct Client {  
+pub struct Client<C> where C: FeatureProvider {  
     meta_data: ClientMetaData,
     evaluation_context: evaluation::EvaluationContext,
-    provider: Provider,
+    provider: C,
 }
 #[derive(Clone)]
-struct ClientMetaData {
-    name: String
+pub struct ClientMetaData {
+    pub name: String
 }
-struct EvaluationDetails<T> {
+pub struct EvaluationDetails<T> {
     value:  T,
     flag_key: String,
     variant: String,
@@ -27,14 +26,15 @@ struct EvaluationDetails<T> {
     error_code: String,
     error_message: String,
 }
- 
-impl ClientTraits for Client {
+
+impl<C> ClientTraits<C> for Client<C> where C: FeatureProvider {
     
-    fn new(name: String ) -> Self {
+    fn new(name: String, provider: C ) -> Self {
         Self {
-            meta_data: ClientMetaData{ name: name},
-            evaluation_context: evaluation::EvaluationContext::new(),
-            provider: Provider::new(),
+            meta_data: ClientMetaData{ name: name.clone()},
+            evaluation_context: evaluation::EvaluationContext::new(name.clone(),
+                 HashMap::new()),
+            provider: provider,
             }
         
     }
@@ -84,7 +84,8 @@ impl ClientTraits for Client {
         (eval_details, Error)
 
     }
-    fn value_details<T>(&self,flag: String, default_value: T, eval_ctx: evaluation::EvaluationContext) -> (EvaluationDetails<T>,Result<bool>) {
+    fn value_details<T>(&self,flag: String, default_value: T,
+         eval_ctx: evaluation::EvaluationContext) -> (EvaluationDetails<T>,Result<bool>) {
         todo!()
     }
 }
@@ -106,17 +107,24 @@ impl ClientMetaData {
 
 #[cfg(test)]
 mod tests {
-    use crate::{Client, ClientMetaData, evaluation};
+    use crate::{ClientMetaData, providers::{self, traits::FeatureProvider}, Client, traits::ClientTraits, evaluation::{self, EvaluationContext}};
 
     #[test]
-    fn test_set_name() {
+    fn test_set_name_client_meta_data() {
         let client_meta_data = ClientMetaData::new("test".to_string());
         assert_eq!(client_meta_data.get_name(), "test");
     }
     #[test]
-    fn test_client_impl() {
-        // test Client
-        
+
+    #[test]
+    fn test_evaluate() {
+        let mut client = Client::<providers::NoOProvider>::new("test".
+         to_string(), providers::NoOProvider::new());
+            assert_eq!(client.meta_data().get_name(), "test");
+            let (eval_details, error) = 
+            client.evaluate::<bool>("test".to_string(),
+             true, client.evaluation_context());
+            assert_eq!(eval_details.value, true);
     }
  
 

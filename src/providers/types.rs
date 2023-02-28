@@ -1,6 +1,6 @@
 
 pub struct Metadata {
-    name: String,
+    pub name: String,
 }
 
 pub struct ResolutionError {
