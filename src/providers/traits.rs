@@ -10,7 +10,7 @@ pub trait FeatureProvider {
         flag: String,
         default_value: T,
         eval_ctx: FlattenedContext,
-    ) -> ResolutionDetails<T>
+    ) -> (ResolutionDetails<T>, anyhow::Error)
     where
         T: Clone;
 }

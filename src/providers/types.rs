@@ -10,5 +10,5 @@ pub struct ResolutionDetails<T> {
     pub value: T,
     pub resolution_error: ResolutionError,
     pub reason: String,
-    pub varient: String,
+    pub variant: String,
 }

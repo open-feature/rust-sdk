@@ -44,18 +44,30 @@ impl FeatureProvider for NoOProvider {
         flag: String,
         default_value: T,
         eval_ctx: FlattenedContext,
-    ) -> ResolutionDetails<T>
+    ) -> (ResolutionDetails<T>, anyhow::Error)
     where
         T: Clone,
     {
-        return ResolutionDetails::<T> {
-            value: default_value,
-            varient: "".to_string(),
-            reason: "".to_string(),
-            resolution_error: ResolutionError {
-                code: "".to_string(),
-                message: "".to_string(),
-            },
+        let mut resolution_error = ResolutionError {
+            code: 0.to_string(),
+            message: "".to_string(),
         };
+
+        let mut reason = DEFAULT_REASON.to_string();
+
+        let mut variant = "".to_string();
+
+        let mut value = default_value;
+
+        let mut resolution_details = ResolutionDetails {
+            value,
+            variant,
+            reason,
+            resolution_error,
+        };
+
+        let mut error = anyhow::Error::msg("NoOProvider");
+
+        return (resolution_details, error);
     }
 }

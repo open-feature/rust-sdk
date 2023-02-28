@@ -1,6 +1,5 @@
 use crate::{evaluation, providers::traits::FeatureProvider, ClientMetaData, EvaluationDetails};
 use anyhow::Result;
-use std::fmt::Error;
 
 pub trait ClientTraits<C>
 where
@@ -15,7 +14,7 @@ where
         flag: String,
         default_value: T,
         eval_ctx: evaluation::EvaluationContext,
-    ) -> (EvaluationDetails<T>, Error)
+    ) -> (EvaluationDetails<T>, anyhow::Error)
     where
         T: Clone;
     fn value<T>(
@@ -23,7 +22,7 @@ where
         flag: String,
         default_value: T,
         eval_ctx: evaluation::EvaluationContext,
-    ) -> (EvaluationDetails<T>, Error)
+    ) -> (T, anyhow::Error)
     where
         T: Copy;
     fn value_details<T>(
@@ -31,5 +30,5 @@ where
         flag: String,
         default_value: T,
         eval_ctx: evaluation::EvaluationContext,
-    ) -> (EvaluationDetails<T>, Result<bool>);
+    ) -> (EvaluationDetails<T>, anyhow::Error) where T: Clone;
 }

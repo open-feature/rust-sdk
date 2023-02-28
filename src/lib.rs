@@ -1,7 +1,7 @@
 use crate::providers::traits::FeatureProvider;
 use std::{collections::HashMap, fmt::Error};
 
-use anyhow::Result;
+use anyhow::{Result, Ok};
 
 use traits::ClientTraits;
 
@@ -59,18 +59,19 @@ where
         flag: String,
         default_value: T,
         eval_ctx: evaluation::EvaluationContext,
-    ) -> (EvaluationDetails<T>, Error)
+    ) -> (T, anyhow::Error)
     where
         T: Copy,
     {
-        self.evaluate::<T>(flag, default_value, eval_ctx)
+        let (eval_details, err): (EvaluationDetails<T>, anyhow::Error) = self.evaluate(flag, default_value, eval_ctx);
+        (eval_details.value, err)
     }
     fn evaluate<T>(
         &self,
         flag: String,
         default_value: T,
         eval_ctx: evaluation::EvaluationContext,
-    ) -> (EvaluationDetails<T>, Error)
+    ) -> (EvaluationDetails<T>, anyhow::Error)
     where
         T: Clone,
     {
@@ -88,24 +89,26 @@ where
 
         let result_default_value: T = default_value;
 
-        let result = self
+        let (result, err) = self
             .provider
             .evaluation::<T>(flag.clone(), result_default_value, flatten_ctx);
 
-        eval_details.variant = result.varient;
+        eval_details.variant = result.variant;
         eval_details.reason = result.reason;
         eval_details.error_code = result.resolution_error.code;
         eval_details.error_message = result.resolution_error.message;
 
-        (eval_details, Error)
+        (eval_details, err)
     }
     fn value_details<T>(
         &self,
         flag: String,
         default_value: T,
         eval_ctx: evaluation::EvaluationContext,
-    ) -> (EvaluationDetails<T>, Result<bool>) {
-        todo!()
+    ) -> (EvaluationDetails<T>, anyhow::Error) where T: Clone{
+        
+        let (eval_details, err): (EvaluationDetails<T>, anyhow::Error) = self.evaluate(flag, default_value, eval_ctx);
+        (eval_details, err)
     }
 }
 
@@ -183,5 +186,18 @@ mod tests {
         assert_eq!(client.meta_data().get_name(), "test");
 
         client.evaluate::<f64>("test".to_string(), 1.0, client.evaluation_context());
+    }
+    #[test]
+    fn test_evaluate_detail() {
+
+        let client = Client::<providers::NoOProvider>::new(
+            "test".to_string(),
+            providers::NoOProvider::new(),
+        );
+        assert_eq!(client.meta_data().get_name(), "test");
+        let (eval_details, err) = client.value_details::<String>("test".to_string(), "test".to_string(), 
+        client.evaluation_context());
+        assert_eq!(eval_details.flag_key, "test");
+        assert_eq!(eval_details.variant, "");
     }
 }
