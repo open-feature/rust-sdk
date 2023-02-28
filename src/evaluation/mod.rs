@@ -29,6 +29,9 @@ impl EvaluationContext {
         }
     }
     fn attribute(&self, key: String) -> String {
+        if !self.attributes.contains_key(&key) {
+            return "".to_string();
+        }
         self.attributes.get(&key).unwrap().clone()
     }
     fn targetting_key(&self) -> String {
@@ -61,5 +64,18 @@ mod tests {
         assert_eq!(context.attribute("key3".to_string()), "value3".to_string());
         assert_eq!(context.attributes().len(), 3);
     }    
-    
+    #[test]
+    fn test_empty_evaluation_context_2() {
+
+        let attributes = HashMap::new();
+
+        let context = EvaluationContext::new("targetting_key".to_string(), attributes);
+
+        assert_eq!(context.targetting_key(), "targetting_key".to_string());
+        assert_eq!(context.attribute("key1".to_string()), "".to_string());
+        assert_eq!(context.attribute("key2".to_string()), "".to_string());
+        assert_eq!(context.attribute("key3".to_string()), "".to_string());
+        assert_eq!(context.attributes().len(), 0);
+
+    }
 }

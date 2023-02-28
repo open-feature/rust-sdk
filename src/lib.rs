@@ -134,7 +134,7 @@ mod tests {
             client.evaluate::<bool>("test".to_string(),
              true, client.evaluation_context());
             assert_eq!(eval_details.value, true);
+
     }
- 
 
 }
