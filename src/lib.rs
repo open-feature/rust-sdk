@@ -107,6 +107,8 @@ impl ClientMetaData {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use crate::{ClientMetaData, providers::{self, traits::FeatureProvider}, Client, traits::ClientTraits, evaluation::{self, EvaluationContext}};
 
     #[test]
@@ -121,6 +123,13 @@ mod tests {
         let mut client = Client::<providers::NoOProvider>::new("test".
          to_string(), providers::NoOProvider::new());
             assert_eq!(client.meta_data().get_name(), "test");
+
+        let mut attributes = HashMap::new();
+        attributes.insert("test".to_string(), "test".to_string());
+        
+            client.set_evaluation_context(evaluation::EvaluationContext::new("test".to_string(),
+            attributes));
+
             let (eval_details, error) = 
             client.evaluate::<bool>("test".to_string(),
              true, client.evaluation_context());

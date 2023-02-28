@@ -47,6 +47,19 @@ mod tests {
 
     #[test]
     fn test_evaluation_context_1() {
-        
-    }
+
+        let mut attributes = HashMap::new();
+        attributes.insert("key1".to_string(), "value1".to_string());
+        attributes.insert("key2".to_string(), "value2".to_string());
+        attributes.insert("key3".to_string(), "value3".to_string());
+
+        let context = EvaluationContext::new("targetting_key".to_string(), attributes);
+
+        assert_eq!(context.targetting_key(), "targetting_key".to_string());
+        assert_eq!(context.attribute("key1".to_string()), "value1".to_string());
+        assert_eq!(context.attribute("key2".to_string()), "value2".to_string());
+        assert_eq!(context.attribute("key3".to_string()), "value3".to_string());
+        assert_eq!(context.attributes().len(), 3);
+    }    
+    
 }
