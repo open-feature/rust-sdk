@@ -3,18 +3,19 @@ use std::collections::HashMap;
 #[derive(Clone)]
 pub struct EvaluationContext {
     pub targetting_key: String,
-    pub attributes: HashMap<String,String>,
+    pub attributes: HashMap<String, String>,
 }
 
-pub struct EvaluationOptions {
+pub struct EvaluationOptions {}
 
-}
-
-pub type FlattenedContext = HashMap<String,String>;
+pub type FlattenedContext = HashMap<String, String>;
 
 pub fn flatten_context(context: EvaluationContext) -> FlattenedContext {
     let mut flattened_context = HashMap::new();
-    flattened_context.insert(context.targetting_key(), context.attribute(context.targetting_key()));
+    flattened_context.insert(
+        context.targetting_key(),
+        context.attribute(context.targetting_key()),
+    );
     for (key, value) in context.attributes() {
         flattened_context.insert(key, value);
     }
@@ -22,10 +23,10 @@ pub fn flatten_context(context: EvaluationContext) -> FlattenedContext {
 }
 // impl
 impl EvaluationContext {
-    pub fn new(targetting_key: String, attributes: HashMap<String,String>) -> Self {
+    pub fn new(targetting_key: String, attributes: HashMap<String, String>) -> Self {
         Self {
             targetting_key: targetting_key,
-            attributes: attributes
+            attributes: attributes,
         }
     }
     fn attribute(&self, key: String) -> String {
@@ -37,7 +38,7 @@ impl EvaluationContext {
     fn targetting_key(&self) -> String {
         self.targetting_key.clone()
     }
-    fn attributes(&self) -> HashMap<String,String> {
+    fn attributes(&self) -> HashMap<String, String> {
         self.attributes.clone()
     }
 }
@@ -50,7 +51,6 @@ mod tests {
 
     #[test]
     fn test_evaluation_context_1() {
-
         let mut attributes = HashMap::new();
         attributes.insert("key1".to_string(), "value1".to_string());
         attributes.insert("key2".to_string(), "value2".to_string());
@@ -63,10 +63,9 @@ mod tests {
         assert_eq!(context.attribute("key2".to_string()), "value2".to_string());
         assert_eq!(context.attribute("key3".to_string()), "value3".to_string());
         assert_eq!(context.attributes().len(), 3);
-    }    
+    }
     #[test]
     fn test_empty_evaluation_context_2() {
-
         let attributes = HashMap::new();
 
         let context = EvaluationContext::new("targetting_key".to_string(), attributes);
@@ -76,6 +75,5 @@ mod tests {
         assert_eq!(context.attribute("key2".to_string()), "".to_string());
         assert_eq!(context.attribute("key3".to_string()), "".to_string());
         assert_eq!(context.attributes().len(), 0);
-
     }
 }

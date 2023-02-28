@@ -1,6 +1,9 @@
 use crate::evaluation::FlattenedContext;
 
-use self::{types::{Metadata, ResolutionDetails, ResolutionError}, traits::FeatureProvider};
+use self::{
+    traits::FeatureProvider,
+    types::{Metadata, ResolutionDetails, ResolutionError},
+};
 
 pub mod traits;
 pub mod types;
@@ -15,14 +18,12 @@ pub const DisabledReason: &str = "DISABLED";
 pub const StaticReason: &str = "STATIC";
 // CachedReason - the resolved value was retrieved from cache
 pub const CachedReason: &str = "CACHED";
-// UnknownReason - the reason for the resolved value could not be determined.	
+// UnknownReason - the reason for the resolved value could not be determined.
 pub const UnknownReason: &str = "UNKNOWN";
 // ErrorReason - the resolved value was the result of an error.
 pub const ErrorReason: &str = "ERROR";
 
 pub const TARGETING_KEY: &str = "targetingKey"; // eva
-
-
 
 pub struct NoOProvider {}
 
@@ -34,21 +35,26 @@ impl FeatureProvider for NoOProvider {
     fn meta_data(&self) -> Metadata {
         return Metadata {
             name: "NoOProvider".to_string(),
-        }
+        };
     }
 
-    fn evaluation<T>(&self,flag: String, default_value: T,
-         eval_ctx: FlattenedContext) -> ResolutionDetails<T> where T: Copy {
-     
-        return  ResolutionDetails::<T> {
+    fn evaluation<T>(
+        &self,
+        flag: String,
+        default_value: T,
+        eval_ctx: FlattenedContext,
+    ) -> ResolutionDetails<T>
+    where
+        T: Clone,
+    {
+        return ResolutionDetails::<T> {
             value: default_value,
             varient: "".to_string(),
             reason: "".to_string(),
             resolution_error: ResolutionError {
                 code: "".to_string(),
                 message: "".to_string(),
-            }
-        }
+            },
+        };
     }
 }
-
