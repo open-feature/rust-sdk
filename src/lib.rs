@@ -5,6 +5,7 @@ use traits::ClientTraits;
 pub mod evaluation;
 pub mod providers;
 pub mod traits;
+mod hooks;
 
 pub struct Client<C>
 where
