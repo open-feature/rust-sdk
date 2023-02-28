@@ -5,9 +5,9 @@ use anyhow::Result;
 
 use traits::ClientTraits;
 
-mod evaluation;
-mod providers;
-mod traits;
+pub mod evaluation;
+pub mod providers;
+pub mod traits;
 
 pub struct Client<C>
 where
