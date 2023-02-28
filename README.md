@@ -27,6 +27,8 @@ fn main() {
         "test".to_string(),
         providers::NoOProvider::new(),
     );
-    client.evaluate::<f64>("test".to_string(), 1.0, client.evaluation_context());
+    let (result, err) = client.value::<i64>("test".to_string(),
+        0, client.evaluation_context() );
 }
+
 ```

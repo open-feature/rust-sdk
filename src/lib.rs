@@ -61,7 +61,7 @@ where
         eval_ctx: evaluation::EvaluationContext,
     ) -> (T, anyhow::Error)
     where
-        T: Copy,
+        T: Clone,
     {
         let (eval_details, err): (EvaluationDetails<T>, anyhow::Error) = self.evaluate(flag, default_value, eval_ctx);
         (eval_details.value, err)
@@ -199,5 +199,43 @@ mod tests {
         client.evaluation_context());
         assert_eq!(eval_details.flag_key, "test");
         assert_eq!(eval_details.variant, "");
+    }
+
+    #[test]
+    fn test_client_value_i64() {
+
+        let client = Client::<providers::NoOProvider>::new(
+            "test".to_string(),
+            providers::NoOProvider::new(),
+        );
+        assert_eq!(client.meta_data().get_name(), "test");
+
+        let (result, error) = client.value::<i64>("test".to_string(), 1, client.evaluation_context());
+        assert_eq!(result, 1);
+    }
+    #[test]
+    fn test_client_value_string() {
+
+        let client = Client::<providers::NoOProvider>::new(
+            "test".to_string(),
+            providers::NoOProvider::new(),
+        );
+        assert_eq!(client.meta_data().get_name(), "test");
+
+        let (result, error) = client.value::<String>("test".to_string(), "test".to_string(), client.evaluation_context());
+        assert_eq!(result, "test");
+
+    }
+    #[test]
+    fn test_client_value_f64() {
+
+        let client = Client::<providers::NoOProvider>::new(
+            "test".to_string(),
+            providers::NoOProvider::new(),
+        );
+        assert_eq!(client.meta_data().get_name(), "test");
+
+        let (result, error) = client.value::<f64>("test".to_string(), 1.0, client.evaluation_context());
+        assert_eq!(result, 1.0);
     }
 }

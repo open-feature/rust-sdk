@@ -24,7 +24,7 @@ where
         eval_ctx: evaluation::EvaluationContext,
     ) -> (T, anyhow::Error)
     where
-        T: Copy;
+        T: Clone;
     fn value_details<T>(
         &self,
         flag: String,
