@@ -2,8 +2,11 @@ use crate::providers::traits::FeatureProvider;
 use std::collections::HashMap;
 use traits::ClientTraits;
 
+#[path = "evaluation/evaluation.rs"]
 pub mod evaluation;
-mod hooks;
+#[path = "hooks/hooks.rs"]
+pub mod hooks;
+#[path = "providers/providers.rs"]
 pub mod providers;
 pub mod traits;
 

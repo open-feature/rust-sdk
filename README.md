@@ -23,11 +23,11 @@ use rust_sdk::traits::ClientTraits;
 
 fn main() {
     
-    let client = Client::<providers::NoOProvider>::new(
-        "test".to_string(),
-        providers::NoOProvider::new(),
+    let client = Client::<providers::NoopProvider>::new(
+        "client-name".to_string(),
+        providers::NoopProvider::new(),
     );
-    let (result, err) = client.value::<i64>("test".to_string(),
+    let (result, err) = client.value::<i64>("flag-key-here".to_string(),
         0, client.evaluation_context() );
 }
 
