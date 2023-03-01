@@ -26,7 +26,7 @@ pub const ERROR_REASON: &str = "ERROR";
 
 pub const TARGETING_KEY: &str = "targetingKey";
 
-// NoOProvider - a provider that does nothing
+// NoopProvider - a provider that does nothing
 pub struct NoopProvider {}
 
 impl FeatureProvider for NoopProvider {
