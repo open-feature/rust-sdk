@@ -62,8 +62,6 @@ impl FeatureProvider for NoOProvider {
             reason,
             resolution_error,
         };
-        let error = anyhow::Error::msg("NoOProvider");
-
-        return (resolution_details, error);
+        return (resolution_details, Ok());
     }
 }
