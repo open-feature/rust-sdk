@@ -27,11 +27,11 @@ pub const ERROR_REASON: &str = "ERROR";
 pub const TARGETING_KEY: &str = "targetingKey";
 
 // NoOProvider - a provider that does nothing
-pub struct NoOProvider {}
+pub struct NoopProvider {}
 
-impl FeatureProvider for NoOProvider {
+impl FeatureProvider for NoopProvider {
     fn new() -> Self {
-        return NoOProvider {};
+        return NoopProvider {};
     }
 
     fn meta_data(&self) -> ProviderMetadata {
@@ -45,7 +45,7 @@ impl FeatureProvider for NoOProvider {
         _flag: String,
         default_value: T,
         _eval_ctx: FlattenedContext,
-    ) -> (ResolutionDetails<T>, anyhow::Error)
+    ) -> Result<ResolutionDetails<T>, anyhow::Error>
     where
         T: Clone,
     {
@@ -62,6 +62,6 @@ impl FeatureProvider for NoOProvider {
             reason,
             resolution_error,
         };
-        return (resolution_details, Ok());
+        return Ok(resolution_details);
     }
 }

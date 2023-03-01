@@ -1,5 +1,6 @@
 use crate::providers::traits::FeatureProvider;
 use std::collections::HashMap;
+use anyhow::Error;
 use traits::ClientTraits;
 
 #[path = "evaluation/evaluation.rs"]
@@ -22,6 +23,7 @@ where
 pub struct ClientMetaData {
     pub name: String,
 }
+#[derive(Debug)]
 pub struct EvaluationDetails<T> {
     value: T,
     flag_key: String,
@@ -59,20 +61,23 @@ where
         flag: String,
         default_value: T,
         eval_ctx: evaluation::EvaluationContext,
-    ) -> (T, anyhow::Error)
+    ) ->  anyhow::Result<T>
     where
         T: Clone,
     {
-        let (eval_details, err): (EvaluationDetails<T>, anyhow::Error) =
+        let result =
             self.evaluate(flag, default_value, eval_ctx);
-        (eval_details.value, err)
+            if result.is_err() {
+                return Err(Error::msg("something went wrong evaluating".to_string()));
+            }
+        return Ok(result.unwrap().value);
     }
     fn evaluate<T>(
         &self,
         flag: String,
         default_value: T,
         eval_ctx: evaluation::EvaluationContext,
-    ) -> (EvaluationDetails<T>, anyhow::Error)
+    ) -> anyhow::Result<EvaluationDetails<T>>
     where
         T: Clone,
     {
@@ -90,29 +95,37 @@ where
 
         let result_default_value: T = default_value;
 
-        let (result, err) =
+        let result =
             self.provider
                 .evaluation::<T>(flag.clone(), result_default_value, flatten_ctx);
 
-        eval_details.variant = result.variant;
-        eval_details.reason = result.reason;
-        eval_details.error_code = result.resolution_error.code;
-        eval_details.error_message = result.resolution_error.message;
+        let response_resolution_details = result.unwrap();
+
+        eval_details.variant = response_resolution_details.variant;
+        eval_details.reason = response_resolution_details.reason;
+        eval_details.error_code = response_resolution_details.resolution_error.code;
+        eval_details.error_message = response_resolution_details.resolution_error.message;
         eval_details.flag_key = flag.clone();
-        (eval_details, err)
+        if eval_details.error_code != "0" {
+            return Err(Error::msg(eval_details.error_message));
+        }
+        return Ok(eval_details);
     }
     fn value_details<T>(
         &self,
         flag: String,
         default_value: T,
         eval_ctx: evaluation::EvaluationContext,
-    ) -> (EvaluationDetails<T>, anyhow::Error)
+    ) -> anyhow::Result<EvaluationDetails<T>>
     where
         T: Clone,
     {
-        let (eval_details, err): (EvaluationDetails<T>, anyhow::Error) =
+        let result =
             self.evaluate(flag, default_value, eval_ctx);
-        (eval_details, err)
+            if result.is_err() {
+                return Err(Error::msg("something went wrong evaluating".to_string()));
+            }
+        return Ok(result.unwrap());
     }
 }
 
@@ -144,24 +157,24 @@ mod tests {
 
     #[test]
     fn test_evaluate_bool() {
-        let client = Client::<providers::NoOProvider>::new(
+        let client = Client::<providers::NoopProvider>::new(
             "test".to_string(),
-            providers::NoOProvider::new(),
+            providers::NoopProvider::new(),
         );
         assert_eq!(client.meta_data().name(), "test");
 
         let mut attributes = HashMap::new();
         attributes.insert("test".to_string(), "test".to_string());
 
-        let (eval_details, _error) =
+        let result = 
             client.evaluate::<bool>("test".to_string(), true, client.evaluation_context());
-        assert_eq!(eval_details.value, true);
+        assert_eq!(result.unwrap().value, true);
     }
     #[test]
     fn test_evaluate_string() {
-        let client = Client::<providers::NoOProvider>::new(
+        let client = Client::<providers::NoopProvider>::new(
             "test".to_string(),
-            providers::NoOProvider::new(),
+            providers::NoopProvider::new(),
         );
         assert_eq!(client.meta_data().name(), "test");
 
@@ -173,77 +186,83 @@ mod tests {
     }
     #[test]
     fn test_evaluate_i64() {
-        let client = Client::<providers::NoOProvider>::new(
+        let client = Client::<providers::NoopProvider>::new(
             "test".to_string(),
-            providers::NoOProvider::new(),
+            providers::NoopProvider::new(),
         );
         assert_eq!(client.meta_data().name(), "test");
 
-        client.evaluate::<i64>("test".to_string(), 1, client.evaluation_context());
+        let result = client.evaluate::<i64>("test".to_string(), 
+        1, client.evaluation_context());
+
+        assert!(result.is_ok());
     }
     #[test]
     fn test_evaluate_f64() {
-        let client = Client::<providers::NoOProvider>::new(
+        let client = Client::<providers::NoopProvider>::new(
             "test".to_string(),
-            providers::NoOProvider::new(),
+            providers::NoopProvider::new(),
         );
         assert_eq!(client.meta_data().name(), "test");
 
-        client.evaluate::<f64>("test".to_string(), 1.0, client.evaluation_context());
+        let result = client.evaluate::<f64>("test".to_string(), 1.0,
+         client.evaluation_context());
+        assert!(result.is_ok());
     }
     #[test]
     fn test_evaluate_detail() {
-        let client = Client::<providers::NoOProvider>::new(
+        let client = Client::<providers::NoopProvider>::new(
             "test".to_string(),
-            providers::NoOProvider::new(),
+            providers::NoopProvider::new(),
         );
         assert_eq!(client.meta_data().name(), "test");
-        let (eval_details, _err) = client.value_details::<String>(
+        let result = client.value_details::<String>(
             "test".to_string(),
             "test".to_string(),
             client.evaluation_context(),
         );
+        let eval_details = result.unwrap();
         assert_eq!(eval_details.flag_key, "test");
         assert_eq!(eval_details.variant, "");
     }
 
     #[test]
     fn test_client_value_i64() {
-        let client = Client::<providers::NoOProvider>::new(
+        let client = Client::<providers::NoopProvider>::new(
             "test".to_string(),
-            providers::NoOProvider::new(),
+            providers::NoopProvider::new(),
         );
         assert_eq!(client.meta_data().name(), "test");
 
-        let (result, _error) =
+        let result =
             client.value::<i64>("test".to_string(), 1, client.evaluation_context());
-        assert_eq!(result, 1);
+        assert_eq!(result.unwrap(), 1);
     }
     #[test]
     fn test_client_value_string() {
-        let client = Client::<providers::NoOProvider>::new(
+        let client = Client::<providers::NoopProvider>::new(
             "test".to_string(),
-            providers::NoOProvider::new(),
+            providers::NoopProvider::new(),
         );
         assert_eq!(client.meta_data().name(), "test");
 
-        let (result, _error) = client.value::<String>(
+        let result = client.value::<String>(
             "test".to_string(),
             "test".to_string(),
             client.evaluation_context(),
         );
-        assert_eq!(result, "test");
+        assert_eq!(result.unwrap(), "test");
     }
     #[test]
     fn test_client_value_f64() {
-        let client = Client::<providers::NoOProvider>::new(
+        let client = Client::<providers::NoopProvider>::new(
             "test".to_string(),
-            providers::NoOProvider::new(),
+            providers::NoopProvider::new(),
         );
         assert_eq!(client.meta_data().name(), "test");
 
-        let (result, _error) =
+        let result =
             client.value::<f64>("test".to_string(), 1.0, client.evaluation_context());
-        assert_eq!(result, 1.0);
+        assert_eq!(result.unwrap(), 1.0);
     }
 }

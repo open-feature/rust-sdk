@@ -13,7 +13,7 @@ where
         flag: String,
         default_value: T,
         eval_ctx: evaluation::EvaluationContext,
-    ) -> (EvaluationDetails<T>, anyhow::Error)
+    ) -> anyhow::Result<EvaluationDetails<T>>
     where
         T: Clone;
     fn value<T>(
@@ -21,7 +21,7 @@ where
         flag: String,
         default_value: T,
         eval_ctx: evaluation::EvaluationContext,
-    ) -> (T, anyhow::Error)
+    ) ->  anyhow::Result<T>
     where
         T: Clone;
     fn value_details<T>(
@@ -29,7 +29,7 @@ where
         flag: String,
         default_value: T,
         eval_ctx: evaluation::EvaluationContext,
-    ) -> (EvaluationDetails<T>, anyhow::Error)
+    ) -> anyhow::Result<EvaluationDetails<T>>
     where
         T: Clone;
 }
