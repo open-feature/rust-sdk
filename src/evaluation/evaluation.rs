@@ -12,12 +12,15 @@ pub type FlattenedContext = HashMap<String, String>;
 
 pub fn flatten_context(context: EvaluationContext) -> FlattenedContext {
     let mut flattened_context = HashMap::new();
-    flattened_context.insert(
-        context.targeting_key(),
-        context.attribute(context.targeting_key()),
-    );
-    for (key, value) in context.attributes() {
-        flattened_context.insert(key, value);
+
+    if !context.attributes.is_empty() {
+        flattened_context = context.attributes();
+    }
+    if !context.targeting_key().is_empty() {
+        flattened_context.insert(
+            context.targeting_key(),
+            context.attribute(context.targeting_key()),
+        );
     }
     flattened_context
 }
@@ -47,7 +50,7 @@ impl EvaluationContext {
 mod tests {
     use std::collections::HashMap;
 
-    use crate::evaluation::EvaluationContext;
+    use crate::evaluation::{EvaluationContext, flatten_context};
 
     #[test]
     fn test_evaluation_context_1() {
@@ -75,5 +78,23 @@ mod tests {
         assert_eq!(context.attribute("key2".to_string()), "".to_string());
         assert_eq!(context.attribute("key3".to_string()), "".to_string());
         assert_eq!(context.attributes().len(), 0);
+    }
+    #[test]
+    fn test_flatten_context() {
+
+        let mut attributes = HashMap::new();
+        attributes.insert("key1".to_string(), "value1".to_string());
+        attributes.insert("key2".to_string(), "value2".to_string());
+        attributes.insert("key3".to_string(), "value3".to_string());
+
+        let context = EvaluationContext::new("targeting_key".to_string(), attributes);
+
+        let flattened_context = flatten_context(context);
+
+        assert_eq!(flattened_context.len(), 4);
+        assert_eq!(flattened_context.get("key1").unwrap().to_string(), "value1".to_string());
+        assert_eq!(flattened_context.get("key2").unwrap().to_string(), "value2".to_string());
+        assert_eq!(flattened_context.get("key3").unwrap().to_string(), "value3".to_string());
+
     }
 }
