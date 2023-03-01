@@ -36,7 +36,7 @@ impl FeatureProvider for NoopProvider {
 
     fn meta_data(&self) -> ProviderMetadata {
         return ProviderMetadata {
-            name: "NoOProvider".to_string(),
+            name: "NoopPårovider".to_string(),
         };
     }
 
