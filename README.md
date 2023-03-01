@@ -17,18 +17,19 @@ rust-sdk = { git = "https://github.com/open-feature/rust-sdk", branch = "main" }
 
 ```rust
 use rust_sdk::Client;
-use rust_sdk::providers;
+use rust_sdk::providers::NoopProvider;
 use rust_sdk::providers::traits::FeatureProvider;
 use rust_sdk::traits::ClientTraits;
 
 fn main() {
     
-    let client = Client::<providers::NoopProvider>::new(
+    let client = Client::<NoopProvider>::new(
         "client-name".to_string(),
-        providers::NoopProvider::new(),
+        NoopProvider::new(),
     );
-    let (result, err) = client.value::<i64>("flag-key-here".to_string(),
+    let result = client.value::<i64>("flag-key-here".to_string(),
         0, client.evaluation_context() );
+    println!("result: {}", result.unwrap());
 }
 
 ```
