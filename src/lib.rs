@@ -1,6 +1,6 @@
 use crate::providers::traits::FeatureProvider;
-use std::collections::HashMap;
 use anyhow::Error;
+use std::collections::HashMap;
 use traits::ClientTraits;
 
 #[path = "evaluation/evaluation.rs"]
@@ -61,15 +61,14 @@ where
         flag: String,
         default_value: T,
         eval_ctx: evaluation::EvaluationContext,
-    ) ->  anyhow::Result<T>
+    ) -> anyhow::Result<T>
     where
         T: Clone,
     {
-        let result =
-            self.evaluate(flag, default_value, eval_ctx);
-            if result.is_err() {
-                return Err(Error::msg("something went wrong evaluating".to_string()));
-            }
+        let result = self.evaluate(flag, default_value, eval_ctx);
+        if result.is_err() {
+            return Err(Error::msg("something went wrong evaluating".to_string()));
+        }
         return Ok(result.unwrap().value);
     }
     fn evaluate<T>(
@@ -95,9 +94,9 @@ where
 
         let result_default_value: T = default_value;
 
-        let result =
-            self.provider
-                .evaluation::<T>(flag.clone(), result_default_value, flatten_ctx);
+        let result = self
+            .provider
+            .evaluation::<T>(flag.clone(), result_default_value, flatten_ctx);
 
         let response_resolution_details = result.unwrap();
 
@@ -120,11 +119,10 @@ where
     where
         T: Clone,
     {
-        let result =
-            self.evaluate(flag, default_value, eval_ctx);
-            if result.is_err() {
-                return Err(Error::msg("something went wrong evaluating".to_string()));
-            }
+        let result = self.evaluate(flag, default_value, eval_ctx);
+        if result.is_err() {
+            return Err(Error::msg("something went wrong evaluating".to_string()));
+        }
         return Ok(result.unwrap());
     }
 }
@@ -166,8 +164,7 @@ mod tests {
         let mut attributes = HashMap::new();
         attributes.insert("test".to_string(), "test".to_string());
 
-        let result = 
-            client.evaluate::<bool>("test".to_string(), true, client.evaluation_context());
+        let result = client.evaluate::<bool>("test".to_string(), true, client.evaluation_context());
         assert_eq!(result.unwrap().value, true);
     }
     #[test]
@@ -192,8 +189,7 @@ mod tests {
         );
         assert_eq!(client.meta_data().name(), "test");
 
-        let result = client.evaluate::<i64>("test".to_string(), 
-        1, client.evaluation_context());
+        let result = client.evaluate::<i64>("test".to_string(), 1, client.evaluation_context());
 
         assert!(result.is_ok());
     }
@@ -205,8 +201,7 @@ mod tests {
         );
         assert_eq!(client.meta_data().name(), "test");
 
-        let result = client.evaluate::<f64>("test".to_string(), 1.0,
-         client.evaluation_context());
+        let result = client.evaluate::<f64>("test".to_string(), 1.0, client.evaluation_context());
         assert!(result.is_ok());
     }
     #[test]
@@ -234,8 +229,7 @@ mod tests {
         );
         assert_eq!(client.meta_data().name(), "test");
 
-        let result =
-            client.value::<i64>("test".to_string(), 1, client.evaluation_context());
+        let result = client.value::<i64>("test".to_string(), 1, client.evaluation_context());
         assert_eq!(result.unwrap(), 1);
     }
     #[test]
@@ -261,8 +255,7 @@ mod tests {
         );
         assert_eq!(client.meta_data().name(), "test");
 
-        let result =
-            client.value::<f64>("test".to_string(), 1.0, client.evaluation_context());
+        let result = client.value::<f64>("test".to_string(), 1.0, client.evaluation_context());
         assert_eq!(result.unwrap(), 1.0);
     }
 }

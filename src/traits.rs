@@ -21,7 +21,7 @@ where
         flag: String,
         default_value: T,
         eval_ctx: evaluation::EvaluationContext,
-    ) ->  anyhow::Result<T>
+    ) -> anyhow::Result<T>
     where
         T: Clone;
     fn value_details<T>(

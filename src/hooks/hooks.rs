@@ -86,8 +86,10 @@ mod tests {
     use std::collections::HashMap;
 
     use crate::{
+        evaluation::EvaluationContext,
         hooks::{types::HookContext, HookHints},
-        ClientMetaData, providers::{types::ProviderMetadata, DEFAULT_REASON}, evaluation::EvaluationContext,
+        providers::{types::ProviderMetadata, DEFAULT_REASON},
+        ClientMetaData,
     };
 
     #[test]
@@ -106,16 +108,16 @@ mod tests {
     }
     #[test]
     fn test_hookcontext_getters() {
-        let provider_meta_data = ProviderMetadata{
+        let provider_meta_data = ProviderMetadata {
             name: "test".to_string(),
         };
-        
+
         let hook_context = HookContext::new(
             "test".to_string(),
             true,
             ClientMetaData::new("test".to_string()),
             provider_meta_data,
-            EvaluationContext::new(DEFAULT_REASON.to_string(),HashMap::new()),
+            EvaluationContext::new(DEFAULT_REASON.to_string(), HashMap::new()),
         );
         assert_eq!(hook_context.flag_key(), "test".to_string());
         assert_eq!(hook_context.flag_type(), "bool".to_string());
