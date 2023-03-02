@@ -1,7 +1,7 @@
 use crate::providers::traits::FeatureProvider;
 use anyhow::Error;
 use std::collections::HashMap;
-use traits::ClientTraits;
+use traits::Client;
 
 #[path = "evaluation/evaluation.rs"]
 pub mod evaluation;
@@ -11,16 +11,16 @@ pub mod hooks;
 pub mod providers;
 pub mod traits;
 
-pub struct Client<C>
+pub struct OpenFeatureClient<C>
 where
     C: FeatureProvider,
 {
-    meta_data: ClientMetaData,
+    meta_data: ClientMetadata,
     evaluation_context: evaluation::EvaluationContext,
     provider: C,
 }
 #[derive(Clone)]
-pub struct ClientMetaData {
+pub struct ClientMetadata {
     pub name: String,
 }
 #[derive(Debug)]
@@ -33,18 +33,18 @@ pub struct EvaluationDetails<T> {
     error_message: String,
 }
 
-impl<C> ClientTraits<C> for Client<C>
+impl<C> Client<C> for OpenFeatureClient<C>
 where
     C: FeatureProvider,
 {
     fn new(name: String, provider: C) -> Self {
         Self {
-            meta_data: ClientMetaData { name: name.clone() },
+            meta_data: ClientMetadata { name: name.clone() },
             evaluation_context: evaluation::EvaluationContext::new(name, HashMap::new()),
             provider,
         }
     }
-    fn meta_data(&self) -> ClientMetaData {
+    fn meta_data(&self) -> ClientMetadata {
         return self.meta_data.clone();
     }
 
@@ -96,7 +96,7 @@ where
 
         let result = self
             .provider
-            .evaluation::<T>(flag.clone(), result_default_value, flatten_ctx);
+            .resolution::<T>(flag.clone(), result_default_value, flatten_ctx);
 
         let response_resolution_details = result.unwrap();
 
@@ -125,10 +125,16 @@ where
         }
         return Ok(result.unwrap());
     }
+
+    fn add_hooks<T>(&self, hooks: T)
+    where
+        T: traits::hooks::Hooks,
+    {
+    }
 }
 
 // ClientMetaData impl
-impl ClientMetaData {
+impl ClientMetadata {
     pub fn new(name: String) -> Self {
         Self { name }
     }
@@ -143,19 +149,19 @@ mod tests {
 
     use crate::{
         providers::{self, traits::FeatureProvider},
-        traits::ClientTraits,
-        Client, ClientMetaData,
+        traits::Client,
+        ClientMetadata, OpenFeatureClient,
     };
 
     #[test]
     fn test_set_name_client_meta_data() {
-        let client_meta_data = ClientMetaData::new("test".to_string());
+        let client_meta_data = ClientMetadata::new("test".to_string());
         assert_eq!(client_meta_data.name(), "test");
     }
 
     #[test]
     fn test_evaluate_bool() {
-        let client = Client::<providers::NoopProvider>::new(
+        let client = OpenFeatureClient::<providers::NoopProvider>::new(
             "test".to_string(),
             providers::NoopProvider::new(),
         );
@@ -169,21 +175,22 @@ mod tests {
     }
     #[test]
     fn test_evaluate_string() {
-        let client = Client::<providers::NoopProvider>::new(
+        let client = OpenFeatureClient::<providers::NoopProvider>::new(
             "test".to_string(),
             providers::NoopProvider::new(),
         );
         assert_eq!(client.meta_data().name(), "test");
 
-        client.evaluate::<String>(
+        let result = client.evaluate::<String>(
             "test".to_string(),
             "test".to_string(),
             client.evaluation_context(),
         );
+        assert_eq!(result.unwrap().value, "test");
     }
     #[test]
     fn test_evaluate_i64() {
-        let client = Client::<providers::NoopProvider>::new(
+        let client = OpenFeatureClient::<providers::NoopProvider>::new(
             "test".to_string(),
             providers::NoopProvider::new(),
         );
@@ -195,7 +202,7 @@ mod tests {
     }
     #[test]
     fn test_evaluate_f64() {
-        let client = Client::<providers::NoopProvider>::new(
+        let client = OpenFeatureClient::<providers::NoopProvider>::new(
             "test".to_string(),
             providers::NoopProvider::new(),
         );
@@ -206,7 +213,7 @@ mod tests {
     }
     #[test]
     fn test_evaluate_detail() {
-        let client = Client::<providers::NoopProvider>::new(
+        let client = OpenFeatureClient::<providers::NoopProvider>::new(
             "test".to_string(),
             providers::NoopProvider::new(),
         );
@@ -223,7 +230,7 @@ mod tests {
 
     #[test]
     fn test_client_value_i64() {
-        let client = Client::<providers::NoopProvider>::new(
+        let client = OpenFeatureClient::<providers::NoopProvider>::new(
             "test".to_string(),
             providers::NoopProvider::new(),
         );
@@ -234,7 +241,7 @@ mod tests {
     }
     #[test]
     fn test_client_value_string() {
-        let client = Client::<providers::NoopProvider>::new(
+        let client = OpenFeatureClient::<providers::NoopProvider>::new(
             "test".to_string(),
             providers::NoopProvider::new(),
         );
@@ -249,7 +256,7 @@ mod tests {
     }
     #[test]
     fn test_client_value_f64() {
-        let client = Client::<providers::NoopProvider>::new(
+        let client = OpenFeatureClient::<providers::NoopProvider>::new(
             "test".to_string(),
             providers::NoopProvider::new(),
         );

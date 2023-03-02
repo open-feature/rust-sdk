@@ -31,7 +31,7 @@ pub struct NoopProvider {}
 
 impl FeatureProvider for NoopProvider {
     fn new() -> Self {
-        return NoopProvider {};
+        NoopProvider {}
     }
 
     fn meta_data(&self) -> ProviderMetadata {
@@ -40,7 +40,7 @@ impl FeatureProvider for NoopProvider {
         };
     }
 
-    fn evaluation<T>(
+    fn resolution<T>(
         &self,
         _flag: String,
         default_value: T,

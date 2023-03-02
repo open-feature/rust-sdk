@@ -50,7 +50,7 @@ impl EvaluationContext {
 mod tests {
     use std::collections::HashMap;
 
-    use crate::evaluation::{EvaluationContext, flatten_context};
+    use crate::evaluation::{flatten_context, EvaluationContext};
 
     #[test]
     fn test_evaluation_context_1() {
@@ -81,7 +81,6 @@ mod tests {
     }
     #[test]
     fn test_flatten_context() {
-
         let mut attributes = HashMap::new();
         attributes.insert("key1".to_string(), "value1".to_string());
         attributes.insert("key2".to_string(), "value2".to_string());
@@ -92,9 +91,17 @@ mod tests {
         let flattened_context = flatten_context(context);
 
         assert_eq!(flattened_context.len(), 4);
-        assert_eq!(flattened_context.get("key1").unwrap().to_string(), "value1".to_string());
-        assert_eq!(flattened_context.get("key2").unwrap().to_string(), "value2".to_string());
-        assert_eq!(flattened_context.get("key3").unwrap().to_string(), "value3".to_string());
-
+        assert_eq!(
+            flattened_context.get("key1").unwrap().to_string(),
+            "value1".to_string()
+        );
+        assert_eq!(
+            flattened_context.get("key2").unwrap().to_string(),
+            "value2".to_string()
+        );
+        assert_eq!(
+            flattened_context.get("key3").unwrap().to_string(),
+            "value3".to_string()
+        );
     }
 }

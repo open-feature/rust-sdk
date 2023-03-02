@@ -16,14 +16,14 @@ rust-sdk = { git = "https://github.com/open-feature/rust-sdk", branch = "main" }
 ### Initialization
 
 ```rust
-use rust_sdk::Client;
+use rust_sdk::OpenFeatureClient;
 use rust_sdk::providers::NoopProvider;
 use rust_sdk::providers::traits::FeatureProvider;
 use rust_sdk::traits::ClientTraits;
 
 fn main() {
     
-    let client = Client::<NoopProvider>::new(
+    let client = OpenFeatureClient::<NoopProvider>::new(
         "client-name".to_string(),
         NoopProvider::new(),
     );
