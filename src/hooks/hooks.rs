@@ -3,7 +3,6 @@ use std::collections::HashMap;
 
 use crate::{
     evaluation::EvaluationContext, providers::types::ProviderMetadata, ClientMetadata,
-    EvaluationDetails,
 };
 
 use self::types::{HookContext, HookHints};

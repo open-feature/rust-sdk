@@ -15,9 +15,9 @@ pub struct OpenFeatureClient<C>
 where
     C: FeatureProvider,
 {
-    meta_data: ClientMetadata,
-    evaluation_context: evaluation::EvaluationContext,
-    provider: C,
+    pub meta_data: ClientMetadata,
+    pub evaluation_context: evaluation::EvaluationContext,
+    pub provider: C,
 }
 #[derive(Clone)]
 pub struct ClientMetadata {
@@ -126,7 +126,7 @@ where
         return Ok(result.unwrap());
     }
 
-    fn add_hooks<T>(&self, hooks: T)
+    fn add_hooks<T>(&self, _hooks: T)
     where
         T: traits::hooks::Hooks,
     {
