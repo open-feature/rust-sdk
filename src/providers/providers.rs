@@ -1,8 +1,10 @@
+use async_trait::async_trait;
+
 use crate::evaluation::FlattenedContext;
 
 use self::{
     traits::FeatureProvider,
-    types::{ProviderMetadata, ResolutionDetails, ResolutionError},
+    types::{Configuration, ProviderMetadata, ResolutionDetails, ResolutionError},
 };
 
 pub mod traits;
@@ -27,11 +29,20 @@ pub const ERROR_REASON: &str = "ERROR";
 pub const TARGETING_KEY: &str = "targetingKey";
 
 // NoopProvider - a provider that does nothing
-pub struct NoopProvider {}
+pub struct NoopProvider {
+    _configuration: Configuration,
+}
 
-impl FeatureProvider for NoopProvider {
-    fn new() -> Self {
-        NoopProvider {}
+#[async_trait]
+impl FeatureProvider<NoopProvider> for NoopProvider {
+    fn new(conf: Configuration) -> NoopProvider {
+        return NoopProvider {
+            _configuration: conf,
+        };
+    }
+
+    async fn connect(&self) {
+        return;
     }
 
     fn meta_data(&self) -> ProviderMetadata {

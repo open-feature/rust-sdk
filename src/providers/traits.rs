@@ -1,9 +1,13 @@
+use async_trait::async_trait;
+
 use crate::evaluation::FlattenedContext;
 
-use super::types::{ProviderMetadata, ResolutionDetails};
+use super::types::{Configuration, ProviderMetadata, ResolutionDetails};
 
-pub trait FeatureProvider {
-    fn new() -> Self;
+#[async_trait]
+pub trait FeatureProvider<P> {
+    fn new(conf: Configuration) -> Self;
+    async fn connect(&self);
     fn meta_data(&self) -> ProviderMetadata;
     fn resolution<T>(
         &self,

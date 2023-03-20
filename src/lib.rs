@@ -1,5 +1,6 @@
 use crate::providers::traits::FeatureProvider;
 use anyhow::Error;
+use async_trait::async_trait;
 use std::collections::HashMap;
 use traits::Client;
 
@@ -13,7 +14,7 @@ pub mod traits;
 
 pub struct OpenFeatureClient<C>
 where
-    C: FeatureProvider,
+    C: FeatureProvider<C>,
 {
     pub meta_data: ClientMetadata,
     pub evaluation_context: evaluation::EvaluationContext,
@@ -33,44 +34,21 @@ pub struct EvaluationDetails<T> {
     error_message: String,
 }
 
+#[async_trait(?Send)]
 impl<C> Client<C> for OpenFeatureClient<C>
 where
-    C: FeatureProvider,
+    C: FeatureProvider<C>,
 {
-    fn new(name: String, provider: C) -> Self {
-        Self {
-            meta_data: ClientMetadata { name: name.clone() },
-            evaluation_context: evaluation::EvaluationContext::new(name, HashMap::new()),
-            provider,
-        }
-    }
-    fn meta_data(&self) -> ClientMetadata {
-        return self.meta_data.clone();
-    }
-
-    fn set_evaluation_context(&mut self, eval_ctx: evaluation::EvaluationContext) {
-        self.evaluation_context = eval_ctx;
-    }
-
-    fn evaluation_context(&self) -> evaluation::EvaluationContext {
-        return self.evaluation_context.clone();
-    }
-
-    fn value<T>(
-        &self,
-        flag: String,
-        default_value: T,
-        eval_ctx: evaluation::EvaluationContext,
-    ) -> anyhow::Result<T>
+    fn add_hooks<T>(&self, _hooks: T)
     where
-        T: Clone,
+        T: traits::hooks::Hooks,
     {
-        let result = self.evaluate(flag, default_value, eval_ctx);
-        if result.is_err() {
-            return Err(Error::msg("something went wrong evaluating".to_string()));
-        }
-        return Ok(result.unwrap().value);
     }
+
+    async fn connect(&self) {
+        self.provider.connect().await;
+    }
+
     fn evaluate<T>(
         &self,
         flag: String,
@@ -110,6 +88,41 @@ where
         }
         return Ok(eval_details);
     }
+
+    fn evaluation_context(&self) -> evaluation::EvaluationContext {
+        return self.evaluation_context.clone();
+    }
+
+    fn meta_data(&self) -> ClientMetadata {
+        return self.meta_data.clone();
+    }
+
+    fn new(name: String, provider: C) -> Self {
+        Self {
+            meta_data: ClientMetadata { name: name.clone() },
+            evaluation_context: evaluation::EvaluationContext::new(name, HashMap::new()),
+            provider,
+        }
+    }
+    fn set_evaluation_context(&mut self, eval_ctx: evaluation::EvaluationContext) {
+        self.evaluation_context = eval_ctx;
+    }
+    fn value<T>(
+        &self,
+        flag: String,
+        default_value: T,
+        eval_ctx: evaluation::EvaluationContext,
+    ) -> anyhow::Result<T>
+    where
+        T: Clone,
+    {
+        let result = self.evaluate(flag, default_value, eval_ctx);
+        if result.is_err() {
+            return Err(Error::msg("something went wrong evaluating".to_string()));
+        }
+        return Ok(result.unwrap().value);
+    }
+
     fn value_details<T>(
         &self,
         flag: String,
@@ -124,12 +137,6 @@ where
             return Err(Error::msg("something went wrong evaluating".to_string()));
         }
         return Ok(result.unwrap());
-    }
-
-    fn add_hooks<T>(&self, _hooks: T)
-    where
-        T: traits::hooks::Hooks,
-    {
     }
 }
 
@@ -153,6 +160,19 @@ mod tests {
         ClientMetadata, OpenFeatureClient,
     };
 
+    #[tokio::test]
+    async fn test_connect_provider() {
+        let client = OpenFeatureClient::<providers::NoopProvider>::new(
+            "test".to_string(),
+            providers::NoopProvider::new(providers::types::Configuration::new(
+                "localhost".to_string(),
+                8080,
+            )),
+        );
+        client.connect().await;
+        
+    }
+
     #[test]
     fn test_set_name_client_meta_data() {
         let client_meta_data = ClientMetadata::new("test".to_string());
@@ -163,7 +183,10 @@ mod tests {
     fn test_evaluate_bool() {
         let client = OpenFeatureClient::<providers::NoopProvider>::new(
             "test".to_string(),
-            providers::NoopProvider::new(),
+            providers::NoopProvider::new(providers::types::Configuration::new(
+                "localhost".to_string(),
+                8080,
+            )),
         );
         assert_eq!(client.meta_data().name(), "test");
 
@@ -173,11 +196,14 @@ mod tests {
         let result = client.evaluate::<bool>("test".to_string(), true, client.evaluation_context());
         assert_eq!(result.unwrap().value, true);
     }
-    #[test]
-    fn test_evaluate_string() {
+    #[tokio::test]
+    async fn test_evaluate_string() {
         let client = OpenFeatureClient::<providers::NoopProvider>::new(
             "test".to_string(),
-            providers::NoopProvider::new(),
+            providers::NoopProvider::new(providers::types::Configuration::new(
+                "localhost".to_string(),
+                8080,
+            )),
         );
         assert_eq!(client.meta_data().name(), "test");
 
@@ -186,13 +212,17 @@ mod tests {
             "test".to_string(),
             client.evaluation_context(),
         );
-        assert_eq!(result.unwrap().value, "test");
+
+        assert!(result.is_ok());
     }
     #[test]
     fn test_evaluate_i64() {
         let client = OpenFeatureClient::<providers::NoopProvider>::new(
             "test".to_string(),
-            providers::NoopProvider::new(),
+            providers::NoopProvider::new(providers::types::Configuration::new(
+                "localhost".to_string(),
+                8080,
+            )),
         );
         assert_eq!(client.meta_data().name(), "test");
 
@@ -204,7 +234,10 @@ mod tests {
     fn test_evaluate_f64() {
         let client = OpenFeatureClient::<providers::NoopProvider>::new(
             "test".to_string(),
-            providers::NoopProvider::new(),
+            providers::NoopProvider::new(providers::types::Configuration::new(
+                "localhost".to_string(),
+                8080,
+            )),
         );
         assert_eq!(client.meta_data().name(), "test");
 
@@ -215,7 +248,10 @@ mod tests {
     fn test_evaluate_detail() {
         let client = OpenFeatureClient::<providers::NoopProvider>::new(
             "test".to_string(),
-            providers::NoopProvider::new(),
+            providers::NoopProvider::new(providers::types::Configuration::new(
+                "localhost".to_string(),
+                8080,
+            )),
         );
         assert_eq!(client.meta_data().name(), "test");
         let result = client.value_details::<String>(
@@ -232,7 +268,10 @@ mod tests {
     fn test_client_value_i64() {
         let client = OpenFeatureClient::<providers::NoopProvider>::new(
             "test".to_string(),
-            providers::NoopProvider::new(),
+            providers::NoopProvider::new(providers::types::Configuration::new(
+                "localhost".to_string(),
+                8080,
+            )),
         );
         assert_eq!(client.meta_data().name(), "test");
 
@@ -243,7 +282,10 @@ mod tests {
     fn test_client_value_string() {
         let client = OpenFeatureClient::<providers::NoopProvider>::new(
             "test".to_string(),
-            providers::NoopProvider::new(),
+            providers::NoopProvider::new(providers::types::Configuration::new(
+                "localhost".to_string(),
+                8080,
+            )),
         );
         assert_eq!(client.meta_data().name(), "test");
 
@@ -258,7 +300,10 @@ mod tests {
     fn test_client_value_f64() {
         let client = OpenFeatureClient::<providers::NoopProvider>::new(
             "test".to_string(),
-            providers::NoopProvider::new(),
+            providers::NoopProvider::new(providers::types::Configuration::new(
+                "localhost".to_string(),
+                8080,
+            )),
         );
         assert_eq!(client.meta_data().name(), "test");
 

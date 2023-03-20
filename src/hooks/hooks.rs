@@ -1,9 +1,7 @@
 use anyhow::{Error, Ok};
 use std::collections::HashMap;
 
-use crate::{
-    evaluation::EvaluationContext, providers::types::ProviderMetadata, ClientMetadata,
-};
+use crate::{evaluation::EvaluationContext, providers::types::ProviderMetadata, ClientMetadata};
 
 use self::types::{HookContext, HookHints};
 
