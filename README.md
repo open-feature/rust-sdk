@@ -21,7 +21,8 @@ rust-sdk = { git = "https://github.com/open-feature/rust-sdk", branch = "main" }
 use rust_sdk::OpenFeatureClient;
 use rust_sdk::providers::NoopProvider;
 use rust_sdk::providers::traits::FeatureProvider;
-use rust_sdk::traits::ClientTraits;
+use rust_sdk::traits::Client;
+
 
 fn main() {
     
