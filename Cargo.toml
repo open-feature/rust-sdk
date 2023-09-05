@@ -9,7 +9,6 @@ edition = "2021"
 anyhow = "1.0"
 async-trait = "0.1.73"
 lazy_static = "1.4.0"
-thiserror = "1.0.48"
 
 [dev-dependencies]
 tokio = { version = "1.32.0", features = ["full"] }
