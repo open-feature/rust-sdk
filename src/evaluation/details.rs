@@ -39,6 +39,26 @@ pub enum EvaluationReason {
 
     /// The resolved value was the result of an error.
     Error,
+
+    /// Other custom reason.
+    Other(String),
+}
+
+impl ToString for EvaluationReason {
+    fn to_string(&self) -> String {
+        match self {
+            Self::Static => "STATIC",
+            Self::Default => "DEFAULT",
+            Self::TargetingMatch => "TARGETING_MATCH",
+            Self::Split => "SPLIT",
+            Self::Cached => "CACHED",
+            Self::Disabled => "DISABLED",
+            Self::Unknown => "UNKNOWN",
+            Self::Error => "ERROR",
+            Self::Other(reason) => reason.as_str(),
+        }
+        .to_string()
+    }
 }
 
 /// Struct representing error

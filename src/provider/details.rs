@@ -41,22 +41,22 @@ impl<T> ResolutionDetails<T> {
         }
     }
 
-    pub fn with_variant(&mut self, variant: String) -> &mut Self {
+    pub fn with_variant(mut self, variant: String) -> Self {
         self.variant = Some(variant);
         self
     }
 
-    pub fn with_reason(&mut self, reason: EvaluationReason) -> &mut Self {
+    pub fn with_reason(mut self, reason: EvaluationReason) -> Self {
         self.reason = Some(reason);
         self
     }
 
-    pub fn with_error(&mut self, error: EvaluationError) -> &mut Self {
+    pub fn with_error(mut self, error: EvaluationError) -> Self {
         self.error = Some(error);
         self
     }
 
-    pub fn with_flag_metadata(&mut self, flag_metadata: FlagMetadata) -> &mut Self {
+    pub fn with_flag_metadata(mut self, flag_metadata: FlagMetadata) -> Self {
         self.flag_metadata = Some(flag_metadata);
         self
     }

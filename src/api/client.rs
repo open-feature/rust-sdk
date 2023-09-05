@@ -24,7 +24,7 @@ impl Client {
         }
     }
 
-    pub fn with_evaluation_context(&mut self, evaluation_context: EvaluationContext) -> &mut Self {
+    pub fn with_evaluation_context(mut self, evaluation_context: EvaluationContext) -> Self {
         self.evaluation_context = evaluation_context;
         self
     }
