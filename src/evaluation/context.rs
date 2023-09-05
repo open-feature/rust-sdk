@@ -9,15 +9,18 @@ use std::{any::Any, collections::HashMap};
 /// define rules that return a specific value based on the user's email address, locale, or the
 /// time of day. The context provides this information. The context can be optionally provided at
 /// evaluation, and mutated in before hooks.
+#[derive(Default)]
 pub struct EvaluationContext {
     /// The targeting key uniquely identifies the subject (end-user, or client service) of a flag
     /// evaluation. Providers may require this field for fractional flag evaluation, rules, or
     /// overrides targeting specific users. Such providers may behave unpredictably if a targeting
     /// key is not specified at flag resolution.
-    targeting_key: Option<String>,
+    pub targeting_key: Option<String>,
 
-    custom_fields: HashMap<String, Box<dyn StructValue>>,
+    pub custom_fields: HashMap<String, EvaluationContextFieldValue>,
 }
+
+impl EvaluationContext {}
 
 pub enum EvaluationContextFieldValue {
     Bool(bool),
@@ -28,10 +31,6 @@ pub enum EvaluationContextFieldValue {
     Struct(Box<dyn StructValue>),
 }
 
-pub trait StructValue {}
+pub trait StructValue: Send + Sync + 'static {}
 
-impl EvaluationContext {
-    pub fn keys() {}
-}
-
-impl<T: Any> StructValue for T {}
+impl<T: Any> StructValue for T where T: Send + Sync + 'static {}

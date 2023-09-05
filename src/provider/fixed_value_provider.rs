@@ -1,3 +1,5 @@
+use async_trait::async_trait;
+
 use crate::{EvaluationContext, EvaluationReason, FlagMetadata};
 
 use super::{FeatureProvider, ProviderMetadata, ResolutionDetails};
@@ -11,11 +13,16 @@ pub struct FixedValueProvider {
 }
 
 impl FixedValueProvider {
-    pub fn new(bool_value: bool) -> Self {
+    pub fn new() -> Self {
         Self {
             metadata: ProviderMetadata::new(PROVIDER_NAME.to_string()),
-            bool_value,
+            bool_value: bool::default(),
         }
+    }
+
+    pub fn with_bool_value(mut self, bool_value: bool) -> Self {
+        self.bool_value = bool_value;
+        self
     }
 }
 
@@ -28,22 +35,18 @@ impl Default for FixedValueProvider {
     }
 }
 
+#[async_trait]
 impl FeatureProvider for FixedValueProvider {
     fn metadata(&self) -> &ProviderMetadata {
         &self.metadata
     }
 
-    fn resolve_bool_value(
+    async fn resolve_bool_value(
         &self,
         _flag_key: &str,
         _default_value: bool,
         _evaluation_context: Option<EvaluationContext>,
     ) -> ResolutionDetails<bool> {
-        ResolutionDetails::new_successful(
-            self.bool_value,
-            "".to_string(),
-            EvaluationReason::Static,
-            FlagMetadata::default(),
-        )
+        ResolutionDetails::new(self.bool_value)
     }
 }

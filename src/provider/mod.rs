@@ -1,3 +1,6 @@
+mod details;
+pub use details::ResolutionDetails;
+
 mod feature_provider;
 pub use feature_provider::*;
 

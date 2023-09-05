@@ -1,3 +1,5 @@
+use async_trait::async_trait;
+
 use crate::{EvaluationReason, FlagMetadata};
 
 use super::{FeatureProvider, ProviderMetadata, ResolutionDetails};
@@ -26,23 +28,18 @@ impl Default for NoOpProvider {
     }
 }
 
+#[async_trait]
 impl FeatureProvider for NoOpProvider {
     fn metadata(&self) -> &super::ProviderMetadata {
         &self.metadata
     }
 
-    fn resolve_bool_value(
+    async fn resolve_bool_value(
         &self,
         flag_key: &str,
         default_value: bool,
         evaluation_context: Option<crate::EvaluationContext>,
     ) -> ResolutionDetails<bool> {
-        ResolutionDetails {
-            value: default_value,
-            variant: Some("NoOp".to_string()),
-            reason: Some(EvaluationReason::Static),
-            error: None,
-            flag_metadata: Some(FlagMetadata::default()),
-        }
+        ResolutionDetails::new(default_value)
     }
 }

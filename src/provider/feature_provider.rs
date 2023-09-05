@@ -1,7 +1,8 @@
-use crate::{
-    evaluation::{EvaluationError, FlagMetadata},
-    EvaluationContext, EvaluationReason,
-};
+use async_trait::async_trait;
+
+use crate::EvaluationContext;
+
+use super::ResolutionDetails;
 
 /// This trait defines interfaces that Provider Authors can use to abstract a particular flag
 /// management system, thus enabling the use of the evaluation API by Application Authors.
@@ -16,7 +17,8 @@ use crate::{
 /// vendor SDK, embed an REST client, or read flags from a local file.
 ///
 /// See the [spec](https://openfeature.dev/specification/sections/providers).
-pub trait FeatureProvider {
+#[async_trait]
+pub trait FeatureProvider: Send + Sync + 'static {
     /// The provider MAY define an initialize function which accepts the global evaluation
     /// context as an argument and performs initialization logic relevant to the provider.
     ///
@@ -44,7 +46,7 @@ pub trait FeatureProvider {
     fn metadata(&self) -> &ProviderMetadata;
 
     /// Resolve given [`flag_key`] as a bool value.
-    fn resolve_bool_value(
+    async fn resolve_bool_value(
         &self,
         flag_key: &str,
         default_value: bool,
@@ -71,61 +73,4 @@ pub enum ProviderStatus {
     Ready,
     NotReady,
     Error,
-}
-
-/// A structure which contains a subset of the fields defined in the evaluation details,
-/// representing the result of the provider's flag resolution process.
-#[derive(Default, Debug)]
-pub struct ResolutionDetails<T> {
-    /// In cases of normal execution, the provider MUST populate the resolution details structure's
-    /// value field with the resolved flag value.
-    pub value: T,
-
-    /// In cases of normal execution, the provider SHOULD populate the resolution details
-    /// structure's variant field with a string identifier corresponding to the returned flag
-    /// value.
-    pub variant: Option<String>,
-
-    /// The provider SHOULD populate the resolution details structure's reason field with "STATIC",
-    /// "DEFAULT", "TARGETING_MATCH", "SPLIT", "CACHED", "DISABLED", "UNKNOWN", "ERROR" or some
-    /// other string indicating the semantic reason for the returned flag value.
-    pub reason: Option<EvaluationReason>,
-
-    /// In cases of normal execution, the provider MUST NOT populate the resolution details
-    /// structure's error code field, or otherwise must populate it with a null or falsy value.
-    ///
-    /// In cases of abnormal execution, the provider MUST indicate an error using the idioms of the
-    /// implementation language, with an associated error code and optional associated error
-    /// message.
-    pub error: Option<EvaluationError>,
-
-    /// The provider SHOULD populate the resolution details structure's flag metadata field.
-    pub flag_metadata: Option<FlagMetadata>,
-}
-
-impl<T> ResolutionDetails<T> {
-    pub fn new_successful(
-        value: T,
-        variant: String,
-        reason: EvaluationReason,
-        flag_metadata: FlagMetadata,
-    ) -> Self {
-        Self {
-            value,
-            variant: Some(variant),
-            reason: Some(reason),
-            flag_metadata: Some(flag_metadata),
-            error: None,
-        }
-    }
-
-    pub fn new_failed(value: T, error: EvaluationError) -> Self {
-        Self {
-            value: value,
-            variant: None,
-            reason: None,
-            error: Some(error),
-            flag_metadata: None,
-        }
-    }
 }
