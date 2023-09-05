@@ -53,9 +53,15 @@ pub trait FeatureProvider {
 }
 
 /// The metadata of a feature provider.
-#[derive(Default, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct ProviderMetadata {
     name: String,
+}
+
+impl ProviderMetadata {
+    pub fn new(name: String) -> Self {
+        Self { name }
+    }
 }
 
 /// The status of a feature provider.
@@ -95,4 +101,31 @@ pub struct ResolutionDetails<T> {
 
     /// The provider SHOULD populate the resolution details structure's flag metadata field.
     pub flag_metadata: Option<FlagMetadata>,
+}
+
+impl<T> ResolutionDetails<T> {
+    pub fn new_successful(
+        value: T,
+        variant: String,
+        reason: EvaluationReason,
+        flag_metadata: FlagMetadata,
+    ) -> Self {
+        Self {
+            value,
+            variant: Some(variant),
+            reason: Some(reason),
+            flag_metadata: Some(flag_metadata),
+            error: None,
+        }
+    }
+
+    pub fn new_failed(value: T, error: EvaluationError) -> Self {
+        Self {
+            value: value,
+            variant: None,
+            reason: None,
+            error: Some(error),
+            flag_metadata: None,
+        }
+    }
 }

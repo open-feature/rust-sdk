@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use lazy_static::lazy_static;
 
@@ -7,14 +7,12 @@ use crate::{
     Client,
 };
 
-use super::client::ClientMetadata;
-
 lazy_static! {
     /// The singleton instance of [`OpenFeature`] struct.
     /// The client should always use this instance to access OpenFeature APIs.
-    pub static ref SINGLETON: OpenFeature = OpenFeature {
+    pub static ref SINGLETON: RwLock<OpenFeature> = RwLock::new(OpenFeature {
         provider: Arc::new(NoOpProvider::default())
-    };
+    });
 }
 
 /// THE struct of the OpenFeature API.
@@ -24,7 +22,13 @@ pub struct OpenFeature {
 }
 
 impl OpenFeature {
-    pub fn set_provider<T>(mut self, provider: T)
+    pub fn new<T: FeatureProvider + Send + Sync + 'static>(provider: T) -> Self {
+        Self {
+            provider: Arc::new(provider),
+        }
+    }
+
+    pub fn set_provider<T>(&mut self, provider: T)
     where
         T: FeatureProvider + Send + Sync + 'static,
     {
@@ -37,5 +41,20 @@ impl OpenFeature {
 
     pub fn get_client(&self, name: String) -> Client {
         Client::new(name, self.provider.clone())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::provider::FixedValueProvider;
+
+    use super::*;
+
+    #[test]
+    fn set_provider() {
+        let provider = FixedValueProvider::new(true);
+        let api = OpenFeature::new(provider);
+
+        let client = api.get_client("Test".to_string());
     }
 }
