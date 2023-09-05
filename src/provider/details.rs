@@ -1,4 +1,4 @@
-use crate::{EvaluationError, EvaluationReason, FlagMetadata};
+use crate::{EvaluationDetails, EvaluationError, EvaluationReason, FlagMetadata};
 
 /// A structure which contains a subset of the fields defined in the evaluation details,
 /// representing the result of the provider's flag resolution process.

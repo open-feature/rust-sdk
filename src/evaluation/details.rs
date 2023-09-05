@@ -2,12 +2,12 @@ use std::collections::HashMap;
 
 #[derive(Default, Debug)]
 pub struct EvaluationDetails<T> {
-    flag_key: String,
-    value: T,
-    reason: Option<EvaluationReason>,
-    error: Option<EvaluationError>,
-    variant: Option<String>,
-    flag_metadata: FlagMetadata,
+    pub flag_key: String,
+    pub value: T,
+    pub reason: Option<EvaluationReason>,
+    pub error: Option<EvaluationError>,
+    pub variant: Option<String>,
+    pub flag_metadata: FlagMetadata,
 }
 
 /// Eeason for evaluation.
