@@ -1,3 +1,5 @@
+use std::{any::Any, sync::Arc};
+
 use async_trait::async_trait;
 
 use crate::{EvaluationContext, EvaluationReason, FlagMetadata};
@@ -13,6 +15,7 @@ pub struct FixedValueProvider {
     int_value: i64,
     float_value: f64,
     string_value: String,
+    struct_value: Arc<dyn Any + Send + Sync>,
 }
 
 impl FixedValueProvider {
@@ -39,6 +42,14 @@ impl FixedValueProvider {
         self.string_value = value;
         self
     }
+
+    pub fn with_struct_value<T>(mut self, value: T) -> Self
+    where
+        T: Any + Send + Sync,
+    {
+        self.struct_value = Arc::new(value);
+        self
+    }
 }
 
 impl Default for FixedValueProvider {
@@ -49,6 +60,7 @@ impl Default for FixedValueProvider {
             int_value: Default::default(),
             float_value: Default::default(),
             string_value: Default::default(),
+            struct_value: Arc::new(String::default()),
         }
     }
 }
@@ -70,28 +82,37 @@ impl FeatureProvider for FixedValueProvider {
 
     async fn resolve_int_value(
         &self,
-        flag_key: &str,
-        default_value: i64,
-        evaluation_context: Option<EvaluationContext>,
+        _flag_key: &str,
+        _default_value: i64,
+        _evaluation_context: Option<EvaluationContext>,
     ) -> ResolutionDetails<i64> {
         ResolutionDetails::new(self.int_value)
     }
 
     async fn resolve_float_value(
         &self,
-        flag_key: &str,
-        default_value: f64,
-        evaluation_context: Option<EvaluationContext>,
+        _flag_key: &str,
+        _default_value: f64,
+        _evaluation_context: Option<EvaluationContext>,
     ) -> ResolutionDetails<f64> {
         ResolutionDetails::new(self.float_value)
     }
 
     async fn resolve_string_value(
         &self,
-        flag_key: &str,
-        default_value: &str,
-        evaluation_context: Option<EvaluationContext>,
+        _flag_key: &str,
+        _default_value: &str,
+        _evaluation_context: Option<EvaluationContext>,
     ) -> ResolutionDetails<String> {
         ResolutionDetails::new(self.string_value.clone())
+    }
+
+    async fn resolve_struct_value(
+        &self,
+        _flag_key: &str,
+        _default_value: Arc<dyn Any + Send + Sync>,
+        _evaluation_context: Option<EvaluationContext>,
+    ) -> ResolutionDetails<Arc<dyn Any + Send + Sync>> {
+        ResolutionDetails::new(self.struct_value.clone())
     }
 }

@@ -1,3 +1,5 @@
+use std::{any::Any, sync::Arc};
+
 use async_trait::async_trait;
 
 use crate::EvaluationContext;
@@ -76,6 +78,13 @@ pub trait FeatureProvider: Send + Sync + 'static {
         default_value: &str,
         evaluation_context: Option<EvaluationContext>,
     ) -> ResolutionDetails<String>;
+
+    async fn resolve_struct_value(
+        &self,
+        flag_key: &str,
+        default_value: Arc<dyn Any + Send + Sync>,
+        evaluation_context: Option<EvaluationContext>,
+    ) -> ResolutionDetails<Arc<dyn Any + Send + Sync>>;
 }
 
 /// The metadata of a feature provider.
