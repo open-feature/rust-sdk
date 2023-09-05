@@ -11,7 +11,7 @@ pub struct EvaluationDetails<T> {
 }
 
 /// Eeason for evaluation.
-#[derive(Default, Debug)]
+#[derive(Eq, PartialEq, Default, Debug)]
 pub enum EvaluationReason {
     /// The resolved value is static (no dynamic evaluation).
     Static,
