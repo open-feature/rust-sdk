@@ -17,7 +17,7 @@ pub struct NoOpProvider {
 impl NoOpProvider {
     pub fn new() -> Self {
         Self {
-            metadata: ProviderMetadata::new(PROVIDER_NAME.to_string()),
+            metadata: ProviderMetadata::new(PROVIDER_NAME),
         }
     }
 }
@@ -25,7 +25,7 @@ impl NoOpProvider {
 impl Default for NoOpProvider {
     fn default() -> Self {
         Self {
-            metadata: ProviderMetadata::new(PROVIDER_NAME.to_string()),
+            metadata: ProviderMetadata::new(PROVIDER_NAME),
         }
     }
 }

@@ -94,8 +94,8 @@ pub struct ProviderMetadata {
 }
 
 impl ProviderMetadata {
-    pub fn new(name: String) -> Self {
-        Self { name }
+    pub fn new<S: Into<String>>(name: S) -> Self {
+        Self { name: name.into() }
     }
 }
 

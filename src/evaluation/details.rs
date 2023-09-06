@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-#[derive(Default, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct EvaluationDetails<T> {
     pub flag_key: String,
     pub value: T,
@@ -11,7 +11,7 @@ pub struct EvaluationDetails<T> {
 }
 
 /// Eeason for evaluation.
-#[derive(Eq, PartialEq, Default, Debug)]
+#[derive(Clone, Default, Eq, PartialEq, Debug)]
 pub enum EvaluationReason {
     /// The resolved value is static (no dynamic evaluation).
     Static,
@@ -62,14 +62,14 @@ impl ToString for EvaluationReason {
 }
 
 /// Struct representing error
-#[derive(Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub struct EvaluationError {
     code: EvaluationErrorCode,
     message: Option<String>,
 }
 
 /// An enumerated error code represented idiomatically in the implementation language.
-#[derive(Debug)]
+#[derive(Clone, Eq, PartialEq, Debug)]
 pub enum EvaluationErrorCode {
     /// The value was resolved before the provider was initialized.
     ProviderNotReady,
@@ -98,12 +98,12 @@ pub enum EvaluationErrorCode {
 ///
 /// This structure is populated by a provider for use by an Application Author (via the Evaluation
 /// API) or an Application Integrator (via hooks).
-#[derive(Default, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct FlagMetadata {
     pub values: HashMap<String, FlagMetadataValue>,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub enum FlagMetadataValue {
     Bool(bool),
     Int(i64),

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::{provider::FeatureProvider, EvaluationContext};
+use crate::{provider::FeatureProvider, EvaluationContext, StructValue};
 
 /// The metadata of OpenFeature client.
 pub struct ClientMetadata {
@@ -82,7 +82,19 @@ impl Client {
         flag_key: &str,
         default_value: T,
         evaluation_context: Option<EvaluationContext>,
-    ) -> T {
-        todo!()
+    ) -> T
+    where
+        T: From<StructValue>,
+    {
+        let result = self
+            .provider
+            .resolve_struct_value(flag_key, StructValue::default(), evaluation_context)
+            .await;
+
+        if result.is_error() {
+            default_value
+        } else {
+            result.value.into()
+        }
     }
 }

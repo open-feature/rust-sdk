@@ -9,48 +9,6 @@ pub enum Value {
     Struct(StructValue),
 }
 
-impl Value {
-    //pub fn as_bool(&self) -> Option<bool> {
-    //    if let Self::Bool(value) = self {
-    //        Some(*value)
-    //    } else {
-    //        None
-    //    }
-    //}
-
-    //pub fn as_int(&self) -> Option<i64> {
-    //    if let Self::Int(value) = self {
-    //        Some(*value)
-    //    } else {
-    //        None
-    //    }
-    //}
-
-    //pub fn as_float(&self) -> Option<f64> {
-    //    if let Self::Float(value) = self {
-    //        Some(*value)
-    //    } else {
-    //        None
-    //    }
-    //}
-
-    //pub fn as_string(&self) -> Option<String> {
-    //    if let Self::String(value) = self {
-    //        Some(value.clone())
-    //    } else {
-    //        None
-    //    }
-    //}
-
-    //pub fn as_struct<T: From<StructValue>>(&self) -> Option<T> {
-    //    if let Self::Struct(value) = self {
-    //        value.into()
-    //    } else {
-    //        None
-    //    }
-    //}
-}
-
 impl From<bool> for Value {
     fn from(value: bool) -> Self {
         Self::Bool(value)
@@ -123,6 +81,12 @@ impl From<&str> for Value {
     }
 }
 
+impl From<StructValue> for Value {
+    fn from(value: StructValue) -> Self {
+        Self::Struct(value)
+    }
+}
+
 /// Represent a structure value as defined in the
 /// [spec](https://openfeature.dev/specification/types#structure).
 #[derive(Clone, Default, PartialEq, Debug)]
@@ -131,12 +95,30 @@ pub struct StructValue {
 }
 
 impl StructValue {
-    pub fn with_field(mut self, key: String, value: Value) -> Self {
-        self.add_field(key, value);
+    pub fn with_field<S: Into<String>, V: Into<Value>>(mut self, key: S, value: V) -> Self {
+        self.add_field(key.into(), value.into());
         self
     }
 
     pub fn add_field(&mut self, key: String, value: Value) {
         self.fields.insert(key, value);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn build_value() {
+        let value = StructValue::default()
+            .with_field("is_male", true)
+            .with_field("id", 100)
+            .with_field("grade", "97.5")
+            .with_field("name", "Alex")
+            .with_field(
+                "other",
+                StructValue::default().with_field("description", "A student"),
+            );
     }
 }

@@ -103,8 +103,8 @@ pub struct DummyStruct {
 impl From<DummyStruct> for StructValue {
     fn from(value: DummyStruct) -> Self {
         StructValue::default()
-            .with_field("id".to_string(), value.id.into())
-            .with_field("name".to_string(), value.name.into())
+            .with_field("id", value.id)
+            .with_field("name", value.name)
     }
 }
 
@@ -124,8 +124,8 @@ mod tests {
         let result: StructValue = value.into();
 
         let expected = StructValue::default()
-            .with_field("id".to_string(), 100.into())
-            .with_field("name".to_string(), "Alex".into());
+            .with_field("id", 100)
+            .with_field("name", "Alex");
 
         assert_eq!(expected, result);
     }

@@ -2,6 +2,7 @@ use std::{any::Any, sync::Arc};
 
 use time::OffsetDateTime;
 
+#[derive(Clone, Debug)]
 pub enum EvaluationContextFieldValue {
     Bool(bool),
     Int(i64),
@@ -107,15 +108,18 @@ mod tests {
     fn evaluation_context_custom_fields() {
         let now = OffsetDateTime::now_utc();
 
-        let context = EvaluationContext::new()
-            .with_targeting_key("Some Key".to_string())
-            .with_custom_field("Bool".to_string(), true.into())
-            .with_custom_field("Int".to_string(), 42.into())
-            .with_custom_field("Float".to_string(), 42.0.into())
-            .with_custom_field("String".to_string(), "StringValue".into())
-            .with_custom_field("DateTime".to_string(), now.clone().into())
+        let context = EvaluationContextBuilder::default()
+            .targeting_key("Some Key".to_string())
+            .build()
+            .unwrap()
+            .with_custom_field("Bool", false)
+            .with_custom_field("Bool", EvaluationContextFieldValue::Bool(true))
+            .with_custom_field("Int", 42)
+            .with_custom_field("Float", 42.0)
+            .with_custom_field("String", "StringValue")
+            .with_custom_field("DateTime", now.clone())
             .with_custom_field(
-                "Struct".to_string(),
+                "Struct",
                 EvaluationContextFieldValue::new_struct(EvaluationReason::Cached),
             );
 

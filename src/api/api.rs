@@ -1,4 +1,4 @@
-use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
+use std::sync::{Arc, RwLock};
 
 use lazy_static::lazy_static;
 
@@ -56,7 +56,7 @@ mod tests {
     use super::*;
     use crate::provider::*;
 
-    //    #[tokio::test]
+    #[tokio::test]
     async fn set_provider() {
         let provider = FixedValueProviderBuilder::default()
             .bool_value(true)
