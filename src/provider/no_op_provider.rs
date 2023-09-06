@@ -2,7 +2,7 @@ use std::{any::Any, sync::Arc};
 
 use async_trait::async_trait;
 
-use crate::EvaluationContext;
+use crate::{EvaluationContext, StructValue};
 
 use super::{FeatureProvider, ProviderMetadata, ResolutionDetails};
 
@@ -75,9 +75,9 @@ impl FeatureProvider for NoOpProvider {
     async fn resolve_struct_value(
         &self,
         flag_key: &str,
-        default_value: Arc<dyn Any + Send + Sync>,
+        default_value: StructValue,
         evaluation_context: Option<EvaluationContext>,
-    ) -> ResolutionDetails<Arc<dyn Any + Send + Sync>> {
+    ) -> ResolutionDetails<StructValue> {
         ResolutionDetails::new(default_value)
     }
 }

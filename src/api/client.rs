@@ -76,4 +76,13 @@ impl Client {
             .await
             .value
     }
+
+    pub async fn get_struct_value<T>(
+        &self,
+        flag_key: &str,
+        default_value: T,
+        evaluation_context: Option<EvaluationContext>,
+    ) -> T {
+        todo!()
+    }
 }

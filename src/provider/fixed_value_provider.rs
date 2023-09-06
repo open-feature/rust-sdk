@@ -1,55 +1,27 @@
-use std::{any::Any, sync::Arc};
+use std::sync::Arc;
 
 use async_trait::async_trait;
+use derive_builder::Builder;
 
-use crate::{EvaluationContext, EvaluationReason, FlagMetadata};
+use crate::{EvaluationContext, StructValue};
 
 use super::{FeatureProvider, ProviderMetadata, ResolutionDetails};
 
 const PROVIDER_NAME: &'static str = "Fixed Value";
 
-#[derive(Debug)]
+// --------------------------------------------------------------------
+//  FixedValueProvider
+// --------------------------------------------------------------------
+
+#[derive(Builder, Debug)]
+#[builder(default)]
 pub struct FixedValueProvider {
     metadata: ProviderMetadata,
     bool_value: bool,
     int_value: i64,
     float_value: f64,
     string_value: String,
-    struct_value: Arc<dyn Any + Send + Sync>,
-}
-
-impl FixedValueProvider {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    pub fn with_bool_value(mut self, value: bool) -> Self {
-        self.bool_value = value;
-        self
-    }
-
-    pub fn with_int_value(mut self, vaule: i64) -> Self {
-        self.int_value = vaule;
-        self
-    }
-
-    pub fn with_float_value(mut self, value: f64) -> Self {
-        self.float_value = value;
-        self
-    }
-
-    pub fn with_string_value(mut self, value: String) -> Self {
-        self.string_value = value;
-        self
-    }
-
-    pub fn with_struct_value<T>(mut self, value: T) -> Self
-    where
-        T: Any + Send + Sync,
-    {
-        self.struct_value = Arc::new(value);
-        self
-    }
+    struct_value: Arc<StructValue>,
 }
 
 impl Default for FixedValueProvider {
@@ -60,7 +32,7 @@ impl Default for FixedValueProvider {
             int_value: Default::default(),
             float_value: Default::default(),
             string_value: Default::default(),
-            struct_value: Arc::new(String::default()),
+            struct_value: Arc::new(DummyStruct::default().into()),
         }
     }
 }
@@ -110,9 +82,51 @@ impl FeatureProvider for FixedValueProvider {
     async fn resolve_struct_value(
         &self,
         _flag_key: &str,
-        _default_value: Arc<dyn Any + Send + Sync>,
+        _default_value: StructValue,
         _evaluation_context: Option<EvaluationContext>,
-    ) -> ResolutionDetails<Arc<dyn Any + Send + Sync>> {
-        ResolutionDetails::new(self.struct_value.clone())
+    ) -> ResolutionDetails<StructValue> {
+        ResolutionDetails::new((*self.struct_value).clone())
+    }
+}
+
+// --------------------------------------------------------------------
+//  DummyStruct
+// --------------------------------------------------------------------
+
+#[derive(Clone, Builder, Default, Debug)]
+#[builder(default)]
+pub struct DummyStruct {
+    id: i64,
+    name: String,
+}
+
+impl From<DummyStruct> for StructValue {
+    fn from(value: DummyStruct) -> Self {
+        StructValue::default()
+            .with_field("id".to_string(), value.id.into())
+            .with_field("name".to_string(), value.name.into())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::*;
+
+    #[test]
+    fn from_dummy_struct() {
+        let value = DummyStructBuilder::default()
+            .id(100)
+            .name("Alex".to_string())
+            .build()
+            .unwrap();
+
+        let result: StructValue = value.into();
+
+        let expected = StructValue::default()
+            .with_field("id".to_string(), 100.into())
+            .with_field("name".to_string(), "Alex".into());
+
+        assert_eq!(expected, result);
     }
 }
