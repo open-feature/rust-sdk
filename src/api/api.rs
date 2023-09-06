@@ -58,10 +58,7 @@ mod tests {
 
     #[tokio::test]
     async fn set_provider() {
-        let provider = FixedValueProviderBuilder::default()
-            .bool_value(true)
-            .build()
-            .unwrap();
+        let provider = FixedValueProvider::builder().bool_value(true).build();
 
         let api = OpenFeature::new(provider, EvaluationContext::default());
 

@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use async_trait::async_trait;
-use derive_builder::Builder;
+use typed_builder::TypedBuilder;
 
 use crate::{EvaluationContext, StructValue};
 
@@ -13,21 +13,31 @@ const PROVIDER_NAME: &'static str = "Fixed Value";
 //  FixedValueProvider
 // --------------------------------------------------------------------
 
-#[derive(Builder, Debug)]
-#[builder(default)]
+#[derive(TypedBuilder, Debug)]
 pub struct FixedValueProvider {
+    #[builder(default)]
     metadata: ProviderMetadata,
+
+    #[builder(default)]
     bool_value: bool,
+
+    #[builder(default)]
     int_value: i64,
+
+    #[builder(default)]
     float_value: f64,
+
+    #[builder(default)]
     string_value: String,
+
+    #[builder(default)]
     struct_value: Arc<StructValue>,
 }
 
 impl Default for FixedValueProvider {
     fn default() -> Self {
         Self {
-            metadata: ProviderMetadata::new(PROVIDER_NAME.to_string()),
+            metadata: ProviderMetadata::new(PROVIDER_NAME),
             bool_value: Default::default(),
             int_value: Default::default(),
             float_value: Default::default(),
@@ -93,10 +103,12 @@ impl FeatureProvider for FixedValueProvider {
 //  DummyStruct
 // --------------------------------------------------------------------
 
-#[derive(Clone, Builder, Default, Debug)]
-#[builder(default)]
+#[derive(Clone, TypedBuilder, Default, Debug)]
 pub struct DummyStruct {
+    #[builder(default)]
     id: i64,
+
+    #[builder(default, setter(into))]
     name: String,
 }
 
@@ -115,11 +127,7 @@ mod tests {
 
     #[test]
     fn from_dummy_struct() {
-        let value = DummyStructBuilder::default()
-            .id(100)
-            .name("Alex".to_string())
-            .build()
-            .unwrap();
+        let value = DummyStruct::builder().id(100).name("Alex").build();
 
         let result: StructValue = value.into();
 

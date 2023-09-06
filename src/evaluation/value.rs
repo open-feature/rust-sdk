@@ -96,12 +96,12 @@ pub struct StructValue {
 
 impl StructValue {
     pub fn with_field<S: Into<String>, V: Into<Value>>(mut self, key: S, value: V) -> Self {
-        self.add_field(key.into(), value.into());
+        self.add_field(key, value);
         self
     }
 
-    pub fn add_field(&mut self, key: String, value: Value) {
-        self.fields.insert(key, value);
+    pub fn add_field<S: Into<String>, V: Into<Value>>(&mut self, key: S, value: V) {
+        self.fields.insert(key.into(), value.into());
     }
 }
 

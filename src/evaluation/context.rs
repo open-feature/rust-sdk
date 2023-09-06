@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use derive_builder::Builder;
+use typed_builder::TypedBuilder;
 
 use crate::EvaluationContextFieldValue;
 
@@ -13,15 +13,16 @@ use crate::EvaluationContextFieldValue;
 /// define rules that return a specific value based on the user's email address, locale, or the
 /// time of day. The context provides this information. The context can be optionally provided at
 /// evaluation, and mutated in before hooks.
-#[derive(Clone, Builder, Default)]
-#[builder(default, setter(strip_option))]
+#[derive(Clone, TypedBuilder, Default)]
 pub struct EvaluationContext {
     /// The targeting key uniquely identifies the subject (end-user, or client service) of a flag
     /// evaluation. Providers may require this field for fractional flag evaluation, rules, or
     /// overrides targeting specific users. Such providers may behave unpredictably if a targeting
     /// key is not specified at flag resolution.
+    #[builder(default, setter(into, strip_option))]
     pub targeting_key: Option<String>,
 
+    #[builder(default)]
     pub custom_fields: HashMap<String, EvaluationContextFieldValue>,
 }
 
@@ -31,11 +32,15 @@ impl EvaluationContext {
         key: S,
         value: V,
     ) -> Self {
-        self.add_custom_field(key.into(), value.into());
+        self.add_custom_field(key, value);
         self
     }
 
-    pub fn add_custom_field(&mut self, key: String, value: EvaluationContextFieldValue) {
-        self.custom_fields.insert(key, value);
+    pub fn add_custom_field<S: Into<String>, V: Into<EvaluationContextFieldValue>>(
+        &mut self,
+        key: S,
+        value: V,
+    ) {
+        self.custom_fields.insert(key.into(), value.into());
     }
 }

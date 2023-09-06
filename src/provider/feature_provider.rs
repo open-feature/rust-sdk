@@ -1,6 +1,7 @@
 use std::{any::Any, borrow::Cow, sync::Arc};
 
 use async_trait::async_trait;
+use typed_builder::TypedBuilder;
 
 use crate::{EvaluationContext, StructValue};
 
@@ -88,8 +89,9 @@ pub trait FeatureProvider: Send + Sync + 'static {
 }
 
 /// The metadata of a feature provider.
-#[derive(Clone, Default, Debug)]
+#[derive(Clone, TypedBuilder, Default, Debug)]
 pub struct ProviderMetadata {
+    #[builder(setter(into))]
     name: String,
 }
 
