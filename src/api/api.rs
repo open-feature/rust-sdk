@@ -24,13 +24,6 @@ pub struct OpenFeature {
 }
 
 impl OpenFeature {
-    pub fn new<T: FeatureProvider>(provider: T, evaluation_context: EvaluationContext) -> Self {
-        Self {
-            provider: Arc::new(provider),
-            evaluation_context,
-        }
-    }
-
     pub fn set_provider<T>(&mut self, provider: T)
     where
         T: FeatureProvider,
@@ -55,6 +48,15 @@ impl OpenFeature {
 mod tests {
     use super::*;
     use crate::provider::*;
+
+    impl OpenFeature {
+        pub fn new<T: FeatureProvider>(provider: T, evaluation_context: EvaluationContext) -> Self {
+            Self {
+                provider: Arc::new(provider),
+                evaluation_context,
+            }
+        }
+    }
 
     #[tokio::test]
     async fn set_provider() {
