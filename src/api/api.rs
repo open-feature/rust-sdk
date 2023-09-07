@@ -1,4 +1,4 @@
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use lazy_static::lazy_static;
 
@@ -24,6 +24,14 @@ pub struct OpenFeature {
 }
 
 impl OpenFeature {
+    pub fn singleton() -> RwLockReadGuard<'static, Self> {
+        SINGLETON.read().unwrap()
+    }
+
+    pub fn singleton_mut() -> RwLockWriteGuard<'static, Self> {
+        SINGLETON.write().unwrap()
+    }
+
     pub fn set_provider<T>(&mut self, provider: T)
     where
         T: FeatureProvider,
@@ -46,6 +54,8 @@ impl OpenFeature {
 
 #[cfg(test)]
 mod tests {
+    use std::thread;
+
     use super::*;
     use crate::provider::*;
 
@@ -68,5 +78,27 @@ mod tests {
         let value = client.get_bool_value("some-key", false, None).await;
 
         assert_eq!(true, value);
+    }
+
+    #[tokio::test]
+    async fn test_singleton_multi_thread() {
+        let reader1 = thread::spawn(|| {
+            let _ = OpenFeature::singleton().provider_metadata();
+        });
+
+        let writer = thread::spawn(|| {
+            OpenFeature::singleton_mut().set_provider(FixedValueProvider::default());
+        });
+
+        let reader2 = thread::spawn(|| {
+            let _ = OpenFeature::singleton().provider_metadata();
+        });
+
+        let _ = (reader1.join(), reader2.join(), writer.join());
+
+        assert_eq!(
+            "Fixed Value",
+            OpenFeature::singleton().provider_metadata().name
+        );
     }
 }

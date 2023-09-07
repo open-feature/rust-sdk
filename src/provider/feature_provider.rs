@@ -95,7 +95,7 @@ pub trait FeatureProvider: Send + Sync + 'static {
 #[derive(Clone, TypedBuilder, Default, Debug)]
 pub struct ProviderMetadata {
     #[builder(setter(into))]
-    name: String,
+    pub name: String,
 }
 
 impl ProviderMetadata {

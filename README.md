@@ -22,5 +22,8 @@ TBD
 
 ## Pending Feature List
 
-- [ ] Provider hooks (2.3.*)
-
+- Some requirements of Flag Evaluation API.
+- Provider hooks (2.3)
+- Evaluation context levels and merging (3.2)
+- Hooks (4)
+- Events (5)
