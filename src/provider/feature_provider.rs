@@ -53,7 +53,7 @@ pub trait FeatureProvider: Send + Sync + 'static {
         &self,
         flag_key: &str,
         default_value: bool,
-        evaluation_context: Option<EvaluationContext>,
+        evaluation_context: Option<&EvaluationContext>,
     ) -> ResolutionDetails<bool>;
 
     /// Resolve given [`flag_key`] as an i64 value.
@@ -61,7 +61,7 @@ pub trait FeatureProvider: Send + Sync + 'static {
         &self,
         flag_key: &str,
         default_value: i64,
-        evaluation_context: Option<EvaluationContext>,
+        evaluation_context: Option<&EvaluationContext>,
     ) -> ResolutionDetails<i64>;
 
     /// Resolve given [`flag_key`] as a f64 value.
@@ -69,7 +69,7 @@ pub trait FeatureProvider: Send + Sync + 'static {
         &self,
         flag_key: &str,
         default_value: f64,
-        evaluation_context: Option<EvaluationContext>,
+        evaluation_context: Option<&EvaluationContext>,
     ) -> ResolutionDetails<f64>;
 
     /// Resolve given [`flag_key`] as a string value.
@@ -77,14 +77,15 @@ pub trait FeatureProvider: Send + Sync + 'static {
         &self,
         flag_key: &str,
         default_value: &str,
-        evaluation_context: Option<EvaluationContext>,
+        evaluation_context: Option<&EvaluationContext>,
     ) -> ResolutionDetails<String>;
 
+    /// Resolve given [`flag_key`] as a struct value.
     async fn resolve_struct_value(
         &self,
         flag_key: &str,
         default_value: StructValue,
-        evaluation_context: Option<EvaluationContext>,
+        evaluation_context: Option<&EvaluationContext>,
     ) -> ResolutionDetails<StructValue>;
 }
 

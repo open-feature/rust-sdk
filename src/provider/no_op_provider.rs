@@ -38,7 +38,7 @@ impl FeatureProvider for NoOpProvider {
         &self,
         flag_key: &str,
         default_value: bool,
-        evaluation_context: Option<EvaluationContext>,
+        evaluation_context: Option<&EvaluationContext>,
     ) -> ResolutionDetails<bool> {
         ResolutionDetails::new(default_value)
     }
@@ -47,7 +47,7 @@ impl FeatureProvider for NoOpProvider {
         &self,
         flag_key: &str,
         default_value: i64,
-        evaluation_context: Option<EvaluationContext>,
+        evaluation_context: Option<&EvaluationContext>,
     ) -> ResolutionDetails<i64> {
         ResolutionDetails::new(default_value)
     }
@@ -56,7 +56,7 @@ impl FeatureProvider for NoOpProvider {
         &self,
         flag_key: &str,
         default_value: f64,
-        evaluation_context: Option<EvaluationContext>,
+        evaluation_context: Option<&EvaluationContext>,
     ) -> ResolutionDetails<f64> {
         ResolutionDetails::new(default_value)
     }
@@ -65,7 +65,7 @@ impl FeatureProvider for NoOpProvider {
         &self,
         flag_key: &str,
         default_value: &str,
-        evaluation_context: Option<EvaluationContext>,
+        evaluation_context: Option<&EvaluationContext>,
     ) -> ResolutionDetails<String> {
         ResolutionDetails::new(default_value)
     }
@@ -74,7 +74,7 @@ impl FeatureProvider for NoOpProvider {
         &self,
         flag_key: &str,
         default_value: StructValue,
-        evaluation_context: Option<EvaluationContext>,
+        evaluation_context: Option<&EvaluationContext>,
     ) -> ResolutionDetails<StructValue> {
         ResolutionDetails::new(default_value)
     }

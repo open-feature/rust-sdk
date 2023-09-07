@@ -33,7 +33,7 @@ impl Client {
         &self,
         flag_key: &str,
         default_value: bool,
-        evaluation_context: Option<EvaluationContext>,
+        evaluation_context: Option<&EvaluationContext>,
     ) -> bool {
         self.provider
             .resolve_bool_value(flag_key, default_value, evaluation_context)
@@ -45,7 +45,7 @@ impl Client {
         &self,
         flag_key: &str,
         default_value: i64,
-        evaluation_context: Option<EvaluationContext>,
+        evaluation_context: Option<&EvaluationContext>,
     ) -> i64 {
         self.provider
             .resolve_int_value(flag_key, default_value, evaluation_context)
@@ -57,7 +57,7 @@ impl Client {
         &self,
         flag_key: &str,
         default_value: f64,
-        evaluation_context: Option<EvaluationContext>,
+        evaluation_context: Option<&EvaluationContext>,
     ) -> f64 {
         self.provider
             .resolve_float_value(flag_key, default_value, evaluation_context)
@@ -69,7 +69,7 @@ impl Client {
         &self,
         flag_key: &str,
         default_value: &str,
-        evaluation_context: Option<EvaluationContext>,
+        evaluation_context: Option<&EvaluationContext>,
     ) -> String {
         self.provider
             .resolve_string_value(flag_key, default_value, evaluation_context)
@@ -81,7 +81,7 @@ impl Client {
         &self,
         flag_key: &str,
         default_value: T,
-        evaluation_context: Option<EvaluationContext>,
+        evaluation_context: Option<&EvaluationContext>,
     ) -> T
     where
         T: From<StructValue>,
