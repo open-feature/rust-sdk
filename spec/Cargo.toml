@@ -1,0 +1,13 @@
+[package]
+name = "spec"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "spec"
+path = "src/lib.rs"
+proc-macro = true
+
+[dependencies]
+darling = "0.20.3"
+

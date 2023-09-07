@@ -14,3 +14,4 @@ typed-builder = "0.16.0"
 
 [dev-dependencies]
 tokio = { version = "1.32.0", features = [ "full" ] }
+spec = { path = "spec" }
