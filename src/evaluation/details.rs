@@ -90,7 +90,7 @@ pub enum EvaluationErrorCode {
     InvalidContext,
 
     /// The error was for a reason not enumerated above.
-    Geneval(String),
+    General(String),
 }
 
 /// A structure which supports definition of arbitrary properties, with keys of type string, and
