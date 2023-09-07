@@ -10,7 +10,7 @@ pub struct EvaluationDetails<T> {
     pub flag_metadata: FlagMetadata,
 }
 
-/// Eeason for evaluation.
+/// Reason for evaluation.
 #[derive(Clone, Default, Eq, PartialEq, Debug)]
 pub enum EvaluationReason {
     /// The resolved value is static (no dynamic evaluation).
