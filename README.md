@@ -6,33 +6,21 @@ This is the rust implementation of [OpenFeature](https://openfeature.dev), a ven
 
 We support multiple data types for flags (numbers, strings, booleans, objects) as well as hooks, which can alter the lifecycle of a flag evaluation.
 
-
 ## Installation
 
-```
-rust-sdk = { git = "https://github.com/open-feature/rust-sdk", branch = "main" }
+```toml
+open-feature = { git = "https://github.com/open-feature/rust-sdk", branch = "main" }
 ```
 
 ## Usage
 
 ### Initialization
 
-```rust
-use rust_sdk::OpenFeatureClient;
-use rust_sdk::providers::NoopProvider;
-use rust_sdk::providers::traits::FeatureProvider;
-use rust_sdk::traits::Client;
+TBD
 
+## Roadmap
 
-fn main() {
-    
-    let client = OpenFeatureClient::<NoopProvider>::new(
-        "client-name".to_string(),
-        NoopProvider::new(),
-    );
-    let result = client.value::<i64>("flag-key-here".to_string(),
-        0, client.evaluation_context() );
-    println!("result: {}", result.unwrap());
-}
+## Pending Feature List
 
-```
+- [ ] Provider hooks (2.3.*)
+

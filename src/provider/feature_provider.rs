@@ -32,16 +32,18 @@ pub trait FeatureProvider: Send + Sync + 'static {
     /// abnormally.
     /// * The provider SHOULD indicate an error if flag resolution is attempted before the provider
     /// is ready.
-    ///
-    /// Implement [`Drop`] trait for the "shutdown" functions.
-    fn initialize(&mut self, context: EvaluationContext) {}
+    async fn initialize(&mut self, context: EvaluationContext) {}
+
+    /// The provider MAY define a shutdown function to perform whatever cleanup is necessary for
+    /// the implementation.
+    async fn shutdown(&mut self) {}
 
     /// The provider MAY define a status field/accessor which indicates the readiness of the
     /// provider, with possible values NOT_READY, READY, or ERROR.
     ///
     /// Providers without this field can be assumed to be ready immediately.
     fn status(&self) -> ProviderStatus {
-        ProviderStatus::default()
+        ProviderStatus::Ready
     }
 
     /// The provider interface MUST define a metadata member or accessor, containing a name field
