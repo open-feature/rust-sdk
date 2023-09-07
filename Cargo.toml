@@ -1,5 +1,5 @@
 [package]
-name = "rust-sdk"
+name = "open-feature"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,3 +7,10 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0"
+async-trait = "0.1.73"
+lazy_static = "1.4.0"
+time = "0.3.28"
+typed-builder = "0.16.0"
+
+[dev-dependencies]
+tokio = { version = "1.32.0", features = ["full"] }
