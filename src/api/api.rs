@@ -58,6 +58,7 @@ mod tests {
 
     use super::*;
     use crate::provider::*;
+    use spec::spec;
 
     impl OpenFeature {
         pub fn new<T: FeatureProvider>(provider: T, evaluation_context: EvaluationContext) -> Self {
@@ -69,6 +70,7 @@ mod tests {
     }
 
     #[tokio::test]
+    #[spec(number="1.1.2.1",text="The API MUST define a provider mutator, a function to set the default provider, which accepts an API-conformant provider implementation.")]
     async fn set_provider() {
         let provider = FixedValueProvider::builder().bool_value(true).build();
 
