@@ -49,8 +49,8 @@ impl Default for FixedValueProvider {
 
 #[async_trait]
 impl FeatureProvider for FixedValueProvider {
-    fn metadata(&self) -> &ProviderMetadata {
-        &self.metadata
+    fn metadata(&self) -> ProviderMetadata {
+        self.metadata.clone()
     }
 
     async fn resolve_bool_value(
