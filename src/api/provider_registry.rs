@@ -27,7 +27,7 @@ impl ProviderRegistry {
 
     pub async fn set_named<T: FeatureProvider>(&self, name: &str, mut provider: T) {
         // Drop the already registered provider if any.
-        if let Some(provider) = self.get_named(name).await {
+        if let Some(_) = self.get_named(name).await {
             self.0.write().await.remove(name);
         }
 

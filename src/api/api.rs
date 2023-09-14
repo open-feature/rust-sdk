@@ -3,10 +3,12 @@ use tokio::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use crate::{
     provider::{FeatureProvider, ProviderMetadata},
-    Client, EvaluationContext,
+    Client,
 };
 
-use super::provider_registry::ProviderRegistry;
+use super::{
+    global_evaluation_context::GlobalEvaluationContext, provider_registry::ProviderRegistry,
+};
 
 lazy_static! {
     /// The singleton instance of [`OpenFeature`] struct.
@@ -19,7 +21,7 @@ lazy_static! {
 #[derive(Default)]
 pub struct OpenFeature {
     providers: ProviderRegistry,
-    evaluation_context: EvaluationContext,
+    evaluation_context: GlobalEvaluationContext,
 }
 
 impl OpenFeature {
@@ -58,13 +60,21 @@ impl OpenFeature {
 
     /// Create a new client with default name.
     pub fn get_client(&self) -> Client {
-        Client::new(String::default(), self.providers.clone())
+        Client::new(
+            String::default(),
+            self.evaluation_context.clone(),
+            self.providers.clone(),
+        )
     }
 
     /// Create a new client with specific `name`.
     /// It will use the provider bound to this name, if any.
     pub fn get_named_client(&self, name: &str) -> Client {
-        Client::new(name.to_string(), self.providers.clone())
+        Client::new(
+            name.to_string(),
+            self.evaluation_context.clone(),
+            self.providers.clone(),
+        )
     }
 }
 
@@ -123,5 +133,18 @@ mod tests {
         api.set_provider(provider).await;
 
         assert_eq!(client.get_int_value("some-key", 100, None).await, 200);
+    }
+
+    #[tokio::test]
+    #[spec(
+        number = "1.1.2.2",
+        text = "The provider mutator function MUST invoke the initialize function on the newly registered provider before using it to resolve flag values."
+    )]
+    async fn set_provider_invoke_initialize() {
+        let mut provider = MockFeatureProvider::new();
+        provider.expect_initialize().once().returning(|_| ());
+
+        let mut api = OpenFeature::default();
+        api.set_provider(provider).await;
     }
 }

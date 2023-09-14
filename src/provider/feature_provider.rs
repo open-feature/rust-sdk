@@ -1,5 +1,3 @@
-use std::{any::Any, borrow::Cow, sync::Arc};
-
 use async_trait::async_trait;
 use typed_builder::TypedBuilder;
 
@@ -23,8 +21,8 @@ use mockall::{automock, predicate::*};
 /// vendor SDK, embed an REST client, or read flags from a local file.
 ///
 /// See the [spec](https://openfeature.dev/specification/sections/providers).
-#[async_trait]
 #[cfg_attr(test, automock)]
+#[async_trait]
 pub trait FeatureProvider: Send + Sync + 'static {
     /// The provider MAY define an initialize function which accepts the global evaluation
     /// context as an argument and performs initialization logic relevant to the provider.
@@ -36,6 +34,7 @@ pub trait FeatureProvider: Send + Sync + 'static {
     /// abnormally.
     /// * The provider SHOULD indicate an error if flag resolution is attempted before the provider
     /// is ready.
+    #[allow(unused_variables)]
     async fn initialize(&mut self, context: EvaluationContext) {}
 
     /// The provider MAY define a status field/accessor which indicates the readiness of the
@@ -55,7 +54,7 @@ pub trait FeatureProvider: Send + Sync + 'static {
         &self,
         flag_key: &str,
         default_value: bool,
-        evaluation_context: Option<&EvaluationContext>,
+        evaluation_context: &EvaluationContext,
     ) -> ResolutionDetails<bool>;
 
     /// Resolve given `flag_key` as an i64 value.
@@ -63,7 +62,7 @@ pub trait FeatureProvider: Send + Sync + 'static {
         &self,
         flag_key: &str,
         default_value: i64,
-        evaluation_context: Option<&EvaluationContext>,
+        evaluation_context: &EvaluationContext,
     ) -> ResolutionDetails<i64>;
 
     /// Resolve given `flag_key` as a f64 value.
@@ -71,7 +70,7 @@ pub trait FeatureProvider: Send + Sync + 'static {
         &self,
         flag_key: &str,
         default_value: f64,
-        evaluation_context: Option<&EvaluationContext>,
+        evaluation_context: &EvaluationContext,
     ) -> ResolutionDetails<f64>;
 
     /// Resolve given `flag_key` as a string value.
@@ -79,7 +78,7 @@ pub trait FeatureProvider: Send + Sync + 'static {
         &self,
         flag_key: &str,
         default_value: &str,
-        evaluation_context: Option<&EvaluationContext>,
+        evaluation_context: &EvaluationContext,
     ) -> ResolutionDetails<String>;
 
     /// Resolve given `flag_key` as a struct value.
@@ -87,7 +86,7 @@ pub trait FeatureProvider: Send + Sync + 'static {
         &self,
         flag_key: &str,
         default_value: StructValue,
-        evaluation_context: Option<&EvaluationContext>,
+        evaluation_context: &EvaluationContext,
     ) -> ResolutionDetails<StructValue>;
 }
 

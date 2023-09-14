@@ -57,7 +57,7 @@ impl FeatureProvider for FixedValueProvider {
         &self,
         _flag_key: &str,
         _default_value: bool,
-        _evaluation_context: Option<&EvaluationContext>,
+        _evaluation_context: &EvaluationContext,
     ) -> ResolutionDetails<bool> {
         ResolutionDetails::new(self.bool_value)
     }
@@ -66,7 +66,7 @@ impl FeatureProvider for FixedValueProvider {
         &self,
         _flag_key: &str,
         _default_value: i64,
-        _evaluation_context: Option<&EvaluationContext>,
+        _evaluation_context: &EvaluationContext,
     ) -> ResolutionDetails<i64> {
         ResolutionDetails::new(self.int_value)
     }
@@ -75,7 +75,7 @@ impl FeatureProvider for FixedValueProvider {
         &self,
         _flag_key: &str,
         _default_value: f64,
-        _evaluation_context: Option<&EvaluationContext>,
+        _evaluation_context: &EvaluationContext,
     ) -> ResolutionDetails<f64> {
         ResolutionDetails::new(self.float_value)
     }
@@ -84,7 +84,7 @@ impl FeatureProvider for FixedValueProvider {
         &self,
         _flag_key: &str,
         _default_value: &str,
-        _evaluation_context: Option<&EvaluationContext>,
+        _evaluation_context: &EvaluationContext,
     ) -> ResolutionDetails<String> {
         ResolutionDetails::new(self.string_value.clone())
     }
@@ -93,7 +93,7 @@ impl FeatureProvider for FixedValueProvider {
         &self,
         _flag_key: &str,
         _default_value: StructValue,
-        _evaluation_context: Option<&EvaluationContext>,
+        _evaluation_context: &EvaluationContext,
     ) -> ResolutionDetails<StructValue> {
         ResolutionDetails::new((*self.struct_value).clone())
     }
