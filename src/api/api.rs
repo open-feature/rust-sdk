@@ -20,8 +20,9 @@ lazy_static! {
 /// Access it via the [`SINGLETON`] instance.
 #[derive(Default)]
 pub struct OpenFeature {
-    providers: ProviderRegistry,
     evaluation_context: GlobalEvaluationContext,
+
+    pub provider_registry: ProviderRegistry,
 }
 
 impl OpenFeature {
@@ -37,22 +38,22 @@ impl OpenFeature {
 
     /// Set the default provider.
     pub async fn set_provider<T: FeatureProvider>(&mut self, provider: T) {
-        self.providers.set_default(provider).await;
+        self.provider_registry.set_default(provider).await;
     }
 
     /// Bind the given `provider` to the corresponding `name`.
     pub async fn set_named_provider<T: FeatureProvider>(&mut self, name: &str, provider: T) {
-        self.providers.set_named(name, provider).await;
+        self.provider_registry.set_named(name, provider).await;
     }
 
     /// Return the metadata of default (unnamed) provider.
     pub async fn provider_metadata(&self) -> ProviderMetadata {
-        self.providers.get_default().await.get().metadata()
+        self.provider_registry.get_default().await.get().metadata()
     }
 
     /// Return the metadata of named provider (a provider bound to clients with this name).
     pub async fn named_provider_metadata(&self, name: &str) -> Option<ProviderMetadata> {
-        match self.providers.get_named(name).await {
+        match self.provider_registry.get_named(name).await {
             Some(provider) => Some(provider.get().metadata()),
             None => None,
         }
@@ -63,7 +64,7 @@ impl OpenFeature {
         Client::new(
             String::default(),
             self.evaluation_context.clone(),
-            self.providers.clone(),
+            self.provider_registry.clone(),
         )
     }
 
@@ -73,13 +74,15 @@ impl OpenFeature {
         Client::new(
             name.to_string(),
             self.evaluation_context.clone(),
-            self.providers.clone(),
+            self.provider_registry.clone(),
         )
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use super::*;
     use crate::provider::*;
     use spec::spec;
@@ -146,5 +149,31 @@ mod tests {
 
         let mut api = OpenFeature::default();
         api.set_provider(provider).await;
+    }
+
+    #[tokio::test]
+    #[spec(
+        number = "1.1.3",
+        text = "The API MUST provide a function to bind a given provider to one or more client names. If the client-name already has a bound provider, it is overwritten with the new mapping."
+    )]
+    async fn set_named_provider() {
+        let mut api = OpenFeature::default();
+        api.set_named_provider("test", NoOpProvider::default())
+            .await;
+
+        // Ensure the No-op provider is used.
+        let client = api.get_named_client("test");
+        assert_eq!(client.get_int_value("", 10, None).await, 10);
+
+        // Bind FixedValueProvider to the same name.
+        api.set_named_provider("test", FixedValueProvider::builder().int_value(30).build())
+            .await;
+
+        // Ensure the FixedValueProvider is used for existing clients.
+        assert_eq!(client.get_int_value("", 10, None).await, 30);
+
+        // Create a new client and ensure FixedValueProvideris used.
+        let new_client = api.get_named_client("test");
+        assert_eq!(new_client.get_int_value("", 10, None).await, 30);
     }
 }
