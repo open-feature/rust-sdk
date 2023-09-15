@@ -22,7 +22,7 @@ lazy_static! {
 pub struct OpenFeature {
     evaluation_context: GlobalEvaluationContext,
 
-    pub provider_registry: ProviderRegistry,
+    provider_registry: ProviderRegistry,
 }
 
 impl OpenFeature {

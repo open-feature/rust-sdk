@@ -10,10 +10,16 @@ pub struct ClientMetadata {
     name: String,
 }
 
+impl ClientMetadata {
+    pub fn name(&self) -> &str {
+        &self.name.as_ref()
+    }
+}
+
 /// The OpenFeature client.
 /// Create it through the [`OpenFeature`] struct.
 pub struct Client {
-    pub metadata: ClientMetadata,
+    metadata: ClientMetadata,
     provider_registry: ProviderRegistry,
     evaluation_context: EvaluationContext,
     global_evaluation_context: GlobalEvaluationContext,
@@ -21,16 +27,20 @@ pub struct Client {
 
 impl Client {
     pub fn new(
-        name: String,
+        name: impl Into<String>,
         global_evaluation_context: GlobalEvaluationContext,
         provider_registry: ProviderRegistry,
     ) -> Self {
         Self {
-            metadata: ClientMetadata { name },
+            metadata: ClientMetadata { name: name.into() },
             global_evaluation_context,
             provider_registry,
             evaluation_context: EvaluationContext::default(),
         }
+    }
+
+    pub fn metadata(&self) -> &ClientMetadata {
+        &self.metadata
     }
 
     pub async fn get_bool_value(
@@ -144,5 +154,32 @@ impl Client {
         context.merge_missing(&global_evaluation_context);
 
         context
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use spec::spec;
+
+    use crate::{
+        api::{
+            global_evaluation_context::GlobalEvaluationContext, provider_registry::ProviderRegistry,
+        },
+        Client,
+    };
+
+    #[spec(
+        number = "1.2.2",
+        text = "The client interface MUST define a metadata member or accessor, containing an immutable name field or accessor of type string, which corresponds to the name value supplied during client creation."
+    )]
+    #[test]
+    fn get_metadata_name() {
+        let client = Client::new(
+            "test",
+            GlobalEvaluationContext::default(),
+            ProviderRegistry::default(),
+        );
+
+        assert_eq!(client.metadata().name, "test");
     }
 }
