@@ -13,7 +13,7 @@ use super::{
 lazy_static! {
     /// The singleton instance of [`OpenFeature`] struct.
     /// The client should always use this instance to access OpenFeature APIs.
-    pub static ref SINGLETON: RwLock<OpenFeature> = RwLock::new(OpenFeature::default());
+    static ref SINGLETON: RwLock<OpenFeature> = RwLock::new(OpenFeature::default());
 }
 
 /// THE struct of the OpenFeature API.
@@ -48,13 +48,18 @@ impl OpenFeature {
 
     /// Return the metadata of default (unnamed) provider.
     pub async fn provider_metadata(&self) -> ProviderMetadata {
-        self.provider_registry.get_default().await.get().metadata()
+        self.provider_registry
+            .get_default()
+            .await
+            .get()
+            .metadata()
+            .clone()
     }
 
     /// Return the metadata of named provider (a provider bound to clients with this name).
     pub async fn named_provider_metadata(&self, name: &str) -> Option<ProviderMetadata> {
         match self.provider_registry.get_named(name).await {
-            Some(provider) => Some(provider.get().metadata()),
+            Some(provider) => Some(provider.get().metadata().clone()),
             None => None,
         }
     }

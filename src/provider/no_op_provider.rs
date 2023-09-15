@@ -30,8 +30,8 @@ impl Default for NoOpProvider {
 
 #[async_trait]
 impl FeatureProvider for NoOpProvider {
-    fn metadata(&self) -> ProviderMetadata {
-        self.metadata.clone()
+    fn metadata(&self) -> &ProviderMetadata {
+        &self.metadata
     }
 
     async fn resolve_bool_value(

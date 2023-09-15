@@ -64,8 +64,8 @@ impl ToString for EvaluationReason {
 /// Struct representing error
 #[derive(Clone, Eq, PartialEq, Debug)]
 pub struct EvaluationError {
-    code: EvaluationErrorCode,
-    message: Option<String>,
+    pub code: EvaluationErrorCode,
+    pub message: Option<String>,
 }
 
 /// An enumerated error code represented idiomatically in the implementation language.

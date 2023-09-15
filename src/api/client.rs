@@ -7,13 +7,7 @@ use super::{
 
 /// The metadata of OpenFeature client.
 pub struct ClientMetadata {
-    name: String,
-}
-
-impl ClientMetadata {
-    pub fn name(&self) -> &str {
-        &self.name.as_ref()
-    }
+    pub name: String,
 }
 
 /// The OpenFeature client.

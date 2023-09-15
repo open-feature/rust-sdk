@@ -1,5 +1,5 @@
 mod api;
-pub use api::*;
+pub use api::OpenFeature;
 
 mod client;
 pub use client::Client;

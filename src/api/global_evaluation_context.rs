@@ -5,7 +5,7 @@ use tokio::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 use crate::EvaluationContext;
 
 #[derive(Clone, Default)]
-pub struct GlobalEvaluationContext(pub Arc<RwLock<EvaluationContext>>);
+pub struct GlobalEvaluationContext(Arc<RwLock<EvaluationContext>>);
 
 impl GlobalEvaluationContext {
     pub async fn get(&self) -> RwLockReadGuard<EvaluationContext> {

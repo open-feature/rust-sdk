@@ -47,7 +47,7 @@ pub trait FeatureProvider: Send + Sync + 'static {
 
     /// The provider interface MUST define a metadata member or accessor, containing a name field
     /// or accessor of type string, which identifies the provider implementation.
-    fn metadata(&self) -> ProviderMetadata;
+    fn metadata(&self) -> &ProviderMetadata;
 
     /// Resolve given `flag_key` as a bool value.
     async fn resolve_bool_value(
