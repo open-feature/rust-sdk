@@ -77,12 +77,15 @@ impl OpenFeature {
             self.provider_registry.clone(),
         )
     }
+
+    /// Drops all the registered providers.
+    pub async fn shutdown(&mut self) {
+        self.provider_registry.clear().await;
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-
     use super::*;
     use crate::provider::*;
     use spec::spec;
@@ -175,5 +178,45 @@ mod tests {
         // Create a new client and ensure FixedValueProvideris used.
         let new_client = api.get_named_client("test");
         assert_eq!(new_client.get_int_value("", 10, None).await, 30);
+    }
+
+    #[tokio::test]
+    #[spec(
+        number = "1.1.4",
+        text = "The API MUST provide a function to add hooks which accepts one or more API-conformant hooks, and appends them to the collection of any previously added hooks. When new hooks are added, previously added hooks are not removed."
+    )]
+    async fn add_hooks() {
+        // Not implemented.
+    }
+
+    #[tokio::test]
+    #[spec(
+        number = "1.1.5",
+        text = "The API MUST provide a function for retrieving the metadata field of the configured provider."
+    )]
+    async fn provider_metadata() {
+        let mut api = OpenFeature::default();
+        api.set_provider(NoOpProvider::default()).await;
+        api.set_named_provider("test", FixedValueProvider::default())
+            .await;
+
+        assert_eq!(api.provider_metadata().await.name, "No Operation");
+        assert_eq!(
+            api.named_provider_metadata("test").await.unwrap().name,
+            "Fixed Value"
+        );
+        assert!(api.named_provider_metadata("invalid").await.is_none());
+    }
+
+    #[tokio::test]
+    #[spec(
+        number = "1.6.1",
+        text = "The API MUST define a shutdown function which, when called, must call the respective shutdown function on the active provider."
+    )]
+    async fn shutdown() {
+        let mut api = OpenFeature::default();
+        api.set_provider(NoOpProvider::default()).await;
+
+        api.shutdown().await;
     }
 }

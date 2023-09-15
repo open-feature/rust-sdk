@@ -57,6 +57,10 @@ impl ProviderRegistry {
             .get(name)
             .map(|provider| provider.clone())
     }
+
+    pub async fn clear(&self) {
+        self.0.write().await.clear();
+    }
 }
 
 impl Default for ProviderRegistry {
