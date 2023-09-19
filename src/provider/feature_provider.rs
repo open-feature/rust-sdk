@@ -1,11 +1,12 @@
-use std::{any::Any, borrow::Cow, sync::Arc};
-
 use async_trait::async_trait;
 use typed_builder::TypedBuilder;
 
 use crate::{EvaluationContext, StructValue};
 
 use super::ResolutionDetails;
+
+#[cfg(test)]
+use mockall::{automock, predicate::*};
 
 /// This trait defines interfaces that Provider Authors can use to abstract a particular flag
 /// management system, thus enabling the use of the evaluation API by Application Authors.
@@ -20,6 +21,7 @@ use super::ResolutionDetails;
 /// vendor SDK, embed an REST client, or read flags from a local file.
 ///
 /// See the [spec](https://openfeature.dev/specification/sections/providers).
+#[cfg_attr(test, automock)]
 #[async_trait]
 pub trait FeatureProvider: Send + Sync + 'static {
     /// The provider MAY define an initialize function which accepts the global evaluation
@@ -32,11 +34,8 @@ pub trait FeatureProvider: Send + Sync + 'static {
     /// abnormally.
     /// * The provider SHOULD indicate an error if flag resolution is attempted before the provider
     /// is ready.
+    #[allow(unused_variables)]
     async fn initialize(&mut self, context: EvaluationContext) {}
-
-    /// The provider MAY define a shutdown function to perform whatever cleanup is necessary for
-    /// the implementation.
-    async fn shutdown(&mut self) {}
 
     /// The provider MAY define a status field/accessor which indicates the readiness of the
     /// provider, with possible values NOT_READY, READY, or ERROR.
@@ -50,44 +49,44 @@ pub trait FeatureProvider: Send + Sync + 'static {
     /// or accessor of type string, which identifies the provider implementation.
     fn metadata(&self) -> &ProviderMetadata;
 
-    /// Resolve given [`flag_key`] as a bool value.
+    /// Resolve given `flag_key` as a bool value.
     async fn resolve_bool_value(
         &self,
         flag_key: &str,
         default_value: bool,
-        evaluation_context: Option<&EvaluationContext>,
+        evaluation_context: &EvaluationContext,
     ) -> ResolutionDetails<bool>;
 
-    /// Resolve given [`flag_key`] as an i64 value.
+    /// Resolve given `flag_key` as an i64 value.
     async fn resolve_int_value(
         &self,
         flag_key: &str,
         default_value: i64,
-        evaluation_context: Option<&EvaluationContext>,
+        evaluation_context: &EvaluationContext,
     ) -> ResolutionDetails<i64>;
 
-    /// Resolve given [`flag_key`] as a f64 value.
+    /// Resolve given `flag_key` as a f64 value.
     async fn resolve_float_value(
         &self,
         flag_key: &str,
         default_value: f64,
-        evaluation_context: Option<&EvaluationContext>,
+        evaluation_context: &EvaluationContext,
     ) -> ResolutionDetails<f64>;
 
-    /// Resolve given [`flag_key`] as a string value.
+    /// Resolve given `flag_key` as a string value.
     async fn resolve_string_value(
         &self,
         flag_key: &str,
         default_value: &str,
-        evaluation_context: Option<&EvaluationContext>,
+        evaluation_context: &EvaluationContext,
     ) -> ResolutionDetails<String>;
 
-    /// Resolve given [`flag_key`] as a struct value.
+    /// Resolve given `flag_key` as a struct value.
     async fn resolve_struct_value(
         &self,
         flag_key: &str,
         default_value: StructValue,
-        evaluation_context: Option<&EvaluationContext>,
+        evaluation_context: &EvaluationContext,
     ) -> ResolutionDetails<StructValue>;
 }
 

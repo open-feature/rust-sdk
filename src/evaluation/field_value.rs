@@ -99,6 +99,32 @@ impl From<OffsetDateTime> for EvaluationContextFieldValue {
     }
 }
 
+impl PartialEq for EvaluationContextFieldValue {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (EvaluationContextFieldValue::Bool(left), EvaluationContextFieldValue::Bool(right)) => {
+                left == right
+            }
+            (EvaluationContextFieldValue::Int(left), EvaluationContextFieldValue::Int(right)) => {
+                left == right
+            }
+            (
+                EvaluationContextFieldValue::Float(left),
+                EvaluationContextFieldValue::Float(right),
+            ) => left == right,
+            (
+                EvaluationContextFieldValue::String(left),
+                EvaluationContextFieldValue::String(right),
+            ) => left == right,
+            (
+                EvaluationContextFieldValue::DateTime(left),
+                EvaluationContextFieldValue::DateTime(right),
+            ) => left == right,
+            (_, _) => false,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -128,7 +154,7 @@ mod tests {
             assert_eq!(true, *value);
         } else {
             panic!()
-        };
+        }
 
         // Assert int.
         if let EvaluationContextFieldValue::Int(value) = context.custom_fields.get("Int").unwrap() {
