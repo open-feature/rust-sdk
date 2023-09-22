@@ -2,10 +2,14 @@
 //  EvaluationError
 // ============================================================
 
+use typed_builder::TypedBuilder;
+
 /// Struct representing error
-#[derive(Clone, Eq, PartialEq, Debug)]
+#[derive(Clone, Eq, PartialEq, TypedBuilder, Debug)]
 pub struct EvaluationError {
     pub code: EvaluationErrorCode,
+
+    #[builder(default, setter(strip_option, into))]
     pub message: Option<String>,
 }
 
@@ -36,4 +40,18 @@ pub enum EvaluationErrorCode {
 
     /// The error was for a reason not enumerated above.
     General(String),
+}
+
+impl ToString for EvaluationErrorCode {
+    fn to_string(&self) -> String {
+        match self {
+            Self::ProviderNotReady => "PROVIDER_NOT_READY".to_string(),
+            Self::FlagNotFound => "FLAG_NOT_FOUND".to_string(),
+            Self::ParseError => "PARSE_ERROR".to_string(),
+            Self::TypeMismatch => "TYPE_MISMATCH".to_string(),
+            Self::TargetingKeyMissing => "TARGETING_KEY_MISSING".to_string(),
+            Self::InvalidContext => "INVALID_CONTEXT".to_string(),
+            Self::General(message) => message.clone(),
+        }
+    }
 }

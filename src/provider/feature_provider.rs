@@ -8,6 +8,10 @@ use super::ResolutionDetails;
 #[cfg(test)]
 use mockall::{automock, predicate::*};
 
+// ============================================================
+//  FeatureProvider
+// ============================================================
+
 /// This trait defines interfaces that Provider Authors can use to abstract a particular flag
 /// management system, thus enabling the use of the evaluation API by Application Authors.
 ///
@@ -35,7 +39,7 @@ pub trait FeatureProvider: Send + Sync + 'static {
     /// * The provider SHOULD indicate an error if flag resolution is attempted before the provider
     /// is ready.
     #[allow(unused_variables)]
-    async fn initialize(&mut self, context: EvaluationContext) {}
+    async fn initialize(&mut self, context: &EvaluationContext) {}
 
     /// The provider MAY define a status field/accessor which indicates the readiness of the
     /// provider, with possible values NOT_READY, READY, or ERROR.
@@ -85,6 +89,10 @@ pub trait FeatureProvider: Send + Sync + 'static {
     ) -> EvaluationResult<ResolutionDetails<StructValue>>;
 }
 
+// ============================================================
+//  ProviderMetadata
+// ============================================================
+
 /// The metadata of a feature provider.
 #[derive(Clone, TypedBuilder, Default, Debug)]
 pub struct ProviderMetadata {
@@ -97,12 +105,18 @@ impl ProviderMetadata {
         Self { name: name.into() }
     }
 }
+//
+// ============================================================
+//  ProviderStatus
+// ============================================================
 
 /// The status of a feature provider.
-#[derive(Default, Debug)]
+#[derive(Default, PartialEq, Eq, Debug)]
 pub enum ProviderStatus {
-    #[default]
     Ready,
+
+    #[default]
     NotReady,
+
     Error,
 }

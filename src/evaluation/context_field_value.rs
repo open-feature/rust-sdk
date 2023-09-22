@@ -183,6 +183,12 @@ impl From<OffsetDateTime> for EvaluationContextFieldValue {
     }
 }
 
+impl<T: Any + Send + Sync> From<Arc<T>> for EvaluationContextFieldValue {
+    fn from(value: Arc<T>) -> Self {
+        Self::Struct(value)
+    }
+}
+
 impl PartialEq for EvaluationContextFieldValue {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {

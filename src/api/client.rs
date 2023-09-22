@@ -411,6 +411,13 @@ mod tests {
     }
 
     #[spec(
+        number = "1.3.4",
+        text = "The client SHOULD guarantee the returned value of any typed flag evaluation method is of the expected type. If the value returned by the underlying provider implementation does not match the expected type, it's to be considered abnormal execution, and the supplied default value should be returned."
+    )]
+    #[test]
+    fn get_value_return_right_type_checked_by_type_system() {}
+
+    #[spec(
         number = "1.4.1.1",
         text = "The client MUST provide methods for detailed flag value evaluation with parameters flag key (string, required), default value (boolean | number | string | structure, required), evaluation context (optional), and evaluation options (optional), which returns an evaluation details structure."
     )]
@@ -461,8 +468,34 @@ mod tests {
     }
 
     #[spec(
+        number = "1.4.8",
+        text = "In cases of abnormal execution, the evaluation details structure's error code field MUST contain an error code."
+    )]
+    #[spec(
+        number = "1.4.9",
+        text = "In cases of abnormal execution (network failure, unhandled error, etc) the reason field in the evaluation details SHOULD indicate an error."
+    )]
+    #[spec(
+        number = "1.4.13",
+        text = "In cases of abnormal execution, the evaluation details structure's error message field MAY contain a string containing additional details about the nature of the error."
+    )]
+    #[test]
+    fn evaluation_details_contains_error_checked_by_type_system() {}
+
+    #[spec(
+        number = "1.4.10",
+        text = "Methods, functions, or operations on the client MUST NOT throw exceptions, or otherwise abnormally terminate. Flag evaluation calls must always return the default value in the event of abnormal execution. Exceptions include functions or methods for the purposes for configuration or setup."
+    )]
+    #[test]
+    fn evaluation_return_default_value_covered_by_result() {}
+
+    #[spec(
         number = "1.4.14",
         text = "If the flag metadata field in the flag resolution structure returned by the configured provider is set, the evaluation details structure's flag metadata field MUST contain that value. Otherwise, it MUST contain an empty record."
+    )]
+    #[spec(
+        number = "1.4.14.1",
+        text = "Condition: Flag metadata MUST be immutable."
     )]
     #[tokio::test]
     async fn get_details_flag_metadata() {
@@ -483,6 +516,17 @@ mod tests {
             FlagMetadata::default()
         )
     }
+
+    #[spec(
+        number = "1.3.2.1",
+        text = "The client MUST provide methods for typed flag evaluation, including boolean, numeric, string, and structure, with parameters flag key (string, required), default value (boolean | number | string | structure, required), and evaluation options (optional), which returns the flag value."
+    )]
+    #[spec(
+        number = "1.4.2.1",
+        text = "The client MUST provide methods for detailed flag value evaluation with parameters flag key (string, required), default value (boolean | number | string | structure, required), and evaluation options (optional), which returns an evaluation details structure."
+    )]
+    #[test]
+    fn static_context_not_applicable() {}
 
     fn create_default_client() -> Client {
         Client::new(
