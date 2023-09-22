@@ -22,6 +22,8 @@ pub struct EvaluationContext {
     #[builder(default, setter(into, strip_option))]
     pub targeting_key: Option<String>,
 
+    /// The evaluation context MUST support the inclusion of custom fields, having keys of type
+    /// string, and values of type boolean | string | number | datetime | structure.
     #[builder(default)]
     pub custom_fields: HashMap<String, EvaluationContextFieldValue>,
 }
@@ -131,4 +133,3 @@ mod tests {
         assert_eq!(context, other);
     }
 }
-

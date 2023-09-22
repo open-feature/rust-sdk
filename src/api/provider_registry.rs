@@ -8,9 +8,9 @@ use crate::{
     EvaluationContext,
 };
 
-// ====================================================================
+// ============================================================
 //  ProviderRegistry
-// ====================================================================
+// ============================================================
 
 #[derive(Clone)]
 pub struct ProviderRegistry(Arc<RwLock<HashMap<String, FeatureProviderWrapper>>>);
@@ -68,7 +68,7 @@ impl Default for ProviderRegistry {
         let mut providers: HashMap<String, FeatureProviderWrapper> = HashMap::new();
         providers.insert(
             String::default(),
-            FeatureProviderWrapper::new(NoOpProvider::new()),
+            FeatureProviderWrapper::new(NoOpProvider::default()),
         );
 
         Self(Arc::new(RwLock::new(providers)))

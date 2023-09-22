@@ -19,6 +19,90 @@ impl EvaluationContextFieldValue {
     {
         Self::Struct(Arc::new(value))
     }
+
+    pub fn is_bool(&self) -> bool {
+        match self {
+            Self::Bool(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn as_bool(&self) -> Option<bool> {
+        match self {
+            Self::Bool(value) => Some(*value),
+            _ => None,
+        }
+    }
+
+    pub fn is_i64(&self) -> bool {
+        match self {
+            Self::Int(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn as_i64(&self) -> Option<i64> {
+        match self {
+            Self::Int(value) => Some(*value),
+            _ => None,
+        }
+    }
+
+    pub fn is_f64(&self) -> bool {
+        match self {
+            Self::Float(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn as_f64(&self) -> Option<f64> {
+        match self {
+            Self::Float(value) => Some(*value),
+            _ => None,
+        }
+    }
+
+    pub fn is_str(&self) -> bool {
+        match self {
+            Self::String(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn as_str(&self) -> Option<&str> {
+        match self {
+            Self::String(value) => Some(&value),
+            _ => None,
+        }
+    }
+
+    pub fn is_date_time(&self) -> bool {
+        match self {
+            Self::DateTime(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn as_date_time(&self) -> Option<&OffsetDateTime> {
+        match self {
+            Self::DateTime(value) => Some(value),
+            _ => None,
+        }
+    }
+
+    pub fn is_struct(&self) -> bool {
+        match self {
+            Self::Struct(_) => true,
+            _ => false,
+        }
+    }
+
+    pub fn as_struct(&self) -> Option<Arc<dyn Any + Send + Sync>> {
+        match self {
+            Self::Struct(value) => Some(value.clone()),
+            _ => None,
+        }
+    }
 }
 
 impl From<bool> for EvaluationContextFieldValue {

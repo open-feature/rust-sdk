@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use typed_builder::TypedBuilder;
 
-use crate::{EvaluationContext, StructValue};
+use crate::{EvaluationContext, EvaluationResult, StructValue};
 
 use super::ResolutionDetails;
 
@@ -53,41 +53,36 @@ pub trait FeatureProvider: Send + Sync + 'static {
     async fn resolve_bool_value(
         &self,
         flag_key: &str,
-        default_value: bool,
         evaluation_context: &EvaluationContext,
-    ) -> ResolutionDetails<bool>;
+    ) -> EvaluationResult<ResolutionDetails<bool>>;
 
     /// Resolve given `flag_key` as an i64 value.
     async fn resolve_int_value(
         &self,
         flag_key: &str,
-        default_value: i64,
         evaluation_context: &EvaluationContext,
-    ) -> ResolutionDetails<i64>;
+    ) -> EvaluationResult<ResolutionDetails<i64>>;
 
     /// Resolve given `flag_key` as a f64 value.
     async fn resolve_float_value(
         &self,
         flag_key: &str,
-        default_value: f64,
         evaluation_context: &EvaluationContext,
-    ) -> ResolutionDetails<f64>;
+    ) -> EvaluationResult<ResolutionDetails<f64>>;
 
     /// Resolve given `flag_key` as a string value.
     async fn resolve_string_value(
         &self,
         flag_key: &str,
-        default_value: &str,
         evaluation_context: &EvaluationContext,
-    ) -> ResolutionDetails<String>;
+    ) -> EvaluationResult<ResolutionDetails<String>>;
 
     /// Resolve given `flag_key` as a struct value.
     async fn resolve_struct_value(
         &self,
         flag_key: &str,
-        default_value: StructValue,
         evaluation_context: &EvaluationContext,
-    ) -> ResolutionDetails<StructValue>;
+    ) -> EvaluationResult<ResolutionDetails<StructValue>>;
 }
 
 /// The metadata of a feature provider.

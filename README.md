@@ -14,16 +14,22 @@ open-feature = { git = "https://github.com/open-feature/rust-sdk", branch = "mai
 
 ## Usage
 
-### Initialization
+First please check the [document](https://openfeature.dev/docs/reference/intro) to have a better understanding of the OpenFeature architecture. We will assume that you have read it. :-)
 
-TBD
+This SDK is compliant with the [OpenFeature specification](https://openfeature.dev/specification/) most of the time. Sometimes, it takes a more Rusty way to model a requirement, as long as the basic functionality is covered. These parts will be explicitly noted though.
+
+Let's roll.
+
+```rust
+let api = OpenFeature::singleton_mut();
+
+```
+
 
 ## Roadmap
 
 ## Pending Feature List
 
-- Some requirements of Flag Evaluation API.
 - Provider hooks (2.3)
-- Evaluation context levels and merging (3.2)
 - Hooks (4)
 - Events (5)
