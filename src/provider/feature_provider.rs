@@ -5,9 +5,6 @@ use crate::{EvaluationContext, EvaluationResult, StructValue};
 
 use super::ResolutionDetails;
 
-#[cfg(test)]
-use mockall::{automock, predicate::*};
-
 // ============================================================
 //  FeatureProvider
 // ============================================================
@@ -25,7 +22,6 @@ use mockall::{automock, predicate::*};
 /// vendor SDK, embed an REST client, or read flags from a local file.
 ///
 /// See the [spec](https://openfeature.dev/specification/sections/providers).
-#[cfg_attr(test, automock)]
 #[async_trait]
 pub trait FeatureProvider: Send + Sync + 'static {
     /// The provider MAY define an initialize function which accepts the global evaluation

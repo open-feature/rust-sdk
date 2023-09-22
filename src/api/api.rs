@@ -102,11 +102,7 @@ mod tests {
     use std::sync::Arc;
 
     use super::*;
-    use crate::{
-        provider::{self, *},
-        EvaluationContextFieldValue, EvaluationReason,
-    };
-    use mockall::mock;
+    use crate::{provider::NoOpProvider, EvaluationContextFieldValue, EvaluationReason};
     use spec::spec;
 
     #[spec(
@@ -172,14 +168,14 @@ mod tests {
     )]
     #[tokio::test]
     async fn set_provider_invoke_initialize() {
-        let mut provider = NoOpProvider::default();
+        let provider = NoOpProvider::default();
 
         assert_eq!(provider.metadata().name, "No Operation - Default");
 
         let mut api = OpenFeature::default();
         api.set_provider(provider).await;
 
-        assert_eq!(provider.metadata().name, "No Operation");
+        assert_eq!(api.provider_metadata().await.name, "No Operation");
     }
 
     #[spec(

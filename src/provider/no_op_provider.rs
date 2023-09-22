@@ -78,7 +78,7 @@ impl FeatureProvider for NoOpProvider {
         &self.metadata
     }
 
-    async fn initialize(&mut self, evaluation_context: &EvaluationContext) {
+    async fn initialize(&mut self, _evaluation_context: &EvaluationContext) {
         self.metadata = ProviderMetadata::new("No Operation");
     }
 
@@ -244,7 +244,7 @@ mod tests {
     fn metadata_name() {
         let provider = NoOpProvider::default();
 
-        assert_eq!(provider.metadata().name, "No Operation");
+        assert_eq!(provider.metadata().name, "No Operation - Default");
     }
 
     #[spec(
