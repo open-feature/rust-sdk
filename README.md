@@ -51,7 +51,7 @@ async fn example() {
     // Create an unnamed client.
     let client = api.create_client();
 
-    // Createa an evaluation context.
+    // Create an evaluation context.
     // It supports types mentioned in the specification.
     //
     // You have multiple ways to add a custom field.
