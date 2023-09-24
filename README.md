@@ -14,7 +14,7 @@ open-feature = { git = "https://github.com/open-feature/rust-sdk", branch = "mai
 
 ## Usage
 
-First please check the [document](https://openfeature.dev/docs/reference/intro) to have a better understanding of the OpenFeature architecture. We will assume that you have read it. :-)
+First please check this [document](https://openfeature.dev/docs/reference/intro) to have a better understanding of the OpenFeature architecture. We will assume that you have read it. :-)
 
 This SDK is compliant with the [OpenFeature specification](https://openfeature.dev/specification/) most of the time. Sometimes, it takes a more Rusty way to model a requirement, as long as the basic functionality is covered. These parts will be explicitly noted though.
 
