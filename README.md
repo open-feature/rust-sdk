@@ -32,7 +32,7 @@ async fn example() {
     // Note the `await` call here because asynchronous lock is used to guarantee thread safety.
     let mut api = OpenFeature::singleton_mut().await;
 
-    // Createa a global evaluation context and set it into the API.
+    // Create a global evaluation context and set it into the API.
     // Note that this is optional. By default it uses an empty one.
     let global_evaluation_context = EvaluationContext::default();
     api.set_evaluation_context(global_evaluation_context).await;
