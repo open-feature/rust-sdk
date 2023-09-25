@@ -264,9 +264,13 @@ mod tests {
         number = "1.1.8",
         text = "The API SHOULD provide functions to set a provider and wait for the initialize function to return or throw."
     )]
-    #[test]
-    fn set_provider_should_block() {
-        // It awaits.
+    #[tokio::test]
+    async fn set_provider_should_block() {
+        let mut api = OpenFeature::default();
+        api.set_provider(NoOpProvider::default()).await;
+
+        api.set_named_provider("named", NoOpProvider::default())
+            .await;
     }
 
     #[spec(
