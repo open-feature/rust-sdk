@@ -1,9 +1,3 @@
-
-<!-- TODO: This is a template SDK README.md.
-It's structured to fit nicely into openfeature.dev, which is configured to include SDK READMEs.
-Complete all the TODOs applicable for your implementation and then create an issue in https://github.com/open-feature/openfeature.dev
--->
-
 <!-- markdownlint-disable MD033 -->
 <!-- x-hide-in-docs-start -->
 <p align="center">
@@ -31,11 +25,13 @@ Complete all the TODOs applicable for your implementation and then create an iss
 -->
 
   <!-- x-release-please-end -->
+  <!-- TODO: update this when we have it set up
   <br/>
   <a href="https://bestpractices.coreinfrastructure.org/projects/6601">
     <img alt="CII Best Practices" src="https://bestpractices.coreinfrastructure.org/projects/6601/badge" />
   </a>
 </p>
+  -->
 <!-- x-hide-in-docs-start -->
 
 [OpenFeature](https://openfeature.dev) is an open standard that provides a vendor-agnostic, community-driven API for feature flagging that works with your favorite feature flag management tool.
@@ -94,13 +90,11 @@ async fn example() {
             EvaluationContextFieldValue::new_struct(MyStruct::default()),
         );
 
-    assert_eq!(
-        client
-            .get_bool_value("key", Some(&evaluation_context), None)
-            .await
-            .unwrap(),
-        bool::default()
-    );
+    // This function returns a `Result`. You can process it with functions provided by std.
+    let is_feature_enabled = client
+        .get_bool_value("SomeFlagEnabled", Some(&evaluation_context), None)
+        .await
+        .unwrap_or(false);
 
     // Let's get evaluation details.
     // Note that we will inject `300` as the int value via evaluation context.
@@ -242,11 +236,13 @@ assert_eq!(client.get_int_value("key", None, None).await.unwrap(), 42);
 
 ### Eventing
 
+<!-- TOOD: Uncomment it when we support events
 Events allow you to react to state changes in the provider or underlying flag management system, such as flag definition changes, provider readiness, or error conditions.
 Initialization events (`PROVIDER_READY` on success, `PROVIDER_ERROR` on failure) are dispatched for every provider.
 Some providers support additional events, such as `PROVIDER_CONFIGURATION_CHANGED`.
 
 Please refer to the documentation of the provider you're using to see what events are supported.
+-->
 
 <!-- TODO: code example of a PROVIDER_CONFIGURATION_CHANGED event for the client and a PROVIDER_STALE event for the API -->
 
