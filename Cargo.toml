@@ -2,6 +2,16 @@
 name = "open-feature"
 version = "0.1.0"
 edition = "2021"
+description = "The official OpenFeature Rust SDK."
+documentation = "https://docs.rs/open-feature"
+readme = "README.md"
+homepage = "https://openfeature.dev/"
+repository = "https://github.com/open-feature/rust-sdk"
+license = "Apache License, Version 2.0"
+license-file = "LICENSE"
+
+[badges]
+maintenance = { status = "actively-developed" }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
