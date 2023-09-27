@@ -102,6 +102,7 @@ pub struct FlagMetadata {
 
 impl FlagMetadata {
     /// Append givne `key` and `value` to the fields of metadata.
+    #[must_use]
     pub fn with_value(
         mut self,
         key: impl Into<String>,
@@ -157,7 +158,7 @@ impl From<i32> for FlagMetadataValue {
 
 impl From<i64> for FlagMetadataValue {
     fn from(value: i64) -> Self {
-        Self::Int(value.into())
+        Self::Int(value)
     }
 }
 
@@ -187,13 +188,13 @@ impl From<f32> for FlagMetadataValue {
 
 impl From<f64> for FlagMetadataValue {
     fn from(value: f64) -> Self {
-        Self::Float(value.into())
+        Self::Float(value)
     }
 }
 
 impl From<String> for FlagMetadataValue {
     fn from(value: String) -> Self {
-        Self::String(value.into())
+        Self::String(value)
     }
 }
 

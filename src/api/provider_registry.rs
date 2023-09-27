@@ -36,7 +36,7 @@ impl ProviderRegistry {
         map.remove("");
 
         provider
-            .initialize(&self.global_evaluation_context.get().await.borrow())
+            .initialize(self.global_evaluation_context.get().await.borrow())
             .await;
 
         map.insert(String::default(), FeatureProviderWrapper::new(provider));
@@ -44,12 +44,12 @@ impl ProviderRegistry {
 
     pub async fn set_named<T: FeatureProvider>(&self, name: &str, mut provider: T) {
         // Drop the already registered provider if any.
-        if let Some(_) = self.get_named(name).await {
+        if self.get_named(name).await.is_some() {
             self.providers.write().await.remove(name);
         }
 
         provider
-            .initialize(&self.global_evaluation_context.get().await.borrow())
+            .initialize(self.global_evaluation_context.get().await.borrow())
             .await;
 
         self.providers
@@ -70,11 +70,7 @@ impl ProviderRegistry {
     }
 
     pub async fn get_named(&self, name: &str) -> Option<FeatureProviderWrapper> {
-        self.providers
-            .read()
-            .await
-            .get(name)
-            .map(|provider| provider.clone())
+        self.providers.read().await.get(name).cloned()
     }
 
     pub async fn clear(&self) {

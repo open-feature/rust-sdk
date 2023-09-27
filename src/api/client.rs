@@ -179,7 +179,7 @@ impl Client {
             .await
             .resolve_bool_value(flag_key, &context)
             .await?
-            .to_evaluation_details(flag_key))
+            .into_evaluation_details(flag_key))
     }
 
     /// Return the [`EvaluationDetails`] with given `flag_key`, `evaluation_context` and
@@ -198,7 +198,7 @@ impl Client {
             .await
             .resolve_int_value(flag_key, &context)
             .await?
-            .to_evaluation_details(flag_key))
+            .into_evaluation_details(flag_key))
     }
 
     /// Return the [`EvaluationDetails`] with given `flag_key`, `evaluation_context` and
@@ -217,7 +217,7 @@ impl Client {
             .await
             .resolve_float_value(flag_key, &context)
             .await?
-            .to_evaluation_details(flag_key))
+            .into_evaluation_details(flag_key))
     }
 
     /// Return the [`EvaluationDetails`] with given `flag_key`, `evaluation_context` and
@@ -236,7 +236,7 @@ impl Client {
             .await
             .resolve_string_value(flag_key, &context)
             .await?
-            .to_evaluation_details(flag_key))
+            .into_evaluation_details(flag_key))
     }
 
     /// Return the [`EvaluationDetails`] with given `flag_key`, `evaluation_context` and
@@ -297,7 +297,7 @@ impl Client {
 }
 
 impl<T> ResolutionDetails<T> {
-    fn to_evaluation_details(self, flag_key: impl Into<String>) -> EvaluationDetails<T> {
+    fn into_evaluation_details(self, flag_key: impl Into<String>) -> EvaluationDetails<T> {
         EvaluationDetails {
             flag_key: flag_key.into(),
             value: self.value,

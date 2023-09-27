@@ -30,6 +30,7 @@ pub struct EvaluationContext {
 
 impl EvaluationContext {
     /// Add `key` and `value` to the custom field of evaluation context.
+    #[must_use]
     pub fn with_custom_field(
         mut self,
         key: impl Into<String>,
