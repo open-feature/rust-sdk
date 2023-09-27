@@ -19,8 +19,8 @@
   <!-- x-release-please-start-version -->
 
 <!-- TODO: update with your SDK repo and the latest release version
-  <a href="https://github.com/open-feature/rust-sdk/releases/tag/v0.1.1">
-    <img alt="Release" src="https://img.shields.io/static/v1?label=release&message=v0.1.1&color=blue&style=for-the-badge" />
+  <a href="https://github.com/open-feature/rust-sdk/releases/tag/v0.1.2">
+    <img alt="Release" src="https://img.shields.io/static/v1?label=release&message=v0.1.2&color=blue&style=for-the-badge" />
   </a>  
 -->
 
@@ -49,7 +49,7 @@ Add the following content to the `Cargo.toml` file:
 
 <!-- x-release-please-start-version -->
 ```toml
-open-feature = "0.1.1"
+open-feature = "0.1.2"
 ```
 <!-- x-release-please-end -->
 
