@@ -97,23 +97,20 @@ async fn example() {
         .unwrap_or(false);
 
     // Let's get evaluation details.
-    // Note that we will inject `300` as the int value via evaluation context.
-    // It is not a feature mentioned in the standard but rather implemented for the
-    // convenience.
     let result = client
         .get_int_details(
             "key",
-            Some(&EvaluationContext::default().with_custom_field("Value", 300)),
+            Some(&EvaluationContext::default().with_custom_field("some_key", "some_value")),
             None,
         )
         .await;
 
     match result {
         Ok(details) => {
-            assert_eq!(details.value, 300);
+            assert_eq!(details.value, 100);
             assert_eq!(details.reason, Some(EvaluationReason::Static));
             assert_eq!(details.variant, Some("Static".to_string()));
-            assert_eq!(details.flag_metadata.values.iter().count(), 1);
+            assert_eq!(details.flag_metadata.values.iter().count(), 2);
         }
         Err(error) => {
             println!(
