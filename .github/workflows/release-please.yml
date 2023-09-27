@@ -40,7 +40,7 @@ jobs:
         with:
           ref: ${{ needs.release-please.outputs.release_tag_name }}
 
-      - name: Release 
+      - name: Publish
         run: |
           cargo publish
         env:
