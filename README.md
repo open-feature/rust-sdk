@@ -65,6 +65,9 @@ async fn example() {
     // Note the `await` call here because asynchronous lock is used to guarantee thread safety.
     let mut api = OpenFeature::singleton_mut().await;
 
+    api.set_provider(NoOpProvider::builder().int_value(100).build())
+        .await;
+
     // Create an unnamed client.
     let client = api.create_client();
 
@@ -95,6 +98,10 @@ async fn example() {
         .get_bool_value("SomeFlagEnabled", Some(&evaluation_context), None)
         .await
         .unwrap_or(false);
+
+    if is_feature_enabled {
+        // Do something.
+    }
 
     // Let's get evaluation details.
     let result = client
