@@ -66,10 +66,10 @@ impl OpenFeature {
 
     /// Return the metadata of named provider (a provider bound to clients with this name).
     pub async fn named_provider_metadata(&self, name: &str) -> Option<ProviderMetadata> {
-        match self.provider_registry.get_named(name).await {
-            Some(provider) => Some(provider.get().metadata().clone()),
-            None => None,
-        }
+        self.provider_registry
+            .get_named(name)
+            .await
+            .map(|provider| provider.get().metadata().clone())
     }
 
     /// Create a new client with default name.

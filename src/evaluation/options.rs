@@ -1,3 +1,2 @@
-pub struct EvaluationOptions {
-    // Not implemented yet.
-}
+/// Contain hooks.
+pub struct EvaluationOptions {}

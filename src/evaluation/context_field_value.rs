@@ -2,7 +2,9 @@ use std::{any::Any, sync::Arc};
 
 use time::OffsetDateTime;
 
+/// Value type of evaluation context custom fields.
 #[derive(Clone, Debug)]
+#[allow(missing_docs)]
 pub enum EvaluationContextFieldValue {
     Bool(bool),
     Int(i64),
@@ -13,6 +15,7 @@ pub enum EvaluationContextFieldValue {
 }
 
 impl EvaluationContextFieldValue {
+    /// Create a new [`EvaluationContextFieldValue`] instance with given struct `value`.
     pub fn new_struct<T>(value: T) -> Self
     where
         T: Any + Send + Sync,
@@ -20,13 +23,12 @@ impl EvaluationContextFieldValue {
         Self::Struct(Arc::new(value))
     }
 
+    /// Return `true` if this is a bool value.
     pub fn is_bool(&self) -> bool {
-        match self {
-            Self::Bool(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::Bool(_))
     }
 
+    /// Try to convert `self` to bool.
     pub fn as_bool(&self) -> Option<bool> {
         match self {
             Self::Bool(value) => Some(*value),
@@ -34,13 +36,12 @@ impl EvaluationContextFieldValue {
         }
     }
 
+    /// Return `true` if this is an int value.
     pub fn is_i64(&self) -> bool {
-        match self {
-            Self::Int(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::Int(_))
     }
 
+    /// Try to convert `self` to int.
     pub fn as_i64(&self) -> Option<i64> {
         match self {
             Self::Int(value) => Some(*value),
@@ -48,13 +49,12 @@ impl EvaluationContextFieldValue {
         }
     }
 
+    /// Return `true` if this is a float value.
     pub fn is_f64(&self) -> bool {
-        match self {
-            Self::Float(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::Float(_))
     }
 
+    /// Try to convert `self` to float.
     pub fn as_f64(&self) -> Option<f64> {
         match self {
             Self::Float(value) => Some(*value),
@@ -62,27 +62,25 @@ impl EvaluationContextFieldValue {
         }
     }
 
+    /// Return `true` if this is a string value.
     pub fn is_str(&self) -> bool {
-        match self {
-            Self::String(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::String(_))
     }
 
+    /// Try to convert `self` to string.
     pub fn as_str(&self) -> Option<&str> {
         match self {
-            Self::String(value) => Some(&value),
+            Self::String(value) => Some(value),
             _ => None,
         }
     }
 
+    /// Return `true` if this is a [`OffsetDateTime`] value.
     pub fn is_date_time(&self) -> bool {
-        match self {
-            Self::DateTime(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::DateTime(_))
     }
 
+    /// Try to convert `self` to [`OffsetDateTime`].
     pub fn as_date_time(&self) -> Option<&OffsetDateTime> {
         match self {
             Self::DateTime(value) => Some(value),
@@ -90,13 +88,12 @@ impl EvaluationContextFieldValue {
         }
     }
 
+    /// Return `true` if this is a struct value.
     pub fn is_struct(&self) -> bool {
-        match self {
-            Self::Struct(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::Struct(_))
     }
 
+    /// Try to convert `self` to struct.
     pub fn as_struct(&self) -> Option<Arc<dyn Any + Send + Sync>> {
         match self {
             Self::Struct(value) => Some(value.clone()),
@@ -131,7 +128,7 @@ impl From<i32> for EvaluationContextFieldValue {
 
 impl From<i64> for EvaluationContextFieldValue {
     fn from(value: i64) -> Self {
-        Self::Int(value.into())
+        Self::Int(value)
     }
 }
 
@@ -161,7 +158,7 @@ impl From<f32> for EvaluationContextFieldValue {
 
 impl From<f64> for EvaluationContextFieldValue {
     fn from(value: f64) -> Self {
-        Self::Float(value.into())
+        Self::Float(value)
     }
 }
 

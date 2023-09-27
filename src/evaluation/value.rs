@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 
+/// Hold a value in the evaluation result of supported types.
 #[derive(Clone, PartialEq, Debug)]
+#[allow(missing_docs)]
 pub enum Value {
     Bool(bool),
     Int(i64),
@@ -14,17 +16,17 @@ pub enum Value {
 /// [spec](https://openfeature.dev/specification/types#structure).
 #[derive(Clone, Default, PartialEq, Debug)]
 pub struct StructValue {
+    /// The fields of struct as key-value pairs.
     pub fields: HashMap<String, Value>,
 }
 
 impl Value {
+    /// Return `true` if this is a bool value.
     pub fn is_bool(&self) -> bool {
-        match self {
-            Self::Bool(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::Bool(_))
     }
 
+    /// Try to convert `self` to bool.
     pub fn as_bool(&self) -> Option<bool> {
         match self {
             Self::Bool(value) => Some(*value),
@@ -32,13 +34,12 @@ impl Value {
         }
     }
 
+    /// Return `true` if this is an int value.
     pub fn is_i64(&self) -> bool {
-        match self {
-            Self::Int(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::Int(_))
     }
 
+    /// Try to convert `self` to int.
     pub fn as_i64(&self) -> Option<i64> {
         match self {
             Self::Int(value) => Some(*value),
@@ -46,13 +47,12 @@ impl Value {
         }
     }
 
+    /// Return `true` if this is a float value.
     pub fn is_f64(&self) -> bool {
-        match self {
-            Self::Float(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::Float(_))
     }
 
+    /// Try to convert `self` to float.
     pub fn as_f64(&self) -> Option<f64> {
         match self {
             Self::Float(value) => Some(*value),
@@ -60,27 +60,25 @@ impl Value {
         }
     }
 
+    /// Return `true` if this is a string value.
     pub fn is_str(&self) -> bool {
-        match self {
-            Self::String(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::String(_))
     }
 
+    /// Try to convert `self` to str.
     pub fn as_str(&self) -> Option<&str> {
         match self {
-            Self::String(value) => Some(&value),
+            Self::String(value) => Some(value),
             _ => None,
         }
     }
 
+    /// Return `true` if this is an array.
     pub fn is_array(&self) -> bool {
-        match self {
-            Self::Array(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::Array(_))
     }
 
+    /// Try to convert `self` to vector.
     pub fn as_array(&self) -> Option<&Vec<Value>> {
         match self {
             Self::Array(value) => Some(value),
@@ -88,13 +86,12 @@ impl Value {
         }
     }
 
+    /// Return `true` if this is a struct.
     pub fn is_struct(&self) -> bool {
-        match self {
-            Self::Struct(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::Struct(_))
     }
 
+    /// Try to convert `self` to [`StructValue`].
     pub fn as_struct(&self) -> Option<&StructValue> {
         match self {
             Self::Struct(value) => Some(value),
@@ -129,7 +126,7 @@ impl From<i32> for Value {
 
 impl From<i64> for Value {
     fn from(value: i64) -> Self {
-        Self::Int(value.into())
+        Self::Int(value)
     }
 }
 
@@ -159,7 +156,7 @@ impl From<f32> for Value {
 
 impl From<f64> for Value {
     fn from(value: f64) -> Self {
-        Self::Float(value.into())
+        Self::Float(value)
     }
 }
 
@@ -191,11 +188,14 @@ impl From<StructValue> for Value {
 }
 
 impl StructValue {
+    /// Append given `key` and `value` to `self` and return it.
+    #[must_use]
     pub fn with_field(mut self, key: impl Into<String>, value: impl Into<Value>) -> Self {
         self.add_field(key, value);
         self
     }
 
+    /// Append given `key` and `value` to `self` in place.
     pub fn add_field(&mut self, key: impl Into<String>, value: impl Into<Value>) {
         self.fields.insert(key.into(), value.into());
     }

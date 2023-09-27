@@ -29,6 +29,8 @@ pub struct EvaluationContext {
 }
 
 impl EvaluationContext {
+    /// Add `key` and `value` to the custom field of evaluation context.
+    #[must_use]
     pub fn with_custom_field(
         mut self,
         key: impl Into<String>,
@@ -38,6 +40,7 @@ impl EvaluationContext {
         self
     }
 
+    /// Add `key` and `value` to the custom field of evaluation context.
     pub fn add_custom_field(
         &mut self,
         key: impl Into<String>,
@@ -46,6 +49,8 @@ impl EvaluationContext {
         self.custom_fields.insert(key.into(), value.into());
     }
 
+    /// Merge `other` into `self` if corresponding field is not set.
+    /// Meaning values set into `self` has higher precedence.
     pub fn merge_missing(&mut self, other: &Self) {
         if self.targeting_key.is_none() {
             if let Some(targeting_key) = &other.targeting_key {

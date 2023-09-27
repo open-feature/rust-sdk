@@ -2,18 +2,31 @@ use std::collections::HashMap;
 
 use crate::EvaluationError;
 
+/// The result of evaluation.
 pub type EvaluationResult<T> = Result<T, EvaluationError>;
 
 // ============================================================
 //  EvaluationDetails
 // ============================================================
 
+/// The result of the flag evaluation process, and made available in the detailed flag resolution
+/// functions.
 #[derive(Clone, Default, Debug)]
 pub struct EvaluationDetails<T> {
+    /// The flag key argument passed to the detailed flag evaluation method.
     pub flag_key: String,
+
+    /// The value of evaluation result.
     pub value: T,
+
+    /// The optional returned by the configured provider.
     pub reason: Option<EvaluationReason>,
+
+    /// The optional variant returned by the configured provider.
     pub variant: Option<String>,
+
+    /// The optional flag metadata returned by the configured provider.
+    /// If the provider returns nothing, it is set to the default value.
     pub flag_metadata: FlagMetadata,
 }
 
@@ -83,10 +96,13 @@ impl ToString for EvaluationReason {
 /// API) or an Application Integrator (via hooks).
 #[derive(Clone, Default, PartialEq, Debug)]
 pub struct FlagMetadata {
+    /// The fields of the metadata.
     pub values: HashMap<String, FlagMetadataValue>,
 }
 
 impl FlagMetadata {
+    /// Append givne `key` and `value` to the fields of metadata.
+    #[must_use]
     pub fn with_value(
         mut self,
         key: impl Into<String>,
@@ -96,6 +112,7 @@ impl FlagMetadata {
         self
     }
 
+    /// Append givne `key` and `value` to the fields of metadata.
     pub fn add_value(&mut self, key: impl Into<String>, value: impl Into<FlagMetadataValue>) {
         self.values.insert(key.into(), value.into());
     }
@@ -105,7 +122,9 @@ impl FlagMetadata {
 //  FlagMetadataValue
 // ============================================================
 
+/// Supported values of flag metadata fields.
 #[derive(Clone, PartialEq, Debug)]
+#[allow(missing_docs)]
 pub enum FlagMetadataValue {
     Bool(bool),
     Int(i64),
@@ -139,7 +158,7 @@ impl From<i32> for FlagMetadataValue {
 
 impl From<i64> for FlagMetadataValue {
     fn from(value: i64) -> Self {
-        Self::Int(value.into())
+        Self::Int(value)
     }
 }
 
@@ -169,13 +188,13 @@ impl From<f32> for FlagMetadataValue {
 
 impl From<f64> for FlagMetadataValue {
     fn from(value: f64) -> Self {
-        Self::Float(value.into())
+        Self::Float(value)
     }
 }
 
 impl From<String> for FlagMetadataValue {
     fn from(value: String) -> Self {
-        Self::String(value.into())
+        Self::String(value)
     }
 }
 

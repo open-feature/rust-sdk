@@ -12,6 +12,7 @@ use super::{
 
 /// The metadata of OpenFeature client.
 pub struct ClientMetadata {
+    /// The name of client.
     pub name: String,
 }
 
@@ -24,7 +25,10 @@ pub struct Client {
     global_evaluation_context: GlobalEvaluationContext,
 }
 
+/// The trait that converts a [`StructValue`] to a custom type.
+/// It is used to return a custom type from `get_struct_value` and `get_string_details`.
 pub trait FromStructValue<Out = Self> {
+    /// Construct type with given `value`.
     fn from_struct_value(value: &StructValue) -> anyhow::Result<Out>;
 }
 
@@ -48,6 +52,7 @@ impl Client {
         &self.metadata
     }
 
+    /// Set evaluation context to the client.
     pub fn set_evaluation_context(&mut self, evaluation_context: EvaluationContext) {
         self.evaluation_context = evaluation_context;
     }
@@ -174,7 +179,7 @@ impl Client {
             .await
             .resolve_bool_value(flag_key, &context)
             .await?
-            .to_evaluation_details(flag_key))
+            .into_evaluation_details(flag_key))
     }
 
     /// Return the [`EvaluationDetails`] with given `flag_key`, `evaluation_context` and
@@ -193,7 +198,7 @@ impl Client {
             .await
             .resolve_int_value(flag_key, &context)
             .await?
-            .to_evaluation_details(flag_key))
+            .into_evaluation_details(flag_key))
     }
 
     /// Return the [`EvaluationDetails`] with given `flag_key`, `evaluation_context` and
@@ -212,7 +217,7 @@ impl Client {
             .await
             .resolve_float_value(flag_key, &context)
             .await?
-            .to_evaluation_details(flag_key))
+            .into_evaluation_details(flag_key))
     }
 
     /// Return the [`EvaluationDetails`] with given `flag_key`, `evaluation_context` and
@@ -231,7 +236,7 @@ impl Client {
             .await
             .resolve_string_value(flag_key, &context)
             .await?
-            .to_evaluation_details(flag_key))
+            .into_evaluation_details(flag_key))
     }
 
     /// Return the [`EvaluationDetails`] with given `flag_key`, `evaluation_context` and
@@ -292,7 +297,7 @@ impl Client {
 }
 
 impl<T> ResolutionDetails<T> {
-    fn to_evaluation_details(self, flag_key: impl Into<String>) -> EvaluationDetails<T> {
+    fn into_evaluation_details(self, flag_key: impl Into<String>) -> EvaluationDetails<T> {
         EvaluationDetails {
             flag_key: flag_key.into(),
             value: self.value,

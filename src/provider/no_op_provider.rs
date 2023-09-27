@@ -71,19 +71,19 @@ impl NoOpProvider {
             .iter()
             .for_each(|(key, value)| match value {
                 EvaluationContextFieldValue::Bool(value) => {
-                    flag_metadata.add_value(key, FlagMetadataValue::Bool(*value))
+                    flag_metadata.add_value(key, FlagMetadataValue::Bool(*value));
                 }
                 EvaluationContextFieldValue::Int(value) => {
-                    flag_metadata.add_value(key, FlagMetadataValue::Int(*value))
+                    flag_metadata.add_value(key, FlagMetadataValue::Int(*value));
                 }
                 EvaluationContextFieldValue::Float(value) => {
-                    flag_metadata.add_value(key, FlagMetadataValue::Float(*value))
+                    flag_metadata.add_value(key, FlagMetadataValue::Float(*value));
                 }
                 EvaluationContextFieldValue::String(value) => {
-                    flag_metadata.add_value(key, FlagMetadataValue::String(value.clone()))
+                    flag_metadata.add_value(key, FlagMetadataValue::String(value.clone()));
                 }
                 _ => (),
-            })
+            });
     }
 }
 
@@ -94,7 +94,7 @@ impl Default for NoOpProvider {
             bool_value: Default::default(),
             int_value: Default::default(),
             float_value: Default::default(),
-            string_value: Default::default(),
+            string_value: String::default(),
             struct_value: Arc::new(DummyStruct::default().into()),
         }
     }
@@ -118,7 +118,7 @@ impl FeatureProvider for NoOpProvider {
         let (reason, variant) = Self::create_reason_variant(self.bool_value == Default::default());
 
         let mut flag_metadata = FlagMetadata::default().with_value("Type", "Bool");
-        Self::populate_evaluation_context_values(&mut flag_metadata, &evaluation_context);
+        Self::populate_evaluation_context_values(&mut flag_metadata, evaluation_context);
 
         Ok(ResolutionDetails::builder()
             .value(self.bool_value)
@@ -136,7 +136,7 @@ impl FeatureProvider for NoOpProvider {
         let (reason, variant) = Self::create_reason_variant(self.int_value == Default::default());
 
         let mut flag_metadata = FlagMetadata::default().with_value("Type", "Int");
-        Self::populate_evaluation_context_values(&mut flag_metadata, &evaluation_context);
+        Self::populate_evaluation_context_values(&mut flag_metadata, evaluation_context);
 
         Ok(ResolutionDetails::builder()
             .value(self.int_value)
@@ -151,10 +151,11 @@ impl FeatureProvider for NoOpProvider {
         _flag_key: &str,
         evaluation_context: &EvaluationContext,
     ) -> Result<ResolutionDetails<f64>, EvaluationError> {
-        let (reason, variant) = Self::create_reason_variant(self.float_value == Default::default());
+        let (reason, variant) =
+            Self::create_reason_variant((self.float_value - f64::default()).abs() < f64::EPSILON);
 
         let mut flag_metadata = FlagMetadata::default().with_value("Type", "Float");
-        Self::populate_evaluation_context_values(&mut flag_metadata, &evaluation_context);
+        Self::populate_evaluation_context_values(&mut flag_metadata, evaluation_context);
 
         Ok(ResolutionDetails::builder()
             .value(self.float_value)
@@ -172,7 +173,7 @@ impl FeatureProvider for NoOpProvider {
         let (reason, variant) = Self::create_reason_variant(self.string_value == String::default());
 
         let mut flag_metadata = FlagMetadata::default().with_value("Type", "String");
-        Self::populate_evaluation_context_values(&mut flag_metadata, &evaluation_context);
+        Self::populate_evaluation_context_values(&mut flag_metadata, evaluation_context);
 
         Ok(ResolutionDetails::builder()
             .value(self.string_value.clone())
@@ -187,11 +188,10 @@ impl FeatureProvider for NoOpProvider {
         _flag_key: &str,
         evaluation_context: &EvaluationContext,
     ) -> Result<ResolutionDetails<StructValue>, EvaluationError> {
-        let (reason, variant) =
-            Self::create_reason_variant(self.struct_value == Default::default());
+        let (reason, variant) = Self::create_reason_variant(self.struct_value == Arc::default());
 
         let mut flag_metadata = FlagMetadata::default().with_value("Type", "Struct");
-        Self::populate_evaluation_context_values(&mut flag_metadata, &evaluation_context);
+        Self::populate_evaluation_context_values(&mut flag_metadata, evaluation_context);
 
         Ok(ResolutionDetails::builder()
             .value((*self.struct_value).clone())
