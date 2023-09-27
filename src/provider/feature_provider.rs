@@ -92,11 +92,13 @@ pub trait FeatureProvider: Send + Sync + 'static {
 /// The metadata of a feature provider.
 #[derive(Clone, TypedBuilder, Default, Debug)]
 pub struct ProviderMetadata {
+    /// The name of provider.
     #[builder(setter(into))]
     pub name: String,
 }
 
 impl ProviderMetadata {
+    /// Create a new instance out of a string.
     pub fn new<S: Into<String>>(name: S) -> Self {
         Self { name: name.into() }
     }
@@ -109,10 +111,17 @@ impl ProviderMetadata {
 /// The status of a feature provider.
 #[derive(Default, PartialEq, Eq, Debug)]
 pub enum ProviderStatus {
-    Ready,
-
+    /// The provider has not been initialized.
     #[default]
     NotReady,
 
+    /// The provider has been initialized, and is able to reliably resolve flag values.
+    Ready,
+
+    /// The provider is initialized but is not able to reliably resolve flag values.
     Error,
+
+    /// The provider's cached state is no longer valid and may not be up-to-date with the source of
+    /// truth.
+    STALE,
 }

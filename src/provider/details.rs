@@ -39,6 +39,7 @@ impl<T: Default> Default for ResolutionDetails<T> {
 }
 
 impl<T> ResolutionDetails<T> {
+    /// Create an instance given value.
     pub fn new<V: Into<T>>(value: V) -> Self {
         Self {
             value: value.into(),

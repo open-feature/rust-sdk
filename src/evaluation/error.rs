@@ -7,8 +7,10 @@ use typed_builder::TypedBuilder;
 /// Struct representing error
 #[derive(Clone, Eq, PartialEq, TypedBuilder, Debug)]
 pub struct EvaluationError {
+    /// The error code of abnormal evaluation.
     pub code: EvaluationErrorCode,
 
+    /// The custom error message returned by the provider.
     #[builder(default, setter(strip_option, into))]
     pub message: Option<String>,
 }

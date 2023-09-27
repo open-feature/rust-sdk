@@ -8,7 +8,6 @@ readme = "README.md"
 homepage = "https://openfeature.dev/"
 repository = "https://github.com/open-feature/rust-sdk"
 license = "Apache License, Version 2.0"
-license-file = "LICENSE"
 
 [badges]
 maintenance = { status = "actively-developed" }
