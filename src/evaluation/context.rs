@@ -22,24 +22,26 @@ pub struct EvaluationContext {
     #[builder(default, setter(into, strip_option))]
     pub targeting_key: Option<String>,
 
+    /// The evaluation context MUST support the inclusion of custom fields, having keys of type
+    /// string, and values of type boolean | string | number | datetime | structure.
     #[builder(default)]
     pub custom_fields: HashMap<String, EvaluationContextFieldValue>,
 }
 
 impl EvaluationContext {
-    pub fn with_custom_field<S: Into<String>, V: Into<EvaluationContextFieldValue>>(
+    pub fn with_custom_field(
         mut self,
-        key: S,
-        value: V,
+        key: impl Into<String>,
+        value: impl Into<EvaluationContextFieldValue>,
     ) -> Self {
         self.add_custom_field(key, value);
         self
     }
 
-    pub fn add_custom_field<S: Into<String>, V: Into<EvaluationContextFieldValue>>(
+    pub fn add_custom_field(
         &mut self,
-        key: S,
-        value: V,
+        key: impl Into<String>,
+        value: impl Into<EvaluationContextFieldValue>,
     ) {
         self.custom_fields.insert(key.into(), value.into());
     }
@@ -61,6 +63,11 @@ impl EvaluationContext {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
+    use spec::spec;
+    use time::OffsetDateTime;
+
     use super::*;
 
     #[test]
@@ -130,5 +137,76 @@ mod tests {
 
         assert_eq!(context, other);
     }
-}
 
+    #[derive(Clone, PartialEq, Eq, TypedBuilder, Debug)]
+    pub struct DummyStruct {
+        pub id: i64,
+
+        #[builder(setter(into))]
+        pub name: String,
+    }
+
+    #[spec(
+        number = "3.1.1",
+        text = "The evaluation context structure MUST define an optional targeting key field of type string, identifying the subject of the flag evaluation."
+    )]
+    #[spec(
+        number = "3.1.2",
+        text = "The evaluation context MUST support the inclusion of custom fields, having keys of type string, and values of type boolean | string | number | datetime | structure."
+    )]
+    #[spec(
+        number = "3.1.3",
+        text = "The evaluation context MUST support fetching the custom fields by key and also fetching all key value pairs."
+    )]
+    #[spec(
+        number = "3.1.4",
+        text = "The evaluation context fields MUST have an unique key."
+    )]
+    #[test]
+    fn fields_access() {
+        let now_time = OffsetDateTime::now_utc();
+        let struct_value = DummyStruct::builder().id(200).name("Bob").build();
+
+        let context = EvaluationContext::builder()
+            .targeting_key("Key")
+            .build()
+            .with_custom_field("Bool", true)
+            .with_custom_field("Int", 100)
+            .with_custom_field("Float", 3.14)
+            .with_custom_field("String", "Hello")
+            .with_custom_field("Datetime", now_time)
+            .with_custom_field(
+                "Struct",
+                EvaluationContextFieldValue::Struct(Arc::new(struct_value.clone())),
+            );
+
+        assert_eq!(context.targeting_key, Some("Key".to_string()));
+        assert_eq!(
+            context.custom_fields.get("Int"),
+            Some(&EvaluationContextFieldValue::Int(100))
+        );
+        assert_eq!(
+            context.custom_fields.get("Float"),
+            Some(&EvaluationContextFieldValue::Float(3.14))
+        );
+        assert_eq!(
+            context.custom_fields.get("String"),
+            Some(&EvaluationContextFieldValue::String("Hello".to_string()))
+        );
+        assert_eq!(
+            context.custom_fields.get("Datetime"),
+            Some(&EvaluationContextFieldValue::DateTime(now_time))
+        );
+        assert_eq!(
+            *context
+                .custom_fields
+                .get("Struct")
+                .unwrap()
+                .as_struct()
+                .unwrap()
+                .downcast::<DummyStruct>()
+                .unwrap(),
+            struct_value
+        );
+    }
+}

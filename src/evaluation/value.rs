@@ -191,12 +191,12 @@ impl From<StructValue> for Value {
 }
 
 impl StructValue {
-    pub fn with_field<S: Into<String>, V: Into<Value>>(mut self, key: S, value: V) -> Self {
+    pub fn with_field(mut self, key: impl Into<String>, value: impl Into<Value>) -> Self {
         self.add_field(key, value);
         self
     }
 
-    pub fn add_field<S: Into<String>, V: Into<Value>>(&mut self, key: S, value: V) {
+    pub fn add_field(&mut self, key: impl Into<String>, value: impl Into<Value>) {
         self.fields.insert(key.into(), value.into());
     }
 }

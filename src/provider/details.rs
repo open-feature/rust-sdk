@@ -1,6 +1,6 @@
 use typed_builder::TypedBuilder;
 
-use crate::{EvaluationError, EvaluationReason, FlagMetadata};
+use crate::{EvaluationReason, FlagMetadata};
 
 /// A structure which contains a subset of the fields defined in the evaluation details,
 /// representing the result of the provider's flag resolution process.
@@ -22,15 +22,6 @@ pub struct ResolutionDetails<T> {
     #[builder(default, setter(strip_option))]
     pub reason: Option<EvaluationReason>,
 
-    /// In cases of normal execution, the provider MUST NOT populate the resolution details
-    /// structure's error code field, or otherwise must populate it with a null or falsy value.
-    ///
-    /// In cases of abnormal execution, the provider MUST indicate an error using the idioms of the
-    /// implementation language, with an associated error code and optional associated error
-    /// message.
-    #[builder(default, setter(strip_option))]
-    pub error: Option<EvaluationError>,
-
     /// The provider SHOULD populate the resolution details structure's flag metadata field.
     #[builder(default, setter(strip_option))]
     pub flag_metadata: Option<FlagMetadata>,
@@ -42,7 +33,6 @@ impl<T: Default> Default for ResolutionDetails<T> {
             value: T::default(),
             variant: None,
             reason: None,
-            error: None,
             flag_metadata: None,
         }
     }
@@ -54,12 +44,7 @@ impl<T> ResolutionDetails<T> {
             value: value.into(),
             variant: None,
             reason: None,
-            error: None,
             flag_metadata: None,
         }
-    }
-
-    pub fn is_error(&self) -> bool {
-        self.error.is_some()
     }
 }
