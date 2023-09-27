@@ -2,6 +2,7 @@
 name = "open-feature"
 version = "0.1.0"
 edition = "2021"
+rust-version = "1.67.1"
 description = "The official OpenFeature Rust SDK."
 documentation = "https://docs.rs/open-feature"
 readme = "README.md"
