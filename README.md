@@ -48,7 +48,7 @@ This package was built with Rust version `1.70.0`. Earlier versions might work, 
 Add the following content to the `Cargo.toml` file:
 
 ```toml
-open-feature = { git = "https://github.com/open-feature/rust-sdk", branch = "main" }
+open-feature = "0.1.0"
 ```
 
 ### Usage
