@@ -15,16 +15,12 @@
   <a href="https://github.com/open-feature/spec/tree/v0.7.0">
     <img alt="Specification" src="https://img.shields.io/static/v1?label=specification&message=v0.7.0&color=yellow&style=for-the-badge" />
   </a>
-  <!-- TODO: update the Release Please config to include the readme -->
   <!-- x-release-please-start-version -->
-
-<!-- TODO: update with your SDK repo and the latest release version
   <a href="https://github.com/open-feature/rust-sdk/releases/tag/v0.1.2">
     <img alt="Release" src="https://img.shields.io/static/v1?label=release&message=v0.1.2&color=blue&style=for-the-badge" />
-  </a>  
--->
-
+  </a>
   <!-- x-release-please-end -->
+
   <!-- TODO: update this when we have it set up
   <br/>
   <a href="https://bestpractices.coreinfrastructure.org/projects/6601">
