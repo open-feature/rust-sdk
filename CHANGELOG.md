@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.2](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.1.1...open-feature-v0.1.2) (2023-09-27)
+
+
+### 🐛 Bug Fixes
+
+* update license to a valid license identifier ([88e38e4](https://github.com/open-feature/rust-sdk/commit/88e38e454d4ee06ff7b83b4abb025a857d48f30a))
+
 ## [0.1.1](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.1.0...open-feature-v0.1.1) (2023-09-27)
 
 
