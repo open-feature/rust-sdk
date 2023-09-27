@@ -2,9 +2,15 @@ name: Rust
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - main
 
 env:
   CARGO_TERM_COLOR: always
