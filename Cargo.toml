@@ -19,7 +19,7 @@ maintenance = { status = "actively-developed" }
 anyhow = "1.0"
 async-trait = "0.1.73"
 lazy_static = "1.4.0"
-time = "0.3.29"
+time = "0.3.30"
 tokio = { version = "1.33.0", features = [ "full" ] }
 typed-builder = "0.16.2"
 
