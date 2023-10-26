@@ -48,17 +48,36 @@ Add the following content to the `Cargo.toml` file:
 open-feature = "0.1.2"
 ```
 <!-- x-release-please-end -->
-
 ### Usage
 
-#### Basic Usage
+```rust
+async fn example() {
+    // Acquire an OpenFeature API instance.
+    let mut api = OpenFeature::singleton_mut().await;
+
+    // configure a provider
+    api.set_provider(NoOpProvider::builder().int_value(100).build())
+        .await;
+
+    // create a client
+    let client = api.create_client();
+
+    // get a bool flag value
+    let is_feature_enabled = client
+        .get_bool_value("v2_enabled", None, None)
+        .await
+        .unwrap_or(false);
+}
+```
+
+#### Extended Example
 
 ```rust
 #[derive(Clone, Default, Debug)]
 struct MyStruct {}
 
 #[tokio::test]
-async fn example() {
+async fn extended_example() {
     // Acquire an OpenFeature API instance.
     // Note the `await` call here because asynchronous lock is used to guarantee thread safety.
     let mut api = OpenFeature::singleton_mut().await;
@@ -178,7 +197,7 @@ api.set_provider(NoOpProvider::default()).await;
 ```
 
 In some situations, it may be beneficial to register multiple providers in the same application.
-This is possible using [named clients](#named-clients), which is covered in more details below.
+This is possible using [named clients](#named-clients), which is covered in more detail below.
 
 ### Targeting
 
@@ -215,12 +234,12 @@ Once you've added a hook as a dependency, it can be registered at the global, cl
 
 ### Logging
 
-<!-- TODO: talk about logging config, and code example -->
+Logging customization is not yet available in the Rust SDK.
 
 ### Named clients
 
 Clients can be given a name.
-A name is a logical identifier which can be used to associate clients with a particular provider.
+A name is a logical identifier that can be used to associate clients with a particular provider.
 If a name has no associated provider, the global provider is used.
 
 ```rust
@@ -235,8 +254,9 @@ let client = api.create_named_client("named");
 
 assert_eq!(client.get_int_value("key", None, None).await.unwrap(), 42);
 ```
-
 ### Eventing
+
+Events are not yet available in the Rust SDK.
 
 <!-- TOOD: Uncomment it when we support events
 Events allow you to react to state changes in the provider or underlying flag management system, such as flag definition changes, provider readiness, or error conditions.
