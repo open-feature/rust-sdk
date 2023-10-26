@@ -56,7 +56,7 @@ async fn example() {
     let mut api = OpenFeature::singleton_mut().await;
 
     // configure a provider
-    api.set_provider(NoOpProvider::builder().int_value(100).build())
+    api.set_provider(NoOpProvider::builder().bool_value(true).build())
         .await;
 
     // create a client
