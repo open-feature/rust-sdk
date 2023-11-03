@@ -51,22 +51,23 @@ open-feature = "0.1.2"
 ### Usage
 
 ```rust
-async fn example() {
+async fn example() -> Result<(), Error> {
     // Acquire an OpenFeature API instance.
     let mut api = OpenFeature::singleton_mut().await;
 
     // configure a provider
-    api.set_provider(NoOpProvider::builder().bool_value(true).build())
+    api.set_provider(NoOpProvider::new())
         .await;
 
     // create a client
-    let client = api.create_client();
+    let client = api.get_client();
 
     // get a bool flag value
     let is_feature_enabled = client
-        .get_bool_value("v2_enabled", None, None)
-        .await
-        .unwrap_or(false);
+        .get_bool_value("v2_enabled", false, None)
+        .await;
+
+    Ok(())
 }
 ```
 
