@@ -21,13 +21,23 @@
   </a>
   <!-- x-release-please-end -->
 
-  <!-- TODO: update this when we have it set up
   <br/>
+  <!-- TODO: update this when we have it set up
   <a href="https://bestpractices.coreinfrastructure.org/projects/6601">
     <img alt="CII Best Practices" src="https://bestpractices.coreinfrastructure.org/projects/6601/badge" />
   </a>
-</p>
   -->
+  <a href="https://crates.io/crates/open-feature">
+    <img alt="Crates.io" src="https://img.shields.io/crates/v/open-feature" />
+  </a>
+  <a href="https://www.rust-lang.org/tools/install">
+    <img alt="Min rust version" src="https://img.shields.io/badge/rust-%3E=1.70.0-blue.svg" />
+  </a>
+  <a href="https://www.repostatus.org/#wip">
+    <img alt="Repo status" src="https://www.repostatus.org/badges/latest/wip.svg" />
+  </a>
+</p>
+
 <!-- x-hide-in-docs-start -->
 
 [OpenFeature](https://openfeature.dev) is an open standard that provides a vendor-agnostic, community-driven API for feature flagging that works with your favorite feature flag management tool.
