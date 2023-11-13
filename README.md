@@ -13,7 +13,7 @@
 <!-- The 'github-badges' class is used in the docs -->
 <p align="center" class="github-badges">
   <a href="https://github.com/open-feature/spec/releases/tag/v0.5.2">
-    <img alt="Specification" src="https://img.shields.io/static/v1?label=specification&message=v0.7.0&color=yellow&style=for-the-badge" />
+    <img alt="Specification" src="https://img.shields.io/static/v1?label=specification&message=v0.5.2&color=yellow&style=for-the-badge" />
   </a>
   <!-- x-release-please-start-version -->
   <a href="https://github.com/open-feature/rust-sdk/releases/tag/v0.1.2">
@@ -156,7 +156,7 @@ You can pass in a type that satisfies this trait bound. When the conversion fail
 
 ### API Reference
 
-<!-- TODO: link to formal API docs (ie: Javadoc) if available -->
+See [here](https://docs.rs/open-feature/latest/open_feature/index.html) for the API docs.
 
 ## 🌟 Features
 
@@ -225,11 +225,15 @@ client.get_int_value("flag", &evaluation_context, None);
 
 ### Hooks
 
+Hooks are not yet available in the Rust SDK.
+
+<!-- TOOD: Uncomment it when we support events
 [Hooks](https://openfeature.dev/docs/reference/concepts/hooks) allow for custom logic to be added at well-defined points of the flag evaluation life-cycle.
 Look [here](https://openfeature.dev/ecosystem/?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Hook&instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=Rust) for a complete list of available hooks.
 If the hook you're looking for hasn't been created yet, see the [develop a hook](#develop-a-hook) section to learn how to build it yourself.
 
 Once you've added a hook as a dependency, it can be registered at the global, client, or flag invocation level.
+-->
 
 <!-- TODO: code example of setting hooks at all levels -->
 
@@ -275,7 +279,7 @@ The OpenFeature API provides a close function to perform a cleanup of all regist
 This should only be called when your application is in the process of shutting down.
 
 ```rust
-// This will clean all the registered providers and invokes their `shutdown()` function.
+// This will clean all the registered providers and invoke their `shutdown()` function.
 let api = OpenFeature::singleton_mut().await;
 api.shutdown();
 ```
@@ -294,15 +298,21 @@ Check the source of [`NoOpProvider`](https://github.com/open-feature/rust-sdk/bl
 
 ### Develop a hook
 
+Hooks are not yet available in the Rust SDK.
+
+<!-- TOOD: Uncomment it when we support events
 To develop a hook, you need to create a new project and include the OpenFeature SDK as a dependency.
 This can be a new repository or included in [the existing contrib repository](https://github.com/open-feature/rust-sdk-contrib) available under the OpenFeature organization.
 Implement your own hook by conforming to the `Hook interface`.
 To satisfy the interface, all methods (`Before`/`After`/`Finally`/`Error`) need to be defined.
 To avoid defining empty functions make use of the `UnimplementedHook` struct (which already implements all the empty functions).
+-->
 
 <!-- TODO: code example of hook implementation -->
 
+<!--
 > Built a new hook? [Let us know](https://github.com/open-feature/openfeature.dev/issues/new?assignees=&labels=hook&projects=&template=document-hook.yaml&title=%5BHook%5D%3A+) so we can add it to the docs!
+-->
 
 <!-- x-hide-in-docs-start -->
 ## ⭐️ Support the project
@@ -318,7 +328,7 @@ To avoid defining empty functions make use of the `UnimplementedHook` struct (wh
 
 Interested in contributing? Great, we'd love your help! To get started, take a look at the [CONTRIBUTING](CONTRIBUTING.md) guide.
 
-### Thanks to everyone that has already contributed
+### Thanks to everyone who has already contributed
 
 <a href="https://github.com/open-feature/rust-sdk/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=open-feature/rust-sdk" alt="Pictures of the folks who have contributed to the project" />
