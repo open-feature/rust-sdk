@@ -25,13 +25,6 @@ pub struct Client {
     global_evaluation_context: GlobalEvaluationContext,
 }
 
-/// The trait that converts a [`StructValue`] to a custom type.
-/// It is used to return a custom type from `get_struct_value` and `get_string_details`.
-pub trait FromStructValue<Out = Self> {
-    /// Construct type with given `value`.
-    fn from_struct_value(value: &StructValue) -> anyhow::Result<Out>;
-}
-
 impl Client {
     /// Create a new [`Client`] instance.
     pub fn new(
@@ -140,7 +133,7 @@ impl Client {
     /// If the resolution fails, the `default_value` is returned.
     /// The required type should implement [`From<StructValue>`] trait.
     #[allow(unused_variables)]
-    pub async fn get_struct_value<T: FromStructValue>(
+    pub async fn get_struct_value<T: TryFrom<StructValue>>(
         &self,
         flag_key: &str,
         evaluation_context: Option<&EvaluationContext>,
@@ -154,7 +147,7 @@ impl Client {
             .resolve_struct_value(flag_key, &context)
             .await?;
 
-        match T::from_struct_value(&result.value) {
+        match T::try_from(result.value) {
             Ok(t) => Ok(t),
             Err(error) => Err(EvaluationError {
                 code: EvaluationErrorCode::TypeMismatch,
@@ -242,7 +235,7 @@ impl Client {
     /// Return the [`EvaluationDetails`] with given `flag_key`, `evaluation_context` and
     /// `evaluation_options`.
     #[allow(unused_variables)]
-    pub async fn get_struct_details<T: FromStructValue>(
+    pub async fn get_struct_details<T: TryFrom<StructValue>>(
         &self,
         flag_key: &str,
         evaluation_context: Option<&EvaluationContext>,
@@ -256,7 +249,7 @@ impl Client {
             .resolve_struct_value(flag_key, &context)
             .await?;
 
-        match T::from_struct_value(&result.value) {
+        match T::try_from(result.value) {
             Ok(value) => Ok(EvaluationDetails {
                 flag_key: flag_key.to_string(),
                 value,
@@ -322,8 +315,6 @@ mod tests {
         Client, EvaluationReason, FlagMetadata, StructValue,
     };
 
-    use super::FromStructValue;
-
     #[spec(
         number = "1.2.2",
         text = "The client interface MUST define a metadata member or accessor, containing an immutable name field or accessor of type string, which corresponds to the name value supplied during client creation."
@@ -339,16 +330,23 @@ mod tests {
         name: String,
     }
 
-    impl FromStructValue for Student {
-        fn from_struct_value(value: &StructValue) -> anyhow::Result<Self> {
+    impl TryFrom<StructValue> for Student {
+        type Error = String;
+
+        fn try_from(value: StructValue) -> Result<Self, Self::Error> {
             Ok(Student {
-                id: value.fields.get("id").unwrap().as_i64().unwrap(),
+                id: value
+                    .fields
+                    .get("id")
+                    .ok_or("id not provided")?
+                    .as_i64()
+                    .ok_or("id is not a valid number")?,
                 name: value
                     .fields
                     .get("name")
-                    .unwrap()
+                    .ok_or("name not provided")?
                     .as_str()
-                    .unwrap()
+                    .ok_or("name is not a valid string")?
                     .to_string(),
             })
         }
