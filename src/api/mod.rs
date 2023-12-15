@@ -2,7 +2,7 @@ mod api;
 pub use api::OpenFeature;
 
 mod client;
-pub use client::{Client, ClientMetadata, FromStructValue};
+pub use client::{Client, ClientMetadata};
 
 mod provider_registry;
 

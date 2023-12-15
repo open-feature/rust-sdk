@@ -160,7 +160,7 @@ async fn extended_example() {
 
 #### Getting a Struct from a Provider
 
-It is possible to extract a struct from the provider. Internally, this SDK defines a type `StructValue` to store any structure value. The `client.get_struct_value()` functions takes a type parameter `T`. It will try to parse `StructValue` resolved by the provider to `T`, as long as `T` implements trait `FromStructValue`.
+It is possible to extract a struct from the provider. Internally, this SDK defines a type `StructValue` to store any structure value. The `client.get_struct_value()` functions takes a type parameter `T`. It will try to parse `StructValue` resolved by the provider to `T`, as long as `T` implements trait `TryFrom<StructValue>`.
 
 You can pass in a type that satisfies this trait bound. When the conversion fails, it returns an `Err` with `EvaluationReason::TypeMismatch`.
 
