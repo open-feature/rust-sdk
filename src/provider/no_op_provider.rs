@@ -115,7 +115,7 @@ impl FeatureProvider for NoOpProvider {
         _flag_key: &str,
         evaluation_context: &EvaluationContext,
     ) -> Result<ResolutionDetails<bool>, EvaluationError> {
-        let (reason, variant) = Self::create_reason_variant(self.bool_value == Default::default());
+        let (reason, variant) = Self::create_reason_variant(self.bool_value == bool::default());
 
         let mut flag_metadata = FlagMetadata::default().with_value("Type", "Bool");
         Self::populate_evaluation_context_values(&mut flag_metadata, evaluation_context);
@@ -133,7 +133,7 @@ impl FeatureProvider for NoOpProvider {
         _flag_key: &str,
         evaluation_context: &EvaluationContext,
     ) -> Result<ResolutionDetails<i64>, EvaluationError> {
-        let (reason, variant) = Self::create_reason_variant(self.int_value == Default::default());
+        let (reason, variant) = Self::create_reason_variant(self.int_value == i64::default());
 
         let mut flag_metadata = FlagMetadata::default().with_value("Type", "Int");
         Self::populate_evaluation_context_values(&mut flag_metadata, evaluation_context);
