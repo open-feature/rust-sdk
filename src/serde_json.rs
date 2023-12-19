@@ -8,6 +8,14 @@ impl TryFrom<serde_json::Value> for Value {
     }
 }
 
+impl TryFrom<&serde_json::Value> for Value {
+    type Error = EvaluationError;
+
+    fn try_from(value: &serde_json::Value) -> Result<Self, Self::Error> {
+        json_value_to_value(value)
+    }
+}
+
 fn json_value_to_value(value: &serde_json::Value) -> EvaluationResult<Value> {
     match value {
         serde_json::Value::Bool(value) => Ok(Value::Bool(*value)),
@@ -96,9 +104,8 @@ mod tests {
                 ),
         );
 
-        let actual_value: Value = json.try_into().unwrap();
-
-        assert_eq!(expected_value, actual_value);
+        assert_eq!(expected_value, Value::try_from(&json).unwrap());
+        assert_eq!(expected_value, Value::try_from(json).unwrap());
     }
 
     #[test]
