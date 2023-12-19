@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.4](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.1.3...open-feature-v0.1.4) (2023-12-19)
+
+
+### ✨ New Features
+
+* add (optional) serde_json conversion support ([#45](https://github.com/open-feature/rust-sdk/issues/45)) ([6dde097](https://github.com/open-feature/rust-sdk/commit/6dde097b160ce821ac2f662e5eb1c3b8855559c0))
+
 ## [0.1.3](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.1.2...open-feature-v0.1.3) (2023-12-15)
 
 
