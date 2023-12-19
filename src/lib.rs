@@ -28,3 +28,7 @@ pub use evaluation::*;
 
 /// Feature provider related.
 pub mod provider;
+
+/// Optional support for [`serde_json::Value`].
+#[cfg(feature = "serde_json")]
+pub mod serde_json;
