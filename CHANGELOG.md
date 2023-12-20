@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.5](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.1.4...open-feature-v0.1.5) (2023-12-20)
+
+
+### 🐛 Bug Fixes
+
+* **deps:** update rust crate time to 0.3.31 ([#47](https://github.com/open-feature/rust-sdk/issues/47)) ([cb734b0](https://github.com/open-feature/rust-sdk/commit/cb734b0979bab5d205b7d313c2aff913f696bc65))
+* **deps:** update rust crate tokio to 1.35.1 ([#48](https://github.com/open-feature/rust-sdk/issues/48)) ([8d5dd69](https://github.com/open-feature/rust-sdk/commit/8d5dd6915a6c36e5ff86e66cd33cefe7450f2d5a))
+
+
+### ✨ New Features
+
+* add conversion from &serde_json::Value ([#46](https://github.com/open-feature/rust-sdk/issues/46)) ([d450bad](https://github.com/open-feature/rust-sdk/commit/d450bad6993b9fc5e8365da38df64d2321a74281))
+
 ## [0.1.4](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.1.3...open-feature-v0.1.4) (2023-12-19)
 
 
