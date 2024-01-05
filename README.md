@@ -33,6 +33,7 @@
   <a href="https://www.rust-lang.org/tools/install">
     <img alt="Min rust version" src="https://img.shields.io/badge/rust-%3E=1.70.0-blue.svg" />
   </a>
+<a href="https://app.fossa.com/projects/git%2Bgithub.com%2Fopen-feature%2Frust-sdk?ref=badge_shield" alt="FOSSA Status"><img src="https://app.fossa.com/api/projects/git%2Bgithub.com%2Fopen-feature%2Frust-sdk.svg?type=shield"/></a>
   <a href="https://www.repostatus.org/#wip">
     <img alt="Repo status" src="https://www.repostatus.org/badges/latest/wip.svg" />
   </a>
@@ -347,3 +348,7 @@ Interested in contributing? Great, we'd love your help! To get started, take a l
 
 Made with [contrib.rocks](https://contrib.rocks).
 <!-- x-hide-in-docs-end -->
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fopen-feature%2Frust-sdk.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fopen-feature%2Frust-sdk?ref=badge_large)
