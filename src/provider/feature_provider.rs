@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use typed_builder::TypedBuilder;
 
 use crate::{EvaluationContext, EvaluationResult, StructValue};
 
@@ -22,6 +21,7 @@ use super::ResolutionDetails;
 /// vendor SDK, embed an REST client, or read flags from a local file.
 ///
 /// See the [spec](https://openfeature.dev/specification/sections/providers).
+#[cfg_attr(feature = "mockall", mockall::automock)]
 #[async_trait]
 pub trait FeatureProvider: Send + Sync + 'static {
     /// The provider MAY define an initialize function which accepts the global evaluation
@@ -90,10 +90,9 @@ pub trait FeatureProvider: Send + Sync + 'static {
 // ============================================================
 
 /// The metadata of a feature provider.
-#[derive(Clone, TypedBuilder, Default, Debug)]
+#[derive(Clone, Default, Debug)]
 pub struct ProviderMetadata {
     /// The name of provider.
-    #[builder(setter(into))]
     pub name: String,
 }
 

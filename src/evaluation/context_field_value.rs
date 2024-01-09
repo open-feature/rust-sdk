@@ -221,9 +221,8 @@ mod tests {
     fn evaluation_context_custom_fields() {
         let now = OffsetDateTime::now_utc();
 
-        let context = EvaluationContext::builder()
-            .targeting_key("Some Key")
-            .build()
+        let context = EvaluationContext::default()
+            .with_targeting_key("Some Key")
             .with_custom_field("Bool", false)
             .with_custom_field("Bool", EvaluationContextFieldValue::Bool(true))
             .with_custom_field("Int", 42)

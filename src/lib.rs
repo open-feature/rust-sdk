@@ -3,8 +3,7 @@
 //! Check its README for examples.
 
 #![warn(missing_docs)]
-#![deny(warnings)]
-#![deny(clippy::pedantic)]
+#![warn(clippy::pedantic)]
 #![allow(clippy::doc_markdown)]
 #![allow(clippy::implicit_hasher)]
 #![allow(clippy::manual_let_else)]

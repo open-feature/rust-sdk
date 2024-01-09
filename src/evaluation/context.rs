@@ -1,7 +1,5 @@
 use std::collections::HashMap;
 
-use typed_builder::TypedBuilder;
-
 use crate::EvaluationContextFieldValue;
 
 /// The evaluation context provides ambient information for the purposes of flag evaluation.
@@ -13,22 +11,27 @@ use crate::EvaluationContextFieldValue;
 /// define rules that return a specific value based on the user's email address, locale, or the
 /// time of day. The context provides this information. The context can be optionally provided at
 /// evaluation, and mutated in before hooks.
-#[derive(Clone, TypedBuilder, Default, PartialEq, Debug)]
+#[derive(Clone, Default, PartialEq, Debug)]
 pub struct EvaluationContext {
     /// The targeting key uniquely identifies the subject (end-user, or client service) of a flag
     /// evaluation. Providers may require this field for fractional flag evaluation, rules, or
     /// overrides targeting specific users. Such providers may behave unpredictably if a targeting
     /// key is not specified at flag resolution.
-    #[builder(default, setter(into, strip_option))]
     pub targeting_key: Option<String>,
 
     /// The evaluation context MUST support the inclusion of custom fields, having keys of type
     /// string, and values of type boolean | string | number | datetime | structure.
-    #[builder(default)]
     pub custom_fields: HashMap<String, EvaluationContextFieldValue>,
 }
 
 impl EvaluationContext {
+    /// Create a new [`EvaluationContext`] with given targeting key.
+    #[must_use]
+    pub fn with_targeting_key(mut self, targeting_key: impl Into<String>) -> Self {
+        self.targeting_key = Some(targeting_key.into());
+        self
+    }
+
     /// Add `key` and `value` to the custom field of evaluation context.
     #[must_use]
     pub fn with_custom_field(
@@ -77,9 +80,8 @@ mod tests {
 
     #[test]
     fn merge_missig_given_empty() {
-        let mut context = EvaluationContext::builder()
-            .targeting_key("Targeting Key")
-            .build()
+        let mut context = EvaluationContext::default()
+            .with_targeting_key("Targeting Key")
             .with_custom_field("Some", "Value");
 
         let expected = context.clone();
@@ -91,26 +93,21 @@ mod tests {
 
     #[test]
     fn merge_missing_given_targeting_key() {
-        let mut context = EvaluationContext::builder()
-            .targeting_key("Targeting Key")
-            .build();
+        let mut context = EvaluationContext::default()
+            .with_targeting_key("Targeting Key")
+            .to_owned();
 
         let expected = context.clone();
 
-        context.merge_missing(
-            &EvaluationContext::builder()
-                .targeting_key("Another Key")
-                .build(),
-        );
+        context.merge_missing(&EvaluationContext::default().with_targeting_key("Another Key"));
 
         assert_eq!(context, expected);
     }
 
     #[test]
     fn merge_missing_given_custom_fields() {
-        let mut context = EvaluationContext::builder()
-            .targeting_key("Targeting Key")
-            .build()
+        let mut context = EvaluationContext::default()
+            .with_targeting_key("Targeting Key")
             .with_custom_field("Key", "Value");
 
         context.merge_missing(
@@ -121,9 +118,8 @@ mod tests {
 
         assert_eq!(
             context,
-            EvaluationContext::builder()
-                .targeting_key("Targeting Key")
-                .build()
+            EvaluationContext::default()
+                .with_targeting_key("Targeting Key")
                 .with_custom_field("Key", "Value")
                 .with_custom_field("Another Key", "Value")
         )
@@ -133,9 +129,8 @@ mod tests {
     fn merge_missing_given_full() {
         let mut context = EvaluationContext::default();
 
-        let other = EvaluationContext::builder()
-            .targeting_key("Targeting Key")
-            .build()
+        let other = EvaluationContext::default()
+            .with_targeting_key("Targeting Key")
             .with_custom_field("Key", "Value");
 
         context.merge_missing(&other);
@@ -143,11 +138,9 @@ mod tests {
         assert_eq!(context, other);
     }
 
-    #[derive(Clone, PartialEq, Eq, TypedBuilder, Debug)]
+    #[derive(Clone, PartialEq, Eq, Debug)]
     pub struct DummyStruct {
         pub id: i64,
-
-        #[builder(setter(into))]
         pub name: String,
     }
 
@@ -170,11 +163,13 @@ mod tests {
     #[test]
     fn fields_access() {
         let now_time = OffsetDateTime::now_utc();
-        let struct_value = DummyStruct::builder().id(200).name("Bob").build();
+        let struct_value = DummyStruct {
+            id: 200,
+            name: "Bob".to_string(),
+        };
 
-        let context = EvaluationContext::builder()
-            .targeting_key("Key")
-            .build()
+        let context = EvaluationContext::default()
+            .with_targeting_key("Key")
             .with_custom_field("Bool", true)
             .with_custom_field("Int", 100)
             .with_custom_field("Float", 3.14)
