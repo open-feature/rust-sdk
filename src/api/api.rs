@@ -104,7 +104,7 @@ mod tests {
     use super::*;
     use crate::{
         provider::{MockFeatureProvider, NoOpProvider, ResolutionDetails},
-        EvaluationContextFieldValue, EvaluationReason,
+        EvaluationContextFieldValue,
     };
     use mockall::predicate;
     use spec::spec;
@@ -408,11 +408,11 @@ mod tests {
     struct MyStruct {}
 
     #[tokio::test]
-    async fn example() {
+    async fn extended_example() {
         // Acquire an OpenFeature API instance.
-        // Note the `await` call here because asynchronous lock is used to guarantee thread safety.
         let mut api = OpenFeature::singleton_mut().await;
 
+        // Set the default (unnamed) provider.
         api.set_provider(NoOpProvider::default()).await;
 
         // Create an unnamed client.
@@ -420,8 +420,6 @@ mod tests {
 
         // Create an evaluation context.
         // It supports types mentioned in the specification.
-        //
-        // You have multiple ways to add a custom field.
         let evaluation_context = EvaluationContext::default()
             .with_targeting_key("Targeting")
             .with_custom_field("bool_key", true)
@@ -439,39 +437,18 @@ mod tests {
                 EvaluationContextFieldValue::new_struct(MyStruct::default()),
             );
 
-        // This function returns a `Result`. You can process it with functions provided by std.
+        // This function returns a `Result`.
+        // You can process it with functions provided by std.
         let is_feature_enabled = client
             .get_bool_value("SomeFlagEnabled", Some(&evaluation_context), None)
             .await
             .unwrap_or(false);
 
         if is_feature_enabled {
-            // Do something.
-        }
-
-        // Let's get evaluation details.
-        let result = client
-            .get_int_details(
-                "key",
-                Some(&EvaluationContext::default().with_custom_field("some_key", "some_value")),
-                None,
-            )
-            .await;
-
-        match result {
-            Ok(details) => {
-                assert_eq!(details.value, 100);
-                assert_eq!(details.reason, Some(EvaluationReason::Static));
-                assert_eq!(details.variant, Some("Static".to_string()));
-                assert_eq!(details.flag_metadata.values.iter().count(), 2);
-            }
-            Err(error) => {
-                println!(
-                    "Error: {}\nMessage: {:?}\n",
-                    error.code.to_string(),
-                    error.message
-                );
-            }
+            // Let's get evaluation details.
+            let _result = client
+                .get_int_details("key", Some(&evaluation_context), None)
+                .await;
         }
     }
 }

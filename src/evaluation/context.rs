@@ -25,7 +25,7 @@ pub struct EvaluationContext {
 }
 
 impl EvaluationContext {
-    /// Create a new [`EvaluationContext`] with given targeting key.
+    /// Set the `targeting_key` of the evaluation context.
     #[must_use]
     pub fn with_targeting_key(mut self, targeting_key: impl Into<String>) -> Self {
         self.targeting_key = Some(targeting_key.into());

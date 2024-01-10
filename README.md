@@ -63,49 +63,47 @@ open-feature = "0.1.5"
 ```rust
 async fn example() -> Result<(), Error> {
     // Acquire an OpenFeature API instance.
+    // Note the `await` call here because asynchronous lock is used to
+    // guarantee thread safety.
     let mut api = OpenFeature::singleton_mut().await;
 
-    // configure a provider
-    api.set_provider(NoOpProvider::new())
-        .await;
+    // Configure a provider.
+    // By default [`NoOpProvider`] is used.
+    api.set_provider(NoOpProvider::default()).await;
 
     // create a client
     let client = api.get_client();
 
     // get a bool flag value
     let is_feature_enabled = client
-        .get_bool_value("v2_enabled", false, None)
+        .get_bool_value("v2_enabled", None, None)
+        .unwrap_or(false)
         .await;
 
     Ok(())
 }
 ```
 
+Note that the default `NoOpProvider` always returns `Err` for any given input.
+
 #### Extended Example
 
 ```rust
-#[derive(Clone, Default, Debug)]
-struct MyStruct {}
-
 #[tokio::test]
 async fn extended_example() {
     // Acquire an OpenFeature API instance.
-    // Note the `await` call here because asynchronous lock is used to guarantee thread safety.
     let mut api = OpenFeature::singleton_mut().await;
 
-    api.set_provider(NoOpProvider::builder().int_value(100).build())
-        .await;
+    // Set the default (unnamed) provider.
+    api.set_provider(NoOpProvider::default()).await;
 
     // Create an unnamed client.
     let client = api.create_client();
 
     // Create an evaluation context.
     // It supports types mentioned in the specification.
-    //
-    // You have multiple ways to add a custom field.
-    let evaluation_context = EvaluationContext::builder()
-        .targeting_key("Targeting")
-        .build()
+    let evaluation_context = EvaluationContext::default()
+        .with_targeting_key("Targeting")
         .with_custom_field("bool_key", true)
         .with_custom_field("int_key", 100)
         .with_custom_field("float_key", 3.14)
@@ -121,39 +119,18 @@ async fn extended_example() {
             EvaluationContextFieldValue::new_struct(MyStruct::default()),
         );
 
-    // This function returns a `Result`. You can process it with functions provided by std.
+    // This function returns a `Result`.
+    // You can process it with functions provided by std.
     let is_feature_enabled = client
         .get_bool_value("SomeFlagEnabled", Some(&evaluation_context), None)
         .await
         .unwrap_or(false);
 
     if is_feature_enabled {
-        // Do something.
-    }
-
-    // Let's get evaluation details.
-    let result = client
-        .get_int_details(
-            "key",
-            Some(&EvaluationContext::default().with_custom_field("some_key", "some_value")),
-            None,
-        )
-        .await;
-
-    match result {
-        Ok(details) => {
-            assert_eq!(details.value, 100);
-            assert_eq!(details.reason, Some(EvaluationReason::Static));
-            assert_eq!(details.variant, Some("Static".to_string()));
-            assert_eq!(details.flag_metadata.values.iter().count(), 2);
-        }
-        Err(error) => {
-            println!(
-                "Error: {}\nMessage: {:?}\n",
-                error.code.to_string(),
-                error.message
-            );
-        }
+        // Let's get evaluation details.
+        let _result = client
+            .get_int_details("key", Some(&evaluation_context), None)
+            .await;
     }
 }
 ```
@@ -195,9 +172,8 @@ Once you've added a provider as a dependency, it can be registered with OpenFeat
 // Set the default feature provider. Please replace the `NoOpProvider` with the one you want.
 // If you do not do that, [`NoOpProvider`] will be used by default.
 //
-// By default, [`NoOpProvider`] will simply return the default value of each type.
-// You can inject value you want via its builder or evaluation context. See other sections
-// for more details.
+// [`NoOpProvider`] always returns `Err` despite any input. You can use functions like 
+// `unwrap_or()` to specify default values.
 //
 // If you set a new provider after creating some clients, the existing clients will pick up
 // the new provider you just set.
@@ -230,7 +206,7 @@ client.set_evaluation_context(client_evaluation_context);
 // Pass evaluation context in evaluation functions.
 // This one will overwrite the globla evaluation context and 
 // the client level one.
-client.get_int_value("flag", &evaluation_context, None);
+client.get_int_value("flag", Some(&evaluation_context), None);
 ```
 
 ### Hooks
@@ -259,10 +235,7 @@ If a name has no associated provider, the global provider is used.
 
 ```rust
 // Create a named provider and bind it.
-api.set_named_provider(
-    "named",
-    NoOpProvider::builder().int_value(42).build())
-.await;
+api.set_named_provider("named", NoOpProvider::default()).await;
 
 // This named client will use the feature provider bound to this name.
 let client = api.create_named_client("named");
