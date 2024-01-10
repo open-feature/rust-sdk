@@ -303,7 +303,6 @@ impl<T> ResolutionDetails<T> {
 
 #[cfg(test)]
 mod tests {
-    //use std::sync::Arc;
 
     use spec::spec;
 
