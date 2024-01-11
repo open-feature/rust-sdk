@@ -13,7 +13,7 @@ pub struct ResolutionDetails<T> {
     /// In cases of normal execution, the provider SHOULD populate the resolution details
     /// structure's variant field with a string identifier corresponding to the returned flag
     /// value.
-    #[builder(default, setter(strip_option))]
+    #[builder(default, setter(into, strip_option))]
     pub variant: Option<String>,
 
     /// The provider SHOULD populate the resolution details structure's reason field with "STATIC",
@@ -40,7 +40,7 @@ impl<T: Default> Default for ResolutionDetails<T> {
 
 impl<T> ResolutionDetails<T> {
     /// Create an instance given value.
-    pub fn new<V: Into<T>>(value: V) -> Self {
+    pub fn new(value: impl Into<T>) -> Self {
         Self {
             value: value.into(),
             variant: None,

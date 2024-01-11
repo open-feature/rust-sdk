@@ -103,8 +103,10 @@ mod tests {
 
     use super::*;
     use crate::{
-        provider::NoOpProvider, EvaluationContextFieldValue, EvaluationReason, FlagMetadataValue,
+        provider::{MockFeatureProvider, NoOpProvider, ResolutionDetails},
+        EvaluationContextFieldValue,
     };
+    use mockall::predicate;
     use spec::spec;
 
     #[spec(
@@ -131,7 +133,7 @@ mod tests {
         let _ = (reader1.await, reader2.await, writer.await);
 
         assert_eq!(
-            "No Operation",
+            "No-op Provider",
             OpenFeature::singleton()
                 .await
                 .provider_metadata()
@@ -149,13 +151,15 @@ mod tests {
         let mut api = OpenFeature::default();
         let client = api.create_client();
 
-        assert_eq!(
-            client.get_int_value("some-key", None, None).await.unwrap(),
-            i64::default()
-        );
+        assert!(client.get_int_value("some-key", None, None).await.is_err());
 
         // Set the new provider and ensure the value comes from it.
-        let provider = NoOpProvider::builder().int_value(200).build();
+        let mut provider = MockFeatureProvider::new();
+        provider.expect_initialize().returning(|_| {});
+        provider
+            .expect_resolve_int_value()
+            .return_const(Ok(ResolutionDetails::new(200)));
+
         api.set_provider(provider).await;
 
         assert_eq!(
@@ -170,14 +174,11 @@ mod tests {
     )]
     #[tokio::test]
     async fn set_provider_invoke_initialize() {
-        let provider = NoOpProvider::default();
-
-        assert_eq!(provider.metadata().name, "No Operation - Default");
+        let mut provider = MockFeatureProvider::new();
+        provider.expect_initialize().returning(|_| {}).once();
 
         let mut api = OpenFeature::default();
         api.set_provider(provider).await;
-
-        assert_eq!(api.provider_metadata().await.name, "No Operation");
     }
 
     #[spec(
@@ -194,23 +195,25 @@ mod tests {
     #[tokio::test]
     async fn set_named_provider() {
         let mut api = OpenFeature::default();
-        api.set_named_provider("test", NoOpProvider::builder().int_value(10).build())
-            .await;
 
         // Ensure the No-op provider is used.
         let client = api.create_named_client("test");
-        assert_eq!(client.get_int_value("", None, None).await.unwrap(), 10);
+        assert!(client.get_int_value("", None, None).await.is_err());
 
         // Bind provider to the same name.
-        api.set_named_provider("test", NoOpProvider::builder().int_value(30).build())
-            .await;
+        let mut provider = MockFeatureProvider::new();
+        provider.expect_initialize().returning(|_| {});
+        provider
+            .expect_resolve_int_value()
+            .return_const(Ok(ResolutionDetails::new(30)));
+        api.set_named_provider("test", provider).await;
 
         // Ensure the new provider is used for existing clients.
-        assert_eq!(client.get_int_value("", None, None).await.unwrap(), 30);
+        assert_eq!(client.get_int_value("", None, None).await, Ok(30));
 
         // Create a new client and ensure new provider is used.
         let new_client = api.create_named_client("test");
-        assert_eq!(new_client.get_int_value("", None, None).await.unwrap(), 30);
+        assert_eq!(new_client.get_int_value("", None, None).await, Ok(30));
     }
 
     #[spec(
@@ -224,10 +227,10 @@ mod tests {
         api.set_named_provider("test", NoOpProvider::default())
             .await;
 
-        assert_eq!(api.provider_metadata().await.name, "No Operation");
+        assert_eq!(api.provider_metadata().await.name, "No-op Provider");
         assert_eq!(
             api.named_provider_metadata("test").await.unwrap().name,
-            "No Operation"
+            "No-op Provider"
         );
         assert!(api.named_provider_metadata("invalid").await.is_none());
     }
@@ -240,10 +243,21 @@ mod tests {
     #[tokio::test]
     async fn get_client() {
         let mut api = OpenFeature::default();
-        api.set_provider(NoOpProvider::builder().int_value(100).build())
-            .await;
-        api.set_named_provider("test", NoOpProvider::builder().int_value(200).build())
-            .await;
+
+        let mut default_provider = MockFeatureProvider::new();
+        default_provider.expect_initialize().returning(|_| {});
+        default_provider
+            .expect_resolve_int_value()
+            .return_const(Ok(ResolutionDetails::new(100)));
+
+        let mut named_provider = MockFeatureProvider::new();
+        named_provider.expect_initialize().returning(|_| {});
+        named_provider
+            .expect_resolve_int_value()
+            .return_const(Ok(ResolutionDetails::new(200)));
+
+        api.set_provider(default_provider).await;
+        api.set_named_provider("test", named_provider).await;
 
         let client = api.create_client();
         assert_eq!(client.get_int_value("key", None, None).await.unwrap(), 100);
@@ -297,68 +311,81 @@ mod tests {
     )]
     #[tokio::test]
     async fn evaluation_context() {
+        // Setup expectations for different evaluation contexts.
+        let mut provider = MockFeatureProvider::new();
+        provider.expect_initialize().returning(|_| {});
+
+        provider
+            .expect_resolve_int_value()
+            .with(
+                predicate::eq("flag"),
+                predicate::eq(
+                    EvaluationContext::default()
+                        .with_targeting_key("global_targeting_key")
+                        .with_custom_field("key", "global_value"),
+                ),
+            )
+            .return_const(Ok(ResolutionDetails::new(100)));
+
+        provider
+            .expect_resolve_int_value()
+            .with(
+                predicate::eq("flag"),
+                predicate::eq(
+                    EvaluationContext::default()
+                        .with_targeting_key("client_targeting_key")
+                        .with_custom_field("key", "client_value"),
+                ),
+            )
+            .return_const(Ok(ResolutionDetails::new(200)));
+
+        provider
+            .expect_resolve_int_value()
+            .with(
+                predicate::eq("flag"),
+                predicate::eq(
+                    EvaluationContext::default()
+                        .with_targeting_key("invocation_targeting_key")
+                        .with_custom_field("key", "invocation_value"),
+                ),
+            )
+            .return_const(Ok(ResolutionDetails::new(300)));
+
+        // Register the provider.
+        let mut api = OpenFeature::default();
+        api.set_provider(provider).await;
+
         // Set global client context and ensure its values are picked up.
-        let evaluation_context = EvaluationContext::builder()
-            .targeting_key("global_targeting_key")
-            .build()
+        let global_evaluation_context = EvaluationContext::default()
+            .with_targeting_key("global_targeting_key")
             .with_custom_field("key", "global_value");
 
-        let mut api = OpenFeature::default();
-        api.set_evaluation_context(evaluation_context).await;
+        api.set_evaluation_context(global_evaluation_context).await;
 
         let mut client = api.create_client();
 
-        let result = client.get_int_details("", None, None).await.unwrap();
-
-        assert_eq!(
-            *result.flag_metadata.values.get("TargetingKey").unwrap(),
-            FlagMetadataValue::String("global_targeting_key".to_string())
-        );
-
-        assert_eq!(
-            *result.flag_metadata.values.get("key").unwrap(),
-            FlagMetadataValue::String("global_value".to_string())
-        );
+        assert_eq!(client.get_int_value("flag", None, None).await.unwrap(), 100);
 
         // Set client evaluation context and ensure its values overwrite the global ones.
-        let evaluation_context = EvaluationContext::builder()
-            .targeting_key("client_targeting_key")
-            .build()
+        let client_evaluation_context = EvaluationContext::default()
+            .with_targeting_key("client_targeting_key")
             .with_custom_field("key", "client_value");
 
-        client.set_evaluation_context(evaluation_context);
+        client.set_evaluation_context(client_evaluation_context);
 
-        let result = client.get_bool_details("", None, None).await.unwrap();
-
-        assert_eq!(
-            *result.flag_metadata.values.get("TargetingKey").unwrap(),
-            FlagMetadataValue::String("client_targeting_key".to_string())
-        );
-
-        assert_eq!(
-            *result.flag_metadata.values.get("key").unwrap(),
-            FlagMetadataValue::String("client_value".to_string())
-        );
+        assert_eq!(client.get_int_value("flag", None, None).await.unwrap(), 200);
 
         // Use invocation level evaluation context and ensure its values are used.
-        let evaluation_context = EvaluationContext::builder()
-            .targeting_key("invocation_targeting_key")
-            .build()
+        let invocation_evaluation_context = EvaluationContext::default()
+            .with_targeting_key("invocation_targeting_key")
             .with_custom_field("key", "invocation_value");
 
-        let result = client
-            .get_string_details("", Some(&evaluation_context), None)
-            .await
-            .unwrap();
-
         assert_eq!(
-            *result.flag_metadata.values.get("TargetingKey").unwrap(),
-            FlagMetadataValue::String("invocation_targeting_key".to_string())
-        );
-
-        assert_eq!(
-            *result.flag_metadata.values.get("key").unwrap(),
-            FlagMetadataValue::String("invocation_value".to_string())
+            client
+                .get_int_value("flag", Some(&invocation_evaluation_context), None)
+                .await
+                .unwrap(),
+            300
         );
     }
 
@@ -381,24 +408,20 @@ mod tests {
     struct MyStruct {}
 
     #[tokio::test]
-    async fn example() {
+    async fn extended_example() {
         // Acquire an OpenFeature API instance.
-        // Note the `await` call here because asynchronous lock is used to guarantee thread safety.
         let mut api = OpenFeature::singleton_mut().await;
 
-        api.set_provider(NoOpProvider::builder().int_value(100).build())
-            .await;
+        // Set the default (unnamed) provider.
+        api.set_provider(NoOpProvider::default()).await;
 
         // Create an unnamed client.
         let client = api.create_client();
 
         // Create an evaluation context.
         // It supports types mentioned in the specification.
-        //
-        // You have multiple ways to add a custom field.
-        let evaluation_context = EvaluationContext::builder()
-            .targeting_key("Targeting")
-            .build()
+        let evaluation_context = EvaluationContext::default()
+            .with_targeting_key("Targeting")
             .with_custom_field("bool_key", true)
             .with_custom_field("int_key", 100)
             .with_custom_field("float_key", 3.14)
@@ -414,39 +437,18 @@ mod tests {
                 EvaluationContextFieldValue::new_struct(MyStruct::default()),
             );
 
-        // This function returns a `Result`. You can process it with functions provided by std.
+        // This function returns a `Result`.
+        // You can process it with functions provided by std.
         let is_feature_enabled = client
             .get_bool_value("SomeFlagEnabled", Some(&evaluation_context), None)
             .await
             .unwrap_or(false);
 
         if is_feature_enabled {
-            // Do something.
-        }
-
-        // Let's get evaluation details.
-        let result = client
-            .get_int_details(
-                "key",
-                Some(&EvaluationContext::default().with_custom_field("some_key", "some_value")),
-                None,
-            )
-            .await;
-
-        match result {
-            Ok(details) => {
-                assert_eq!(details.value, 100);
-                assert_eq!(details.reason, Some(EvaluationReason::Static));
-                assert_eq!(details.variant, Some("Static".to_string()));
-                assert_eq!(details.flag_metadata.values.iter().count(), 2);
-            }
-            Err(error) => {
-                println!(
-                    "Error: {}\nMessage: {:?}\n",
-                    error.code.to_string(),
-                    error.message
-                );
-            }
+            // Let's get evaluation details.
+            let _result = client
+                .get_int_details("key", Some(&evaluation_context), None)
+                .await;
         }
     }
 }

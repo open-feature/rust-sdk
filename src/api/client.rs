@@ -303,7 +303,6 @@ impl<T> ResolutionDetails<T> {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
 
     use spec::spec;
 
@@ -311,8 +310,8 @@ mod tests {
         api::{
             global_evaluation_context::GlobalEvaluationContext, provider_registry::ProviderRegistry,
         },
-        provider::NoOpProvider,
-        Client, EvaluationReason, FlagMetadata, StructValue,
+        provider::{FeatureProvider, MockFeatureProvider, ResolutionDetails},
+        Client, EvaluationReason, FlagMetadata, StructValue, Value,
     };
 
     #[spec(
@@ -356,35 +355,63 @@ mod tests {
         number = "1.3.1.1",
         text = "The client MUST provide methods for typed flag evaluation, including boolean, numeric, string, and structure, with parameters flag key (string, required), default value (boolean | number | string | structure, required), evaluation context (optional), and evaluation options (optional), which returns the flag value."
     )]
+    #[spec(
+        number = "1.3.3.1",
+        text = "The client SHOULD provide functions for floating-point numbers and integers, consistent with language idioms."
+    )]
     #[tokio::test]
     async fn get_value() {
         // Test bool.
-        let client = create_client(NoOpProvider::builder().bool_value(true).build()).await;
+        let mut provider = MockFeatureProvider::new();
+        provider.expect_initialize().returning(|_| {});
+
+        provider
+            .expect_resolve_bool_value()
+            .return_const(Ok(ResolutionDetails::new(true)));
+
+        provider
+            .expect_resolve_int_value()
+            .return_const(Ok(ResolutionDetails::new(123)));
+
+        provider
+            .expect_resolve_float_value()
+            .return_const(Ok(ResolutionDetails::new(12.34)));
+
+        provider
+            .expect_resolve_string_value()
+            .return_const(Ok(ResolutionDetails::new("Hello")));
+
+        provider
+            .expect_resolve_struct_value()
+            .return_const(Ok(ResolutionDetails::new(
+                StructValue::default()
+                    .with_field("id", 100)
+                    .with_field("name", "Alex"),
+            )));
+
+        let client = create_client(provider).await;
 
         assert_eq!(
             client.get_bool_value("key", None, None).await.unwrap(),
             true
         );
 
-        // Test string.
-        let client = create_client(NoOpProvider::builder().string_value("result").build()).await;
+        assert_eq!(client.get_int_value("key", None, None).await.unwrap(), 123);
+
+        assert_eq!(
+            client.get_float_value("key", None, None).await.unwrap(),
+            12.34
+        );
 
         assert_eq!(
             client.get_string_value("", None, None).await.unwrap(),
-            "result"
+            "Hello"
         );
 
-        // Test struct.
-        let client = create_client(
-            NoOpProvider::builder()
-                .struct_value(Arc::new(
-                    StructValue::default()
-                        .with_field("id", 100)
-                        .with_field("name", "Alex"),
-                ))
-                .build(),
-        )
-        .await;
+        println!(
+            "Result: {:?}",
+            client.get_struct_value::<Value>("", None, None).await
+        );
 
         assert_eq!(
             client
@@ -396,21 +423,6 @@ mod tests {
                 name: "Alex".to_string()
             }
         );
-    }
-
-    #[spec(
-        number = "1.3.3.1",
-        text = "The client SHOULD provide functions for floating-point numbers and integers, consistent with language idioms."
-    )]
-    #[tokio::test]
-    async fn get_numeric_value() {
-        // Test int.
-        let client = create_client(NoOpProvider::builder().int_value(200).build()).await;
-        assert_eq!(client.get_int_value("key", None, None).await.unwrap(), 200);
-
-        // Test float.
-        let client = create_client(NoOpProvider::builder().float_value(5.0).build()).await;
-        assert_eq!(client.get_float_value("", None, None).await.unwrap(), 5.0);
     }
 
     #[spec(
@@ -450,24 +462,24 @@ mod tests {
     )]
     #[tokio::test]
     async fn get_details() {
-        let provider = NoOpProvider::builder().int_value(100).build();
+        let mut provider = MockFeatureProvider::new();
+        provider.expect_initialize().returning(|_| {});
+        provider
+            .expect_resolve_int_value()
+            .return_const(Ok(ResolutionDetails::builder()
+                .value(123)
+                .variant("Static")
+                .reason(EvaluationReason::Static)
+                .build()));
+
         let client = create_client(provider).await;
 
         let result = client.get_int_details("key", None, None).await.unwrap();
 
-        assert_eq!(result.value, 100);
+        assert_eq!(result.value, 123);
         assert_eq!(result.flag_key, "key");
         assert_eq!(result.reason, Some(EvaluationReason::Static));
         assert_eq!(result.variant, Some("Static".to_string()));
-
-        assert_eq!(
-            client
-                .get_bool_details("another_key", None, None)
-                .await
-                .unwrap()
-                .reason,
-            Some(EvaluationReason::Default)
-        );
     }
 
     #[spec(
@@ -502,22 +514,23 @@ mod tests {
     )]
     #[tokio::test]
     async fn get_details_flag_metadata() {
-        let client = create_default_client();
+        let mut provider = MockFeatureProvider::new();
+        provider.expect_initialize().returning(|_| {});
+        provider
+            .expect_resolve_bool_value()
+            .return_const(Ok(ResolutionDetails::builder()
+                .value(true)
+                .flag_metadata(FlagMetadata::default().with_value("Type", "Bool"))
+                .build()));
+
+        let client = create_client(provider).await;
 
         let result = client.get_bool_details("", None, None).await.unwrap();
+
         assert_eq!(
             *result.flag_metadata.values.get("Type").unwrap(),
             "Bool".into()
         );
-
-        assert_eq!(
-            client
-                .get_struct_details::<Student>("", None, None)
-                .await
-                .unwrap()
-                .flag_metadata,
-            FlagMetadata::default()
-        )
     }
 
     #[spec(
@@ -539,7 +552,7 @@ mod tests {
         )
     }
 
-    async fn create_client(provider: NoOpProvider) -> Client {
+    async fn create_client(provider: impl FeatureProvider) -> Client {
         let provider_registry = ProviderRegistry::default();
         provider_registry.set_named("custom", provider).await;
 
