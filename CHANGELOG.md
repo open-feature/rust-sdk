@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.0](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.1.5...open-feature-v0.2.0) (2024-01-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* re-design No-op Provider ([#56](https://github.com/open-feature/rust-sdk/issues/56))
+
+### 🐛 Bug Fixes
+
+* **deps:** update rust crate async-trait to 0.1.77 ([#52](https://github.com/open-feature/rust-sdk/issues/52)) ([50390e8](https://github.com/open-feature/rust-sdk/commit/50390e87b8cdd44d7a509aa9174ae3f0a53342f4))
+* **deps:** update rust crate serde_json to 1.0.110 ([#53](https://github.com/open-feature/rust-sdk/issues/53)) ([1d90cd9](https://github.com/open-feature/rust-sdk/commit/1d90cd9b884999285be79604c6c7b90be24d936e))
+* **deps:** update rust crate serde_json to 1.0.111 ([#54](https://github.com/open-feature/rust-sdk/issues/54)) ([78b0bf3](https://github.com/open-feature/rust-sdk/commit/78b0bf3aab39d41bd0938b4b903eacfe0de6654a))
+
+
+### ✨ New Features
+
+* re-design No-op Provider ([#56](https://github.com/open-feature/rust-sdk/issues/56)) ([554cf22](https://github.com/open-feature/rust-sdk/commit/554cf22302781ee5c2015e75c514be3d4be67ca5))
+
 ## [0.1.5](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.1.4...open-feature-v0.1.5) (2023-12-20)
 
 
