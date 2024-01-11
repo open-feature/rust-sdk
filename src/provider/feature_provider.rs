@@ -21,7 +21,7 @@ use super::ResolutionDetails;
 /// vendor SDK, embed an REST client, or read flags from a local file.
 ///
 /// See the [spec](https://openfeature.dev/specification/sections/providers).
-#[cfg_attr(feature = "mockall", mockall::automock)]
+#[cfg_attr(feature = "test-util", mockall::automock)]
 #[async_trait]
 pub trait FeatureProvider: Send + Sync + 'static {
     /// The provider MAY define an initialize function which accepts the global evaluation

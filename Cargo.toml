@@ -28,6 +28,6 @@ typed-builder = "0.18.0"
 spec = { path = "spec" }
 
 [features]
-default = [ "mockall" ]
-mockall = [ "dep:mockall" ]
+default = [ "test-util" ]
+test-util = [ "dep:mockall" ]
 serde_json = [ "dep:serde_json" ]
