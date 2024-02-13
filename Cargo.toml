@@ -19,7 +19,7 @@ maintenance = { status = "actively-developed" }
 async-trait = "0.1.77"
 lazy_static = "1.4.0"
 mockall = { version = "0.12.1", optional = true }
-serde_json = { version = "1.0.111", optional = true }
+serde_json = { version = "1.0.113", optional = true }
 time = "0.3.31"
 tokio = { version = "1.35.1", features = [ "full" ] }
 typed-builder = "0.18.1"
