@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.1](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.0...open-feature-v0.2.1) (2024-02-13)
+
+
+### 🐛 Bug Fixes
+
+* **deps:** update rust crate darling to 0.20.5 ([#61](https://github.com/open-feature/rust-sdk/issues/61)) ([921f027](https://github.com/open-feature/rust-sdk/commit/921f027b8e60cb149af153a7047c2f22417b975c))
+* **deps:** update rust crate serde_json to 1.0.113 ([#60](https://github.com/open-feature/rust-sdk/issues/60)) ([04125b2](https://github.com/open-feature/rust-sdk/commit/04125b2fd556013532dd9d44c21e424ca01760f6))
+* **deps:** update rust crate time to 0.3.34 ([#62](https://github.com/open-feature/rust-sdk/issues/62)) ([a8e0ddb](https://github.com/open-feature/rust-sdk/commit/a8e0ddb2d17e66301bb8e09dc2396747eb1ebb15))
+* **deps:** update rust crate tokio to 1.36.0 ([#63](https://github.com/open-feature/rust-sdk/issues/63)) ([f99de1c](https://github.com/open-feature/rust-sdk/commit/f99de1cfd49cde660425f5fb2ca8f54c50e1f738))
+* **deps:** update rust crate typed-builder to 0.18.1 ([#58](https://github.com/open-feature/rust-sdk/issues/58)) ([396bf02](https://github.com/open-feature/rust-sdk/commit/396bf022402b8864cf136aa458052296fdb757b4))
+
 ## [0.2.0](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.1.5...open-feature-v0.2.0) (2024-01-11)
 
 
