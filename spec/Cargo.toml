@@ -9,5 +9,5 @@ path = "src/lib.rs"
 proc-macro = true
 
 [dependencies]
-darling = "0.20.6"
+darling = "0.20.8"
 
