@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.2.2](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.1...open-feature-v0.2.2) (2024-03-01)
+
+
+### 🐛 Bug Fixes
+
+* **deps:** update rust crate darling to 0.20.6 ([#64](https://github.com/open-feature/rust-sdk/issues/64)) ([0397117](https://github.com/open-feature/rust-sdk/commit/039711764b8fc0c495208729117bac20fe9db69c))
+* **deps:** update rust crate darling to 0.20.8 ([#67](https://github.com/open-feature/rust-sdk/issues/67)) ([e1606c3](https://github.com/open-feature/rust-sdk/commit/e1606c3eb80cfe18843142139cdf9fd4505bc851))
+* **deps:** update rust crate serde_json to 1.0.114 ([#66](https://github.com/open-feature/rust-sdk/issues/66)) ([812efe3](https://github.com/open-feature/rust-sdk/commit/812efe3538948b7e9265f463a5ba8722b2e61789))
+
+
+### 🧹 Chore
+
+* change Cargo.toml file to reference minor version ([#68](https://github.com/open-feature/rust-sdk/issues/68)) ([24fff2e](https://github.com/open-feature/rust-sdk/commit/24fff2e7a75dd74192b469f1dede272fe59c3118))
+
 ## [0.2.1](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.0...open-feature-v0.2.1) (2024-02-13)
 
 
