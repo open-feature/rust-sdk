@@ -53,8 +53,11 @@ def main(refresh_spec=False, diff_output=False, limit_numbers=None):
             with open(F) as f:
                 data = ''.join(f.readlines())
 
-            for match in re.findall('#\[spec\((?P<innards>.*?)"\)\]', data.replace('\n', ''), re.MULTILINE | re.DOTALL):
+            # if "#[spec" in data:
+            #     import pdb; pdb.set_trace()
+            for match in re.findall('#\[spec\((?P<innards>.*?)\)\]', data.replace('\n', ''), re.MULTILINE | re.DOTALL):
                 number = re.findall('number\s*=\s*"(.*?)"', match)[0]
+
 
                 if number in missing:
                     missing.remove(number)
