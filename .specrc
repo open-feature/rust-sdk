@@ -1,0 +1,5 @@
+[spec]
+file_extension=rs
+multiline_regex=#\[spec\((?P<innards>.*?)\)\]
+number_subregex=number\s*=\s*"(.*?)"
+text_subregex=text\s*=\s*["'](.*)["']
