@@ -27,6 +27,7 @@ pub use evaluation::*;
 
 /// Feature provider related.
 pub mod provider;
+pub use async_trait::async_trait;
 
 /// Optional support for [`serde_json::Value`].
 #[cfg(feature = "serde_json")]
