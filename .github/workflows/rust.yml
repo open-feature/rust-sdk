@@ -31,6 +31,10 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
 
+      - if: matrix.rust == '1.67.1'
+        name: Use MSRV lock file
+        run: cp Cargo.lock.msrv Cargo.lock
+
       - name: Build
         run: cargo build --verbose
 
