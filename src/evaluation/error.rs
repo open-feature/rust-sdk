@@ -2,6 +2,7 @@
 //  EvaluationError
 // ============================================================
 
+use std::fmt::{Display, Formatter};
 use typed_builder::TypedBuilder;
 
 /// Struct representing error
@@ -44,16 +45,17 @@ pub enum EvaluationErrorCode {
     General(String),
 }
 
-impl ToString for EvaluationErrorCode {
-    fn to_string(&self) -> String {
-        match self {
-            Self::ProviderNotReady => "PROVIDER_NOT_READY".to_string(),
-            Self::FlagNotFound => "FLAG_NOT_FOUND".to_string(),
-            Self::ParseError => "PARSE_ERROR".to_string(),
-            Self::TypeMismatch => "TYPE_MISMATCH".to_string(),
-            Self::TargetingKeyMissing => "TARGETING_KEY_MISSING".to_string(),
-            Self::InvalidContext => "INVALID_CONTEXT".to_string(),
-            Self::General(message) => message.clone(),
-        }
+impl Display for EvaluationErrorCode {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let code = match self {
+            Self::ProviderNotReady => "PROVIDER_NOT_READY",
+            Self::FlagNotFound => "FLAG_NOT_FOUND",
+            Self::ParseError => "PARSE_ERROR",
+            Self::TypeMismatch => "TYPE_MISMATCH",
+            Self::TargetingKeyMissing => "TARGETING_KEY_MISSING",
+            Self::InvalidContext => "INVALID_CONTEXT",
+            Self::General(message) => message,
+        };
+        write!(f, "{code}")
     }
 }
