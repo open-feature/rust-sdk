@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.2.4](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.3...open-feature-v0.2.4) (2024-08-12)
+
+
+### 🐛 Bug Fixes
+
+* **deps:** update rust crate async-trait to 0.1.80 ([#76](https://github.com/open-feature/rust-sdk/issues/76)) ([1078042](https://github.com/open-feature/rust-sdk/commit/10780429edd180c73ad738b1bfb5689c7da30a62))
+* **deps:** update rust crate darling to v0.20.10 ([#82](https://github.com/open-feature/rust-sdk/issues/82)) ([c35f593](https://github.com/open-feature/rust-sdk/commit/c35f593400a487481ff3acd1774d7f8f566558f8))
+* **deps:** update rust crate darling to v0.20.9 ([#81](https://github.com/open-feature/rust-sdk/issues/81)) ([2c926d8](https://github.com/open-feature/rust-sdk/commit/2c926d81aac223b52969bf0833a0340c90410404))
+* **deps:** update rust crate mockall to 0.12.1 ([#77](https://github.com/open-feature/rust-sdk/issues/77)) ([34facac](https://github.com/open-feature/rust-sdk/commit/34facac08728957b843bfaf360a7e12fde38da61))
+* **deps:** update rust crate mockall to 0.13.0 ([#84](https://github.com/open-feature/rust-sdk/issues/84)) ([2d99576](https://github.com/open-feature/rust-sdk/commit/2d99576a671be1d676bd623f20ddc84a89ee4bfe))
+* **deps:** update rust crate serde_json to 1.0.116 ([#78](https://github.com/open-feature/rust-sdk/issues/78)) ([0116d78](https://github.com/open-feature/rust-sdk/commit/0116d788fe2b8c96c0968e829bbdaf27847b0a46))
+* **deps:** update rust crate time to 0.3.36 ([#79](https://github.com/open-feature/rust-sdk/issues/79)) ([1ab8087](https://github.com/open-feature/rust-sdk/commit/1ab8087f30b35706b767d2cea2780c7c20890a1a))
+* **deps:** update rust crate typed-builder to 0.18.2 ([#80](https://github.com/open-feature/rust-sdk/issues/80)) ([c48e29f](https://github.com/open-feature/rust-sdk/commit/c48e29f0e6259a6da58a4d650bab246a29e6cb3d))
+* **deps:** update rust crate typed-builder to 0.19.0 ([#83](https://github.com/open-feature/rust-sdk/issues/83)) ([cc26526](https://github.com/open-feature/rust-sdk/commit/cc2652691baac13392bc2203358f2213ac01f5e5))
+* reexport `async_trait::async_trait` ([#74](https://github.com/open-feature/rust-sdk/issues/74)) ([40f911e](https://github.com/open-feature/rust-sdk/commit/40f911ec396086d4f05aeec6f4bba2ccdee258a8))
+
 ## [0.2.3](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.2...open-feature-v0.2.3) (2024-04-16)
 
 
