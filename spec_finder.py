@@ -21,13 +21,13 @@ def _demarkdown(t):
 def get_spec(force_refresh=False):
     """Fetch the specification, either from a local file or by downloading it."""
     if os.path.exists(SPEC_PATH) and not force_refresh:
-        with open(SPEC_PATH) as f:
+        with open(SPEC_PATH, encoding='utf-8') as f:
             data = f.read()
     else:
         try:
             with urllib.request.urlopen(SPEC_URL) as response:
                 data = response.read().decode('utf-8')
-            with open(SPEC_PATH, 'w') as f:
+            with open(SPEC_PATH, 'w', encoding='utf-8') as f:
                 f.write(data)
         except Exception as e:
             logging.error(f"Failed to fetch specification: {e}")
@@ -59,7 +59,7 @@ def parse_rust_files() -> Dict[str, Dict[str, str]]:
         for name in files:
             if not name.endswith('.rs'):
                 continue
-            with open(os.path.join(root, name)) as f:
+            with open(os.path.join(root, name), encoding='utf-8') as f:
                 data = f.read()
             for match in re.findall(r'#\[spec\((?P<innards>.*?)\)\]', data.replace('\n', ''), re.MULTILINE | re.DOTALL):
                 number_match = re.findall(r'number\s*=\s*"(.*?)"', match)
