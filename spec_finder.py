@@ -7,9 +7,11 @@ import os
 import sys
 
 def _demarkdown(t):
+    """Remove markdown-like formatting from text."""
     return t.replace('**', '').replace('`', '').replace('"', '')
 
 def get_spec(force_refresh=False):
+    """Fetch the specification, either from a local file or by downloading it."""
     spec_path = './specification.json'
     data = ""
     if os.path.exists(spec_path) and not force_refresh:
