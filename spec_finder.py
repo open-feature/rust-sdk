@@ -10,26 +10,28 @@ import sys
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
+SPEC_URL = 'https://raw.githubusercontent.com/open-feature/spec/main/specification.json'
+SPEC_PATH = './specification.json'
+
 def _demarkdown(t):
     """Remove markdown-like formatting from text."""
     return t.replace('**', '').replace('`', '').replace('"', '')
 
 def get_spec(force_refresh=False):
     """Fetch the specification, either from a local file or by downloading it."""
-    spec_path = './specification.json'
-    data = ""
-    if os.path.exists(spec_path) and not force_refresh:
-        with open(spec_path) as f:
-            data = ''.join(f.readlines())
+    if os.path.exists(SPEC_PATH) and not force_refresh:
+        with open(SPEC_PATH) as f:
+            data = f.read()
     else:
-        # TODO: Status code check
-        spec_response = urllib.request.urlopen('https://raw.githubusercontent.com/open-feature/spec/main/specification.json')
-        raw = []
-        for i in spec_response.readlines():
-            raw.append(i.decode('utf-8'))
-        data = ''.join(raw)
-        with open(spec_path, 'w') as f:
-            f.write(data)
+        try:
+            with urllib.request.urlopen(SPEC_URL) as response:
+                data = response.read().decode('utf-8')
+            with open(SPEC_PATH, 'w') as f:
+                f.write(data)
+        except Exception as e:
+            logging.error(f"Failed to fetch specification: {e}")
+            sys.exit(1)
+
     return json.loads(data)
 
 
