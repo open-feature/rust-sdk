@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import logging
+from typing import Any, Dict, Optional, Set
 import urllib.request
 import json
 import re
@@ -34,74 +35,71 @@ def get_spec(force_refresh=False):
 
     return json.loads(data)
 
-
-def main(refresh_spec=False, diff_output=False, limit_numbers=None):
-    actual_spec = get_spec(refresh_spec)
-
+def extract_spec_map(actual_spec: Dict[str, Any]) -> Dict[str, str]:
+    """Extract the specification map from the JSON data."""
     spec_map = {}
     for entry in actual_spec['rules']:
-        number = re.search('[\d.]+', entry['id']).group()
-        if 'requirement' in entry['machine_id']:
-            spec_map[number] = _demarkdown(entry['content'])
-
-        if len(entry['children']) > 0:
-            for ch in entry['children']:
-                number = re.search('[\d.]+', ch['id']).group()
+        number = re.search(r'[\d.]+', entry['id'])
+        if number:
+            number = number.group()
+            if 'requirement' in entry['machine_id']:
+                spec_map[number] = _demarkdown(entry['content'])
+        for ch in entry.get('children', []):
+            number = re.search(r'[\d.]+', ch['id'])
+            if number:
+                number = number.group()
                 if 'requirement' in ch['machine_id']:
                     spec_map[number] = _demarkdown(ch['content'])
+    return spec_map
 
+def parse_rust_files() -> Dict[str, Dict[str, str]]:
+    """Parse Rust files and extract specification numbers and corresponding text."""
     repo_specs = {}
-    missing = set(spec_map.keys())
-
-    for root, dirs, files in os.walk(".", topdown=False):
+    for root, _, files in os.walk(".", topdown=False):
         for name in files:
-            F = os.path.join(root, name)
-            if '.rs' not in name:
+            if not name.endswith('.rs'):
                 continue
-            with open(F) as f:
-                data = ''.join(f.readlines())
-
-            # if "#[spec" in data:
-            #     import pdb; pdb.set_trace()
-            for match in re.findall('#\[spec\((?P<innards>.*?)\)\]', data.replace('\n', ''), re.MULTILINE | re.DOTALL):
-                number = re.findall('number\s*=\s*"(.*?)"', match)[0]
-
-
-                if number in missing:
-                    missing.remove(number)
-                text_with_concat_chars = re.findall('text\s*=\s*(.*)', match)
+            with open(os.path.join(root, name)) as f:
+                data = f.read()
+            for match in re.findall(r'#\[spec\((?P<innards>.*?)\)\]', data.replace('\n', ''), re.MULTILINE | re.DOTALL):
+                number_match = re.findall(r'number\s*=\s*"(.*?)"', match)
+                if not number_match:
+                    continue
+                number = number_match[0]
+                text_with_concat_chars = re.findall(r'text\s*=\s*(.*)', match)
                 try:
-                    # We have to match for ") to capture text with parens inside, so we add the trailing " back in.
-                    text = _demarkdown(eval(''.join(text_with_concat_chars) + '"'))
-                    entry = repo_specs[number] = {
-                        'number': number,
-                        'text': text,
-                    }
-                except:
-                    print(f"Skipping {match} due to parsing error")
+                    text = _demarkdown(''.join(text_with_concat_chars) + '"')
+                    repo_specs[number] = {'number': number, 'text': text}
+                except Exception as e:
+                    logging.warning(f"Skipping {match} due to parsing error: {e}")
+    return repo_specs
 
+def main(refresh_spec: bool = False, diff_output: bool = False, limit_numbers: Optional[Set[str]] = None) -> None:
+    actual_spec = get_spec(refresh_spec)
+    spec_map = extract_spec_map(actual_spec)
+    repo_specs = parse_rust_files()
+
+    missing = set(spec_map.keys())
     bad_num = len(missing)
+
     for number, entry in sorted(repo_specs.items(), key=lambda x: x[0]):
-        if limit_numbers is not None and len(limit_numbers) > 0 and number not in limit_numbers:
+        if limit_numbers is not None and number not in limit_numbers:
             continue
         if number in spec_map:
             txt = entry['text']
-            if txt == spec_map[number]:
-                continue
-            else:
-                print(f"{number} is bad")
+            if txt != spec_map[number]:
+                logging.info(f"{number} is bad")
                 bad_num += 1
                 if diff_output:
-                    print(number + '\n' + '\n'.join([li for li in difflib.ndiff([txt], [spec_map[number]]) if not li.startswith(' ')]))
-                continue
+                    diff = difflib.ndiff([txt], [spec_map[number]])
+                    logging.info('\n'.join([li for li in diff if not li.startswith(' ')]))
+        else:
+            logging.info(f"{number} is defined in our tests, but couldn't find it in the spec")
 
-        print(f"{number} is defined in our tests, but couldn't find it in the spec")
-    print("")
-
-    if len(missing) > 0:
-        print('In the spec, but not in our tests: ')
+    if missing:
+        logging.info('In the spec, but not in our tests:')
         for m in sorted(missing):
-            print(f"  {m}: {spec_map[m]}")
+            logging.info(f"  {m}: {spec_map[m]}")
 
     sys.exit(bad_num)
 
