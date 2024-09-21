@@ -1,10 +1,14 @@
 #!/usr/bin/env python
+import logging
 import urllib.request
 import json
 import re
 import difflib
 import os
 import sys
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
 
 def _demarkdown(t):
     """Remove markdown-like formatting from text."""
