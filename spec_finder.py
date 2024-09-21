@@ -70,7 +70,7 @@ def main(refresh_spec=False, diff_output=False, limit_numbers=None):
                         'text': text,
                     }
                 except:
-                    print(f"Skipping {match} b/c we couldn't parse it")
+                    print(f"Skipping {match} due to parsing error")
 
     bad_num = len(missing)
     for number, entry in sorted(repo_specs.items(), key=lambda x: x[0]):
@@ -102,10 +102,10 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser(description='Parse the spec to make sure our tests cover it')
-    parser.add_argument('--refresh-spec', action='store_true', help='Re-downloads the spec')
-    parser.add_argument('--diff-output', action='store_true', help='print the text differences')
+    parser.add_argument('--refresh-spec', action='store_true', help='Re-download the spec')
+    parser.add_argument('--diff-output', action='store_true', help='Print the text differences')
     parser.add_argument('specific_numbers', metavar='num', type=str, nargs='*',
-                        help='limit this to specific numbers')
+                        help='Limit this to specific numbers')
 
     args = parser.parse_args()
     main(refresh_spec=args.refresh_spec, diff_output=args.diff_output, limit_numbers=args.specific_numbers)
