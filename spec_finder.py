@@ -30,7 +30,7 @@ def get_spec(force_refresh=False):
             with open(SPEC_PATH, 'w', encoding='utf-8') as f:
                 f.write(data)
         except Exception as e:
-            logging.error(f"Failed to fetch specification: {e}")
+            logging.error("Failed to fetch specification: %s", e)
             sys.exit(1)
 
     return json.loads(data)
@@ -71,7 +71,7 @@ def parse_rust_files() -> Dict[str, Dict[str, str]]:
                     text = _demarkdown(''.join(text_with_concat_chars) + '"')
                     repo_specs[number] = {'number': number, 'text': text}
                 except Exception as e:
-                    logging.warning(f"Skipping {match} due to parsing error: {e}")
+                    logging.warning("Skipping %s due to parsing error: %s", match, e)
     return repo_specs
 
 def main(refresh_spec: bool = False, diff_output: bool = False, limit_numbers: Optional[Set[str]] = None) -> None:
@@ -88,18 +88,18 @@ def main(refresh_spec: bool = False, diff_output: bool = False, limit_numbers: O
         if number in spec_map:
             txt = entry['text']
             if txt != spec_map[number]:
-                logging.info(f"{number} is bad")
+                logging.info("%s is bad", number)
                 bad_num += 1
                 if diff_output:
                     diff = difflib.ndiff([txt], [spec_map[number]])
                     logging.info('\n'.join([li for li in diff if not li.startswith(' ')]))
         else:
-            logging.info(f"{number} is defined in our tests, but couldn't find it in the spec")
+            logging.info("%s is defined in our tests, but couldn't find it in the spec", number)
 
     if missing:
         logging.info('In the spec, but not in our tests:')
         for m in sorted(missing):
-            logging.info(f"  {m}: {spec_map[m]}")
+            logging.info("%s: %s", m, spec_map[m])
 
     sys.exit(bad_num)
 
