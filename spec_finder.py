@@ -75,6 +75,7 @@ def parse_rust_files() -> Dict[str, Dict[str, str]]:
     return repo_specs
 
 def main(refresh_spec: bool = False, diff_output: bool = False, limit_numbers: Optional[Set[str]] = None) -> None:
+    """Main function to compare specifications with Rust tests."""
     actual_spec = get_spec(refresh_spec)
     spec_map = extract_spec_map(actual_spec)
     repo_specs = parse_rust_files()
