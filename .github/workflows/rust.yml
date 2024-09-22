@@ -35,6 +35,10 @@ jobs:
         name: Use MSRV lock file
         run: cp Cargo.lock.msrv Cargo.lock
 
+      - name: Update dependencies for Rust 1.67.1
+        if: matrix.rust == '1.67.1'
+        run: cargo update -p mockall --precise 0.12.1
+
       - name: Build
         run: cargo build --verbose
 
