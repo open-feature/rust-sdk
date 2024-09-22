@@ -36,7 +36,12 @@ jobs:
         run: cp Cargo.lock.msrv Cargo.lock
 
       - name: Build
-        run: cargo build --verbose
+        run: |
+          if [ '${{ matrix.rust }}' == '1.67.1' ]; then
+            cargo build --locked --verbose
+          else
+            cargo build --verbose
+          fi
 
       - name: Run tests
         run: cargo test --verbose
