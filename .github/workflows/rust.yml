@@ -21,7 +21,7 @@ jobs:
     strategy:
       matrix:
         rust:
-          - 1.67.1 # MSRV
+          - 1.71.1 # MSRV
           - stable
           - beta
     steps:
@@ -31,7 +31,7 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
 
-      - if: matrix.rust == '1.67.1'
+      - if: matrix.rust == '1.71.1'
         name: Use MSRV lock file
         run: cp Cargo.lock.msrv Cargo.lock
 
