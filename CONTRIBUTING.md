@@ -1,4 +1,5 @@
-Thank you for considering contributing to OpenFeature Rust SDK! We appreciate your help and look forward to collaborating with you.
+Thank you for considering contributing to OpenFeature Rust SDK!
+We appreciate your help and look forward to collaborating with you.
 
 Here are the key steps for contributing to the OpenFeature Rust SDK:
 
@@ -9,7 +10,7 @@ Here are the key steps for contributing to the OpenFeature Rust SDK:
    ```sh
    mkdir open-feature
    cd open-feature
-   git clone https://github.com/open-feature/rust-sdk.git
+   git clone https://github.com/YOUR_GITHUB_USERNAME/rust-sdk.git
    cd rust-sdk
    ```
 3. **Create a Branch**: Create a new branch with a name that follows the recommended convention:
@@ -83,4 +84,7 @@ cargo run
 
 ## Closing Note
 
-Thank you 🙏 for your interest and support!  Your contributions help us improve and grow 🌱 the OpenFeature Rust SDK. We truly appreciate your time and effort in making our project better. If you have any questions or need assistance, please don’t hesitate to reach out on Slack in the [#openfeature-rust](https://cloud-native.slack.com/archives/C05RG7F93NV) channel!
+Thank you 🙏 for your interest and support!
+Your contributions help us improve and grow 🌱 the OpenFeature Rust SDK.
+We truly appreciate your time and effort in making our project better.
+If you have any questions or need assistance, please don’t hesitate to reach out on Slack in the [#openfeature-rust](https://cloud-native.slack.com/archives/C05RG7F93NV) channel!
