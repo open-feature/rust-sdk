@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt::{Display, Formatter};
 
 use crate::EvaluationError;
 
@@ -68,9 +69,9 @@ pub enum EvaluationReason {
     Other(String),
 }
 
-impl ToString for EvaluationReason {
-    fn to_string(&self) -> String {
-        match self {
+impl Display for EvaluationReason {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let reason = match self {
             Self::Static => "STATIC",
             Self::Default => "DEFAULT",
             Self::TargetingMatch => "TARGETING_MATCH",
@@ -80,8 +81,8 @@ impl ToString for EvaluationReason {
             Self::Unknown => "UNKNOWN",
             Self::Error => "ERROR",
             Self::Other(reason) => reason.as_str(),
-        }
-        .to_string()
+        };
+        write!(f, "{reason}")
     }
 }
 
