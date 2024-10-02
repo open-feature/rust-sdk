@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.5](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.4...open-feature-v0.2.5) (2024-10-02)
+
+
+### 🧹 Chore
+
+* Add configs for centrally managed spec compliance checking. ([#73](https://github.com/open-feature/rust-sdk/issues/73)) ([40431aa](https://github.com/open-feature/rust-sdk/commit/40431aa3cc6284357d2ed845ee9725ae5da80896))
+* fix MSRV build ([#91](https://github.com/open-feature/rust-sdk/issues/91)) ([d82a3ec](https://github.com/open-feature/rust-sdk/commit/d82a3ec8453d639cc1f596490e19a1255590d1c1))
+
+
+### 📚 Documentation
+
+* add CONTRIBUTING.md to guide contributors ([#88](https://github.com/open-feature/rust-sdk/issues/88)) ([81d01b6](https://github.com/open-feature/rust-sdk/commit/81d01b678c14cf8043f83fa25167c06d0626e3a7))
+
 ## [0.2.4](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.3...open-feature-v0.2.4) (2024-08-12)
 
 
