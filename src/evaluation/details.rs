@@ -3,6 +3,8 @@ use std::fmt::{Display, Formatter};
 
 use crate::EvaluationError;
 
+use super::Value;
+
 /// The result of evaluation.
 pub type EvaluationResult<T> = Result<T, EvaluationError>;
 
@@ -29,6 +31,22 @@ pub struct EvaluationDetails<T> {
     /// The optional flag metadata returned by the configured provider.
     /// If the provider returns nothing, it is set to the default value.
     pub flag_metadata: FlagMetadata,
+}
+
+impl<T> EvaluationDetails<T>
+where
+    T: Into<Value>,
+{
+    /// Convert the evaluation result of type `T` to `Value`.
+    pub fn into_value(self) -> EvaluationDetails<Value> {
+        EvaluationDetails {
+            flag_key: self.flag_key,
+            value: self.value.into(),
+            reason: self.reason,
+            variant: self.variant,
+            flag_metadata: self.flag_metadata,
+        }
+    }
 }
 
 // ============================================================

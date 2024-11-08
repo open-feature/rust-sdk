@@ -3,11 +3,12 @@ use tokio::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use crate::{
     provider::{FeatureProvider, ProviderMetadata},
-    Client, EvaluationContext,
+    Client, EvaluationContext, Hook, HookWrapper,
 };
 
 use super::{
-    global_evaluation_context::GlobalEvaluationContext, provider_registry::ProviderRegistry,
+    global_evaluation_context::GlobalEvaluationContext, global_hooks::GlobalHooks,
+    provider_registry::ProviderRegistry,
 };
 
 lazy_static! {
@@ -21,6 +22,7 @@ lazy_static! {
 #[derive(Default)]
 pub struct OpenFeature {
     evaluation_context: GlobalEvaluationContext,
+    hooks: GlobalHooks,
 
     provider_registry: ProviderRegistry,
 }
@@ -54,6 +56,12 @@ impl OpenFeature {
         self.provider_registry.set_named(name, provider).await;
     }
 
+    /// Add a new hook to the global list of hooks.
+    pub async fn add_hook<T: Hook>(&mut self, hook: T) {
+        let mut lock = self.hooks.get_mut().await; // TODO: Remove async context to avoid deadlock and enforce initialization before usage.
+        lock.push(HookWrapper::new(hook));
+    }
+
     /// Return the metadata of default (unnamed) provider.
     pub async fn provider_metadata(&self) -> ProviderMetadata {
         self.provider_registry
@@ -77,6 +85,7 @@ impl OpenFeature {
         Client::new(
             String::default(),
             self.evaluation_context.clone(),
+            self.hooks.clone(),
             self.provider_registry.clone(),
         )
     }
@@ -87,6 +96,7 @@ impl OpenFeature {
         Client::new(
             name.to_string(),
             self.evaluation_context.clone(),
+            self.hooks.clone(),
             self.provider_registry.clone(),
         )
     }

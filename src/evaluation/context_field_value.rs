@@ -11,7 +11,7 @@ pub enum EvaluationContextFieldValue {
     Float(f64),
     String(String),
     DateTime(OffsetDateTime),
-    Struct(Arc<dyn Any + Send + Sync>),
+    Struct(Arc<dyn Any + Send + Sync>), // TODO: better to make structure in similar way as serde_json::Value
 }
 
 impl EvaluationContextFieldValue {

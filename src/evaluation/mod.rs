@@ -13,7 +13,7 @@ mod context_field_value;
 pub use context_field_value::EvaluationContextFieldValue;
 
 mod value;
-pub use value::{StructValue, Value};
+pub use value::{StructValue, Type, Value};
 
 mod options;
 pub use options::EvaluationOptions;
