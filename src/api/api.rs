@@ -166,6 +166,7 @@ mod tests {
         // Set the new provider and ensure the value comes from it.
         let mut provider = MockFeatureProvider::new();
         provider.expect_initialize().returning(|_| {});
+        provider.expect_hooks().return_const(vec![]);
         provider
             .expect_resolve_int_value()
             .return_const(Ok(ResolutionDetails::new(200)));
@@ -213,6 +214,7 @@ mod tests {
         // Bind provider to the same name.
         let mut provider = MockFeatureProvider::new();
         provider.expect_initialize().returning(|_| {});
+        provider.expect_hooks().return_const(vec![]);
         provider
             .expect_resolve_int_value()
             .return_const(Ok(ResolutionDetails::new(30)));
@@ -256,12 +258,14 @@ mod tests {
 
         let mut default_provider = MockFeatureProvider::new();
         default_provider.expect_initialize().returning(|_| {});
+        default_provider.expect_hooks().return_const(vec![]);
         default_provider
             .expect_resolve_int_value()
             .return_const(Ok(ResolutionDetails::new(100)));
 
         let mut named_provider = MockFeatureProvider::new();
         named_provider.expect_initialize().returning(|_| {});
+        named_provider.expect_hooks().return_const(vec![]);
         named_provider
             .expect_resolve_int_value()
             .return_const(Ok(ResolutionDetails::new(200)));
@@ -324,6 +328,7 @@ mod tests {
         // Setup expectations for different evaluation contexts.
         let mut provider = MockFeatureProvider::new();
         provider.expect_initialize().returning(|_| {});
+        provider.expect_hooks().return_const(vec![]);
 
         provider
             .expect_resolve_int_value()

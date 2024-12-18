@@ -207,7 +207,7 @@ mod tests {
         let mut mock_hook_1 = MockHook::new();
         let mut mock_hook_2 = MockHook::new();
 
-        let mut api = OpenFeature::singleton_mut().await;
+        let mut api = OpenFeature::default();
         let mut client = api.create_named_client("test");
         let mut mock_provider = MockFeatureProvider::default();
 
@@ -215,6 +215,15 @@ mod tests {
         mock_provider.expect_initialize().return_const(());
         mock_provider
             .expect_resolve_bool_value()
+            .withf(|_, ctx| {
+                assert_eq!(
+                    ctx,
+                    &EvaluationContext::default()
+                        .with_targeting_key("mock_hook_1")
+                        .with_custom_field("is", "a test")
+                );
+                true
+            })
             .return_const(Ok(ResolutionDetails::new(true)));
 
         api.set_provider(mock_provider).await;
@@ -247,7 +256,7 @@ mod tests {
                 ))
             });
 
-        let expected_eval_ctx_2 = eval_ctx.clone().with_targeting_key("mock_hook_1");
+        let expected_eval_ctx_2 = EvaluationContext::default().with_targeting_key("mock_hook_1");
         let client_metadata = client.metadata().clone();
         mock_hook_2
             .expect_before()
@@ -287,7 +296,7 @@ mod tests {
     async fn before_hook_context_merging() {
         let mut mock_hook = MockHook::new();
 
-        let mut api = OpenFeature::singleton_mut().await;
+        let mut api = OpenFeature::default();
         api.set_evaluation_context(
             EvaluationContext::default()
                 .with_custom_field("key", "api context")
@@ -359,7 +368,7 @@ mod tests {
     async fn after_hook() {
         let mut mock_hook = MockHook::new();
 
-        let mut api = OpenFeature::singleton_mut().await;
+        let mut api = OpenFeature::default();
         let mut client = api.create_client();
         let mut mock_provider = MockFeatureProvider::default();
 
@@ -407,7 +416,7 @@ mod tests {
         {
             let mut mock_hook = MockHook::new();
 
-            let mut api = OpenFeature::singleton_mut().await;
+            let mut api = OpenFeature::default();
             let mut client = api.create_client();
             let mut mock_provider = MockFeatureProvider::default();
 
@@ -445,7 +454,7 @@ mod tests {
         {
             let mut mock_hook = MockHook::new();
 
-            let mut api = OpenFeature::singleton_mut().await;
+            let mut api = OpenFeature::default();
             let mut client = api.create_client();
             let mut mock_provider = MockFeatureProvider::default();
 
@@ -493,7 +502,7 @@ mod tests {
     async fn finally_hook() {
         let mut mock_hook = MockHook::new();
 
-        let mut api = OpenFeature::singleton_mut().await;
+        let mut api = OpenFeature::default();
         let mut client = api.create_client();
         let mut mock_provider = MockFeatureProvider::default();
 
@@ -506,7 +515,6 @@ mod tests {
             .return_const(Ok(ResolutionDetails::new(true)));
 
         api.set_provider(mock_provider).await;
-        drop(api);
 
         mock_hook
             .expect_before()
@@ -551,7 +559,7 @@ mod tests {
         let mut mock_provider_hook = MockHook::new();
         let mut mock_invocation_hook = MockHook::new();
 
-        let mut api = OpenFeature::singleton_mut().await;
+        let mut api = OpenFeature::default();
         let mut client = api.create_client();
         let mut provider = MockFeatureProvider::default();
 
@@ -665,7 +673,7 @@ mod tests {
     async fn error_hook_invoked_on_error() {
         let mut mock_hook = MockHook::new();
 
-        let mut api = OpenFeature::singleton_mut().await;
+        let mut api = OpenFeature::default();
         let mut client = api.create_client();
         let mut mock_provider = MockFeatureProvider::default();
 
@@ -676,7 +684,6 @@ mod tests {
         mock_provider.expect_resolve_bool_value().never();
 
         api.set_provider(mock_provider).await;
-        drop(api);
 
         mock_hook
             .expect_before()
@@ -714,7 +721,7 @@ mod tests {
         let mut mock_provider_hook = MockHook::new();
         let mut mock_invocation_hook = MockHook::new();
 
-        let mut api = OpenFeature::singleton_mut().await;
+        let mut api = OpenFeature::default();
         let mut client = api.create_client();
         let mut provider = MockFeatureProvider::default();
 
