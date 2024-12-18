@@ -385,7 +385,7 @@ impl Client {
     where
         I: Iterator<Item = &'a HookWrapper>,
     {
-        let mut context = EvaluationContext::default();
+        let mut context = hook_context.evaluation_context.clone();
         for hook in hooks {
             let invoke_hook_context = HookContext {
                 evaluation_context: &context,
@@ -567,6 +567,7 @@ mod tests {
         // Test bool.
         let mut provider = MockFeatureProvider::new();
         provider.expect_initialize().returning(|_| {});
+        provider.expect_hooks().return_const(vec![]);
 
         provider
             .expect_resolve_bool_value()
@@ -667,6 +668,7 @@ mod tests {
     async fn get_details() {
         let mut provider = MockFeatureProvider::new();
         provider.expect_initialize().returning(|_| {});
+        provider.expect_hooks().return_const(vec![]);
         provider
             .expect_resolve_int_value()
             .return_const(Ok(ResolutionDetails::builder()
@@ -719,6 +721,7 @@ mod tests {
     async fn get_details_flag_metadata() {
         let mut provider = MockFeatureProvider::new();
         provider.expect_initialize().returning(|_| {});
+        provider.expect_hooks().return_const(vec![]);
         provider
             .expect_resolve_bool_value()
             .return_const(Ok(ResolutionDetails::builder()
