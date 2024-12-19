@@ -338,11 +338,21 @@ impl Client {
             .await;
         hook_context.evaluation_context = &context;
 
+        // INFO: Result of the resolution or error reson with default value
+        // This bind is defined here to minimize cloning of the `Value`
+        let evaluation_details;
+
         if let Err(error) = result {
             self.error_hooks(after_hooks.clone(), &hook_context, &error, hints)
                 .await;
-            self.finally_hooks(after_hooks.into_iter(), &hook_context, hints)
-                .await;
+            evaluation_details = EvaluationDetails::error_reason(flag_key, T::default());
+            self.finally_hooks(
+                after_hooks.into_iter(),
+                &hook_context,
+                &evaluation_details,
+                hints,
+            )
+            .await;
 
             return Err(error);
         }
@@ -360,18 +370,27 @@ impl Client {
                     .after_hooks(after_hooks.clone(), &hook_context, &details, hints)
                     .await
                 {
+                    evaluation_details = EvaluationDetails::error_reason(flag_key, T::default());
                     self.error_hooks(after_hooks.clone(), &hook_context, &error, hints)
                         .await;
+                } else {
+                    evaluation_details = details;
                 }
             }
             Err(ref error) => {
+                evaluation_details = EvaluationDetails::error_reason(flag_key, T::default());
                 self.error_hooks(after_hooks.clone(), &hook_context, error, hints)
                     .await;
             }
         }
 
-        self.finally_hooks(after_hooks.into_iter(), &hook_context, hints)
-            .await;
+        self.finally_hooks(
+            after_hooks.into_iter(),
+            &hook_context,
+            &evaluation_details,
+            hints,
+        )
+        .await;
 
         result
     }
@@ -441,12 +460,13 @@ impl Client {
         &self,
         hooks: I,
         hook_context: &HookContext<'_>,
+        evaluation_details: &EvaluationDetails<Value>,
         hints: Option<&HookHints>,
     ) where
         I: Iterator<Item = &'a HookWrapper>,
     {
         for hook in hooks {
-            hook.finally(hook_context, hints).await;
+            hook.finally(hook_context, evaluation_details, hints).await;
         }
     }
 }

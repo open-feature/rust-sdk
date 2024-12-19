@@ -33,6 +33,19 @@ pub struct EvaluationDetails<T> {
     pub flag_metadata: FlagMetadata,
 }
 
+impl EvaluationDetails<Value> {
+    /// Creates a new `EvaluationDetails` instance with an error reason.
+    pub fn error_reason(flag_key: impl Into<String>, value: impl Into<Value>) -> Self {
+        Self {
+            value: value.into(),
+            flag_key: flag_key.into(),
+            reason: Some(EvaluationReason::Error),
+            variant: None,
+            flag_metadata: FlagMetadata::default(),
+        }
+    }
+}
+
 impl<T> EvaluationDetails<T>
 where
     T: Into<Value>,

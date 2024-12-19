@@ -34,7 +34,12 @@ impl Hook for LoggingHook {
     ) {
         log::error!("Error hook for flag {}: {:?}", context.flag_key, error);
     }
-    async fn finally<'a>(&self, context: &HookContext<'a>, _: Option<&'a HookHints>) {
+    async fn finally<'a>(
+        &self,
+        context: &HookContext<'a>,
+        _: &EvaluationDetails<Value>,
+        _: Option<&'a HookHints>,
+    ) {
         log::trace!("Finally hook for flag {}", context.flag_key);
     }
 }

@@ -44,7 +44,12 @@ pub trait Hook: Send + Sync + 'static {
     );
 
     /// This method is called after the flag evaluation, regardless of the result.
-    async fn finally<'a>(&self, context: &HookContext<'a>, hints: Option<&'a HookHints>);
+    async fn finally<'a>(
+        &self,
+        context: &HookContext<'a>,
+        evaluation_details: &EvaluationDetails<Value>,
+        hints: Option<&'a HookHints>,
+    );
 }
 
 // ============================================================
@@ -102,7 +107,7 @@ mod tests {
 
     use crate::{
         provider::{MockFeatureProvider, ResolutionDetails},
-        EvaluationErrorCode, EvaluationOptions, OpenFeature, StructValue,
+        EvaluationErrorCode, EvaluationOptions, EvaluationReason, OpenFeature, StructValue,
     };
 
     use super::*;
@@ -437,7 +442,22 @@ mod tests {
                 .in_sequence(&mut seq)
                 .return_const(());
 
-            mock_hook.expect_finally().return_const(());
+            mock_hook
+                .expect_finally()
+                .withf(|ctx, details, _| {
+                    assert_eq!(ctx.flag_key, "flag");
+                    assert_eq!(ctx.flag_type, Type::Bool);
+                    assert_eq!(
+                        ctx.evaluation_context,
+                        &EvaluationContext::default().with_custom_field("is", "a test")
+                    );
+                    assert_eq!(ctx.default_value, Some(Value::Bool(false)));
+                    assert_eq!(details.flag_key, "flag");
+                    assert_eq!(details.value, Value::Bool(false));
+                    assert_eq!(details.reason, Some(EvaluationReason::Error));
+                    true
+                })
+                .return_const(());
 
             // evaluation
             client = client.with_hook(mock_hook);
@@ -531,6 +551,18 @@ mod tests {
             .expect_finally()
             .once()
             .in_sequence(&mut seq)
+            .withf(|ctx, details, _| {
+                assert_eq!(ctx.flag_key, "flag");
+                assert_eq!(ctx.flag_type, Type::Bool);
+                assert_eq!(
+                    ctx.evaluation_context,
+                    &EvaluationContext::default().with_custom_field("is", "a test")
+                );
+                assert_eq!(ctx.default_value, Some(Value::Bool(false)));
+                assert_eq!(details.flag_key, "flag");
+                assert_eq!(details.value, Value::Bool(true));
+                true
+            })
             .return_const(());
 
         // evaluation
@@ -621,22 +653,22 @@ mod tests {
             .expect_finally()
             .once()
             .in_sequence(&mut seq)
-            .returning(|_, _| {});
+            .returning(|_, _, _| {});
         mock_invocation_hook
             .expect_finally()
             .once()
             .in_sequence(&mut seq)
-            .returning(|_, _| {});
+            .returning(|_, _, _| {});
         mock_client_hook
             .expect_finally()
             .once()
             .in_sequence(&mut seq)
-            .returning(|_, _| {});
+            .returning(|_, _, _| {});
         mock_api_hook
             .expect_finally()
             .once()
             .in_sequence(&mut seq)
-            .returning(|_, _| {});
+            .returning(|_, _, _| {});
 
         provider
             .expect_hooks()
@@ -779,22 +811,22 @@ mod tests {
             .expect_finally()
             .once()
             .in_sequence(&mut seq)
-            .returning(|_, _| {});
+            .returning(|_, _, _| {});
         mock_invocation_hook
             .expect_finally()
             .once()
             .in_sequence(&mut seq)
-            .returning(|_, _| {});
+            .returning(|_, _, _| {});
         mock_client_hook
             .expect_finally()
             .once()
             .in_sequence(&mut seq)
-            .returning(|_, _| {});
+            .returning(|_, _, _| {});
         mock_api_hook
             .expect_finally()
             .once()
             .in_sequence(&mut seq)
-            .returning(|_, _| {});
+            .returning(|_, _, _| {});
 
         provider
             .expect_hooks()

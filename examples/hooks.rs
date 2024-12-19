@@ -114,7 +114,12 @@ impl Hook for DummyLoggingHook {
         );
     }
 
-    async fn finally<'a>(&self, context: &HookContext<'a>, _hints: Option<&'a HookHints>) {
+    async fn finally<'a>(
+        &self,
+        context: &HookContext<'a>,
+        _: &EvaluationDetails<Value>,
+        _hints: Option<&'a HookHints>,
+    ) {
         log::info!(
             "Finally({}) evaluating flag {} of type {}",
             self.0,
