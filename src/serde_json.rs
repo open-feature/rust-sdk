@@ -20,7 +20,7 @@ fn json_value_to_value(value: &serde_json::Value) -> EvaluationResult<Value> {
     match value {
         serde_json::Value::Bool(value) => Ok(Value::Bool(*value)),
         serde_json::Value::Number(value) if value.is_i64() => {
-            Ok(Value::Int(value.as_i64().unwrap())) //TODO: remove unwrap or use expect
+            Ok(Value::Int(value.as_i64().unwrap()))
         }
         serde_json::Value::Number(value) if value.is_f64() => {
             Ok(Value::Float(value.as_f64().unwrap()))

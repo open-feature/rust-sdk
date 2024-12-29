@@ -27,7 +27,7 @@ pub struct Client {
     global_evaluation_context: GlobalEvaluationContext,
     global_hooks: GlobalHooks,
 
-    hooks: Vec<HookWrapper>,
+    client_hooks: Vec<HookWrapper>,
 }
 
 impl Client {
@@ -44,7 +44,7 @@ impl Client {
             global_hooks,
             provider_registry,
             evaluation_context: EvaluationContext::default(),
-            hooks: Vec::new(),
+            client_hooks: Vec::new(),
         }
     }
 
@@ -274,7 +274,7 @@ impl Client {
     /// Add a hook to the client.
     #[must_use]
     pub fn with_hook<T: Hook>(mut self, hook: T) -> Self {
-        self.hooks.push(HookWrapper::new(hook));
+        self.client_hooks.push(HookWrapper::new(hook));
         self
     }
 
@@ -315,7 +315,7 @@ impl Client {
         };
 
         let global_hooks = self.global_hooks.get().await;
-        let client_hooks = &self.hooks[..];
+        let client_hooks = &self.client_hooks[..];
         let invocation_hooks: &[HookWrapper] = evaluation_options
             .map(|options| options.hooks.as_ref())
             .unwrap_or_default();
@@ -779,7 +779,7 @@ mod tests {
 
         let client = client.with_hook(crate::LoggingHook);
 
-        assert_eq!(client.hooks.len(), 1);
+        assert_eq!(client.client_hooks.len(), 1);
     }
 
     #[tokio::test]
@@ -791,7 +791,7 @@ mod tests {
 
         let client = client.with_logging_hook();
 
-        assert_eq!(client.hooks.len(), 1);
+        assert_eq!(client.client_hooks.len(), 1);
     }
 
     fn create_default_client() -> Client {

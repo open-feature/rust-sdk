@@ -2,7 +2,7 @@
 name = "open-feature"
 version = "0.2.4"
 edition = "2021"
-rust-version = "1.71.1"                                 # MSRV
+rust-version = "1.71.1" # MSRV
 description = "The official OpenFeature Rust SDK."
 documentation = "https://docs.rs/open-feature"
 readme = "README.md"

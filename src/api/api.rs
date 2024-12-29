@@ -58,7 +58,7 @@ impl OpenFeature {
 
     /// Add a new hook to the global list of hooks.
     pub async fn add_hook<T: Hook>(&mut self, hook: T) {
-        let mut lock = self.hooks.get_mut().await; // TODO: Remove async context to avoid deadlock and enforce initialization before usage.
+        let mut lock = self.hooks.get_mut().await;
         lock.push(HookWrapper::new(hook));
     }
 
