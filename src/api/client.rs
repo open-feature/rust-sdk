@@ -338,7 +338,7 @@ impl Client {
             .await;
         hook_context.evaluation_context = &context;
 
-        // INFO: Result of the resolution or error reson with default value
+        // INFO: Result of the resolution or error reason with default value
         // This bind is defined here to minimize cloning of the `Value`
         let evaluation_details;
 
