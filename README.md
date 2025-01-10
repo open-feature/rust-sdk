@@ -151,12 +151,12 @@ See [here](https://docs.rs/open-feature/latest/open_feature/index.html) for the 
 | ------ | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | ✅      | [Providers](#providers)         | Integrate with a commercial, open source, or in-house feature management tool.                                                     |
 | ✅      | [Targeting](#targeting)         | Contextually-aware flag evaluation using [evaluation context](https://openfeature.dev/docs/reference/concepts/evaluation-context). |
-| ❌      | [Hooks](#hooks)                 | Add functionality to various stages of the flag evaluation life-cycle.                                                             |
-| ❌      | [Logging](#logging)             | Integrate with popular logging packages.                                                                                           |
+| ✅      | [Hooks](#hooks)                 | Add functionality to various stages of the flag evaluation life-cycle.                                                             |
+| ✅      | [Logging](#logging)             | Integrate with popular logging packages.                                                                                           |
 | ✅      | [Named clients](#named-clients) | Utilize multiple providers in a single application.                                                                                |
 | ❌      | [Eventing](#eventing)           | React to state changes in the provider or flag management system.                                                                  |
 | ✅      | [Shutdown](#shutdown)           | Gracefully clean up a provider during application shutdown.                                                                        |
-| ❌      | [Extending](#extending)         | Extend OpenFeature with custom providers and hooks.                                                                                |
+| ✅      | [Extending](#extending)         | Extend OpenFeature with custom providers and hooks.                                                                                |
 
 <sub>Implemented: ✅ | In-progress: ⚠️ | Not implemented yet: ❌</sub>
 
@@ -211,21 +211,89 @@ client.get_int_value("flag", Some(&evaluation_context), None);
 
 ### Hooks
 
-Hooks are not yet available in the Rust SDK.
-
-<!-- TOOD: Uncomment it when we support events
 [Hooks](https://openfeature.dev/docs/reference/concepts/hooks) allow for custom logic to be added at well-defined points of the flag evaluation life-cycle.
 Look [here](https://openfeature.dev/ecosystem/?instant_search%5BrefinementList%5D%5Btype%5D%5B0%5D=Hook&instant_search%5BrefinementList%5D%5Btechnology%5D%5B0%5D=Rust) for a complete list of available hooks.
 If the hook you're looking for hasn't been created yet, see the [develop a hook](#develop-a-hook) section to learn how to build it yourself.
 
 Once you've added a hook as a dependency, it can be registered at the global, client, or flag invocation level.
--->
 
-<!-- TODO: code example of setting hooks at all levels -->
+```rust
+let mut api = OpenFeature::singleton_mut().await;
+
+// Set a global hook.
+api.set_hook(MyHook::default()).await;
+
+// Create a client and set a client level hook.
+let client = api.create_client();
+client.set_hook(MyHook::default());
+
+// Get a flag value with a hook.
+let eval = EvaluationOptions::default().with_hook(MyHook::default());
+client.get_int_value("key", None, Some(&eval)).await;
+```
+
+Example of a hook implementation you can find in [examples/hooks.rs](https://github.com/open-feature/rust-sdk/blob/main/examples/hooks.rs).
+
+To run the example, execute the following command:
+
+```shell
+cargo run --example hooks
+```
 
 ### Logging
 
-Logging customization is not yet available in the Rust SDK.
+Note that in accordance with the OpenFeature specification, the SDK doesn't generally log messages during flag evaluation.
+
+#### Logging hook
+
+The Rust SDK provides a logging hook that can be used to log messages during flag evaluation.
+This hook is not enabled by default and must be explicitly set.
+
+```rust
+let mut api = OpenFeature::singleton_mut().await;
+
+let client = api.create_client().with_logging_hook(false);
+
+...
+
+// Note: You can include evaluation context to log output.
+let client = api.create_client().with_logging_hook(true);
+```
+
+Both **text** and **structured** logging are supported.
+To enable **structured** logging, enable feature `structured-logging` in your `Cargo.toml`:
+
+```toml
+open-feature = { version = "0.2.4", features = ["structured-logging"] }
+```
+
+Example of a logging hook usage you can find in [examples/logging.rs](https://github.com/open-feature/rust-sdk/blob/main/examples/logging.rs).
+
+To run the example, execute the following command:
+
+```shell
+cargo run --example logging
+```
+
+**Output**:
+
+```text
+[2025-01-10T18:53:11Z DEBUG open_feature::hooks::logging] Before stage: domain=, provider_name=Dummy Provider, flag_key=my_feature, default_value=Some(Bool(false)), evaluation_context=EvaluationContext { targeting_key: None, custom_fields: {} }
+[2025-01-10T18:53:11Z DEBUG open_feature::hooks::logging] After stage: domain=, provider_name=Dummy Provider, flag_key=my_feature, default_value=Some(Bool(false)), reason=None, variant=None, value=Bool(true), evaluation_context=EvaluationContext { targeting_key: None, custom_fields: {} }
+```
+
+or with structured logging:
+
+```shell
+cargo run --example logging --features structured-logging
+```
+
+**Output**:
+
+```jsonl
+{"default_value":"Some(Bool(false))","domain":"","evaluation_context":"EvaluationContext { targeting_key: None, custom_fields: {} }","flag_key":"my_feature","level":"DEBUG","message":"Before stage","provider_name":"No-op Provider","target":"open_feature","timestamp":1736537120828}
+{"default_value":"Some(Bool(false))","domain":"","error_message":"Some(\"No-op provider is never ready\")","evaluation_context":"EvaluationContext { targeting_key: None, custom_fields: {} }","file":"src/hooks/logging.rs","flag_key":"my_feature","level":"ERROR","line":162,"message":"Error stage","module":"open_feature::hooks::logging::structured","provider_name":"No-op Provider","target":"open_feature","timestamp":1736537120828}
+```
 
 ### Named clients
 
@@ -281,21 +349,59 @@ Check the source of [`NoOpProvider`](https://github.com/open-feature/rust-sdk/bl
 
 ### Develop a hook
 
-Hooks are not yet available in the Rust SDK.
-
-<!-- TOOD: Uncomment it when we support events
 To develop a hook, you need to create a new project and include the OpenFeature SDK as a dependency.
 This can be a new repository or included in [the existing contrib repository](https://github.com/open-feature/rust-sdk-contrib) available under the OpenFeature organization.
 Implement your own hook by conforming to the `Hook interface`.
-To satisfy the interface, all methods (`Before`/`After`/`Finally`/`Error`) need to be defined.
-To avoid defining empty functions make use of the `UnimplementedHook` struct (which already implements all the empty functions).
--->
+To satisfy the interface, all methods (`before`/`after`/`finally`/`error`) need to be defined.
 
-<!-- TODO: code example of hook implementation -->
+```rust
+use open_feature::{
+    EvaluationContext, EvaluationDetails, EvaluationError,
+    Hook, HookContext, HookHints, Value,
+};
 
-<!--
+struct MyHook;
+
+#[async_trait::async_trait]
+impl Hook for MyHook {
+    async fn before<'a>(
+        &self,
+        context: &HookContext<'a>,
+        hints: Option<&'a HookHints>,
+    ) -> Result<Option<EvaluationContext>, EvaluationError> {
+        todo!()
+    }
+
+    async fn after<'a>(
+        &self,
+        context: &HookContext<'a>,
+        details: &EvaluationDetails<Value>,
+        hints: Option<&'a HookHints>,
+    ) -> Result<(), EvaluationError> {
+        todo!()
+    }
+
+    async fn error<'a>(
+        &self,
+        context: &HookContext<'a>,
+        error: &EvaluationError,
+        hints: Option<&'a HookHints>,
+    ) {
+        todo!()
+    }
+
+    async fn finally<'a>(
+        &self,
+        context: &HookContext<'a>,
+        detaild: &EvaluationDetails<Value>,
+        hints: Option<&'a HookHints>,
+    ) {
+        todo!()
+    }
+}
+```
+
 > Built a new hook? [Let us know](https://github.com/open-feature/openfeature.dev/issues/new?assignees=&labels=hook&projects=&template=document-hook.yaml&title=%5BHook%5D%3A+) so we can add it to the docs!
--->
 
 <!-- x-hide-in-docs-start -->
 ## ⭐️ Support the project
