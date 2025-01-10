@@ -280,8 +280,10 @@ impl Client {
 
     /// Add logging hook to the client.
     #[must_use]
-    pub fn with_logging_hook(self) -> Self {
-        self.with_hook(crate::LoggingHook)
+    pub fn with_logging_hook(self, include_evaluation_context: bool) -> Self {
+        self.with_hook(crate::LoggingHook {
+            include_evaluation_context,
+        })
     }
 
     async fn evaluate<T>(
@@ -309,6 +311,7 @@ impl Client {
             flag_key,
             flag_type: default.get_type(),
             client_metadata: self.metadata.clone(),
+            provider_metadata: provider.metadata().clone(),
             evaluation_context: context,
 
             default_value: Some(default),
@@ -533,7 +536,7 @@ mod tests {
             global_evaluation_context::GlobalEvaluationContext, global_hooks::GlobalHooks,
             provider_registry::ProviderRegistry,
         },
-        provider::{FeatureProvider, MockFeatureProvider, ResolutionDetails},
+        provider::{FeatureProvider, MockFeatureProvider, ProviderMetadata, ResolutionDetails},
         Client, EvaluationReason, FlagMetadata, StructValue, Value,
     };
 
@@ -588,6 +591,9 @@ mod tests {
         let mut provider = MockFeatureProvider::new();
         provider.expect_initialize().returning(|_| {});
         provider.expect_hooks().return_const(vec![]);
+        provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
 
         provider
             .expect_resolve_bool_value()
@@ -690,6 +696,9 @@ mod tests {
         provider.expect_initialize().returning(|_| {});
         provider.expect_hooks().return_const(vec![]);
         provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
+        provider
             .expect_resolve_int_value()
             .return_const(Ok(ResolutionDetails::builder()
                 .value(123)
@@ -743,6 +752,9 @@ mod tests {
         provider.expect_initialize().returning(|_| {});
         provider.expect_hooks().return_const(vec![]);
         provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
+        provider
             .expect_resolve_bool_value()
             .return_const(Ok(ResolutionDetails::builder()
                 .value(true)
@@ -777,7 +789,7 @@ mod tests {
 
         let client = create_client(provider).await;
 
-        let client = client.with_hook(crate::LoggingHook);
+        let client = client.with_hook(crate::LoggingHook::default());
 
         assert_eq!(client.client_hooks.len(), 1);
     }
@@ -789,7 +801,7 @@ mod tests {
 
         let client = create_client(provider).await;
 
-        let client = client.with_logging_hook();
+        let client = client.with_logging_hook(false);
 
         assert_eq!(client.client_hooks.len(), 1);
     }

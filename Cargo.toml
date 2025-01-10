@@ -23,13 +23,16 @@ serde_json = { version = "1.0.116", optional = true }
 time = "0.3.36"
 tokio = { version = "1.40", features = ["full"] }
 typed-builder = "0.20.0"
-log = "0.4.14"
+
+log = { package = "log", version = "0.4", optional = true }
 
 [dev-dependencies]
 env_logger = "0.11.5"
+structured-logger = "1.0.3"
 spec = { path = "spec" }
 
 [features]
-default = ["test-util"]
+default = ["test-util", "dep:log"]
 test-util = ["dep:mockall"]
 serde_json = ["dep:serde_json"]
+structured-logging = ["log?/kv"]

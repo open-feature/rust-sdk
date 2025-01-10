@@ -1,6 +1,9 @@
 use std::{collections::HashMap, ops::Deref, sync::Arc};
 
-use crate::{ClientMetadata, EvaluationContext, EvaluationDetails, EvaluationError, Type, Value};
+use crate::{
+    provider::ProviderMetadata, ClientMetadata, EvaluationContext, EvaluationDetails,
+    EvaluationError, Type, Value,
+};
 
 mod logging;
 pub use logging::LoggingHook;
@@ -96,6 +99,7 @@ pub struct HookContext<'a> {
     pub flag_key: &'a str,
     pub flag_type: Type,
     pub evaluation_context: &'a EvaluationContext,
+    pub provider_metadata: ProviderMetadata,
     pub default_value: Option<Value>,
     pub client_metadata: ClientMetadata,
 }
@@ -130,6 +134,7 @@ mod tests {
             flag_key: "flag_key",
             flag_type: Type::Bool,
             evaluation_context: &EvaluationContext::default(),
+            provider_metadata: ProviderMetadata::default(),
             default_value: Some(Value::Bool(true)),
             client_metadata: ClientMetadata::default(),
         };
@@ -137,6 +142,7 @@ mod tests {
         assert_eq!(context.flag_key, "flag_key");
         assert_eq!(context.flag_type, Type::Bool);
         assert_eq!(context.evaluation_context, &EvaluationContext::default());
+        assert_eq!(context.provider_metadata, ProviderMetadata::default());
         assert_eq!(context.default_value, Some(Value::Bool(true)));
         assert_eq!(context.client_metadata, ClientMetadata::default());
     }
@@ -219,6 +225,9 @@ mod tests {
         mock_provider.expect_hooks().return_const(vec![]);
         mock_provider.expect_initialize().return_const(());
         mock_provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
+        mock_provider
             .expect_resolve_bool_value()
             .withf(|_, ctx| {
                 assert_eq!(
@@ -248,6 +257,7 @@ mod tests {
                     flag_type: Type::Bool,
                     evaluation_context: &expected_eval_ctx,
                     default_value: Some(Value::Bool(false)),
+                    provider_metadata: ProviderMetadata::default(),
                     client_metadata: client_metadata.clone(),
                 };
 
@@ -271,6 +281,7 @@ mod tests {
                     flag_type: Type::Bool,
                     evaluation_context: &expected_eval_ctx_2,
                     default_value: Some(Value::Bool(false)),
+                    provider_metadata: ProviderMetadata::default(),
                     client_metadata: client_metadata.clone(),
                 };
 
@@ -346,6 +357,9 @@ mod tests {
         mock_provider.expect_hooks().return_const(vec![]);
         mock_provider.expect_initialize().return_const(());
         mock_provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
+        mock_provider
             .expect_resolve_string_value()
             .withf(move |_, ctx| {
                 assert_eq!(ctx, &expected_ctx);
@@ -381,6 +395,9 @@ mod tests {
 
         mock_provider.expect_hooks().return_const(vec![]);
         mock_provider.expect_initialize().return_const(());
+        mock_provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
         mock_provider
             .expect_resolve_bool_value()
             .once()
@@ -430,6 +447,9 @@ mod tests {
             mock_provider.expect_hooks().return_const(vec![]);
             mock_provider.expect_initialize().return_const(());
             mock_provider.expect_resolve_bool_value().never();
+            mock_provider
+                .expect_metadata()
+                .return_const(ProviderMetadata::default());
 
             api.set_provider(mock_provider).await;
             drop(api);
@@ -482,6 +502,9 @@ mod tests {
 
             mock_provider.expect_hooks().return_const(vec![]);
             mock_provider.expect_initialize().return_const(());
+            mock_provider
+                .expect_metadata()
+                .return_const(ProviderMetadata::default());
 
             mock_hook.expect_before().returning(|_, _| Ok(None));
 
@@ -530,6 +553,9 @@ mod tests {
 
         mock_provider.expect_hooks().return_const(vec![]);
         mock_provider.expect_initialize().return_const(());
+        mock_provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
         mock_provider
             .expect_resolve_bool_value()
             .return_const(Ok(ResolutionDetails::new(true)));
@@ -674,6 +700,9 @@ mod tests {
             .expect_hooks()
             .return_const(vec![HookWrapper::new(mock_provider_hook)]);
         provider.expect_initialize().return_const(());
+        provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
 
         api.set_provider(provider).await;
         api.add_hook(mock_api_hook).await;
@@ -714,6 +743,9 @@ mod tests {
         mock_provider.expect_hooks().return_const(vec![]);
         mock_provider.expect_initialize().return_const(());
         mock_provider.expect_resolve_bool_value().never();
+        mock_provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
 
         api.set_provider(mock_provider).await;
 
@@ -832,6 +864,9 @@ mod tests {
             .expect_hooks()
             .return_const(vec![HookWrapper::new(mock_provider_hook)]);
         provider.expect_initialize().return_const(());
+        provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
 
         api.set_provider(provider).await;
         api.add_hook(mock_api_hook).await;

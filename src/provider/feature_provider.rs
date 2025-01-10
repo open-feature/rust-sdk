@@ -96,7 +96,7 @@ pub trait FeatureProvider: Send + Sync + 'static {
 // ============================================================
 
 /// The metadata of a feature provider.
-#[derive(Clone, Default, Debug)]
+#[derive(Clone, Default, Debug, PartialEq)]
 pub struct ProviderMetadata {
     /// The name of provider.
     pub name: String,

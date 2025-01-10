@@ -168,6 +168,9 @@ mod tests {
         provider.expect_initialize().returning(|_| {});
         provider.expect_hooks().return_const(vec![]);
         provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
+        provider
             .expect_resolve_int_value()
             .return_const(Ok(ResolutionDetails::new(200)));
 
@@ -216,6 +219,9 @@ mod tests {
         provider.expect_initialize().returning(|_| {});
         provider.expect_hooks().return_const(vec![]);
         provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
+        provider
             .expect_resolve_int_value()
             .return_const(Ok(ResolutionDetails::new(30)));
         api.set_named_provider("test", provider).await;
@@ -260,12 +266,18 @@ mod tests {
         default_provider.expect_initialize().returning(|_| {});
         default_provider.expect_hooks().return_const(vec![]);
         default_provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
+        default_provider
             .expect_resolve_int_value()
             .return_const(Ok(ResolutionDetails::new(100)));
 
         let mut named_provider = MockFeatureProvider::new();
         named_provider.expect_initialize().returning(|_| {});
         named_provider.expect_hooks().return_const(vec![]);
+        named_provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
         named_provider
             .expect_resolve_int_value()
             .return_const(Ok(ResolutionDetails::new(200)));
@@ -329,6 +341,9 @@ mod tests {
         let mut provider = MockFeatureProvider::new();
         provider.expect_initialize().returning(|_| {});
         provider.expect_hooks().return_const(vec![]);
+        provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
 
         provider
             .expect_resolve_int_value()
