@@ -3,11 +3,12 @@ use tokio::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use crate::{
     provider::{FeatureProvider, ProviderMetadata},
-    Client, EvaluationContext,
+    Client, EvaluationContext, Hook, HookWrapper,
 };
 
 use super::{
-    global_evaluation_context::GlobalEvaluationContext, provider_registry::ProviderRegistry,
+    global_evaluation_context::GlobalEvaluationContext, global_hooks::GlobalHooks,
+    provider_registry::ProviderRegistry,
 };
 
 lazy_static! {
@@ -21,6 +22,7 @@ lazy_static! {
 #[derive(Default)]
 pub struct OpenFeature {
     evaluation_context: GlobalEvaluationContext,
+    hooks: GlobalHooks,
 
     provider_registry: ProviderRegistry,
 }
@@ -54,6 +56,12 @@ impl OpenFeature {
         self.provider_registry.set_named(name, provider).await;
     }
 
+    /// Add a new hook to the global list of hooks.
+    pub async fn add_hook<T: Hook>(&mut self, hook: T) {
+        let mut lock = self.hooks.get_mut().await;
+        lock.push(HookWrapper::new(hook));
+    }
+
     /// Return the metadata of default (unnamed) provider.
     pub async fn provider_metadata(&self) -> ProviderMetadata {
         self.provider_registry
@@ -77,6 +85,7 @@ impl OpenFeature {
         Client::new(
             String::default(),
             self.evaluation_context.clone(),
+            self.hooks.clone(),
             self.provider_registry.clone(),
         )
     }
@@ -87,6 +96,7 @@ impl OpenFeature {
         Client::new(
             name.to_string(),
             self.evaluation_context.clone(),
+            self.hooks.clone(),
             self.provider_registry.clone(),
         )
     }
@@ -156,6 +166,10 @@ mod tests {
         // Set the new provider and ensure the value comes from it.
         let mut provider = MockFeatureProvider::new();
         provider.expect_initialize().returning(|_| {});
+        provider.expect_hooks().return_const(vec![]);
+        provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
         provider
             .expect_resolve_int_value()
             .return_const(Ok(ResolutionDetails::new(200)));
@@ -203,6 +217,10 @@ mod tests {
         // Bind provider to the same name.
         let mut provider = MockFeatureProvider::new();
         provider.expect_initialize().returning(|_| {});
+        provider.expect_hooks().return_const(vec![]);
+        provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
         provider
             .expect_resolve_int_value()
             .return_const(Ok(ResolutionDetails::new(30)));
@@ -246,12 +264,20 @@ mod tests {
 
         let mut default_provider = MockFeatureProvider::new();
         default_provider.expect_initialize().returning(|_| {});
+        default_provider.expect_hooks().return_const(vec![]);
+        default_provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
         default_provider
             .expect_resolve_int_value()
             .return_const(Ok(ResolutionDetails::new(100)));
 
         let mut named_provider = MockFeatureProvider::new();
         named_provider.expect_initialize().returning(|_| {});
+        named_provider.expect_hooks().return_const(vec![]);
+        named_provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
         named_provider
             .expect_resolve_int_value()
             .return_const(Ok(ResolutionDetails::new(200)));
@@ -314,6 +340,10 @@ mod tests {
         // Setup expectations for different evaluation contexts.
         let mut provider = MockFeatureProvider::new();
         provider.expect_initialize().returning(|_| {});
+        provider.expect_hooks().return_const(vec![]);
+        provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
 
         provider
             .expect_resolve_int_value()

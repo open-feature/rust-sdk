@@ -12,6 +12,19 @@ pub enum Value {
     Struct(StructValue),
 }
 
+/// Supported types of values.
+/// [spec](https://openfeature.dev/specification/types).
+#[derive(Clone, PartialEq, Debug)]
+#[allow(missing_docs)]
+pub enum Type {
+    Bool,
+    Int,
+    Float,
+    String,
+    Array,
+    Struct,
+}
+
 /// Represent a structure value as defined in the
 /// [spec](https://openfeature.dev/specification/types#structure).
 #[derive(Clone, Default, PartialEq, Debug)]
@@ -96,6 +109,18 @@ impl Value {
         match self {
             Self::Struct(value) => Some(value),
             _ => None,
+        }
+    }
+
+    /// Return the type of the value.
+    pub fn get_type(&self) -> Type {
+        match self {
+            Self::Bool(_) => Type::Bool,
+            Self::Int(_) => Type::Int,
+            Self::Float(_) => Type::Float,
+            Self::String(_) => Type::String,
+            Self::Array(_) => Type::Array,
+            Self::Struct(_) => Type::Struct,
         }
     }
 }
@@ -198,6 +223,19 @@ impl StructValue {
     /// Append given `key` and `value` to `self` in place.
     pub fn add_field(&mut self, key: impl Into<String>, value: impl Into<Value>) {
         self.fields.insert(key.into(), value.into());
+    }
+}
+
+impl std::fmt::Display for Type {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Bool => write!(f, "bool"),
+            Self::Int => write!(f, "int"),
+            Self::Float => write!(f, "float"),
+            Self::String => write!(f, "string"),
+            Self::Array => write!(f, "array"),
+            Self::Struct => write!(f, "struct"),
+        }
     }
 }
 

@@ -49,6 +49,12 @@ pub trait FeatureProvider: Send + Sync + 'static {
     /// or accessor of type string, which identifies the provider implementation.
     fn metadata(&self) -> &ProviderMetadata;
 
+    /// The provider MAY define a hooks field or accessor which returns a list of hooks that
+    /// the provider supports.
+    fn hooks(&self) -> &[crate::hooks::HookWrapper] {
+        &[]
+    }
+
     /// Resolve given `flag_key` as a bool value.
     async fn resolve_bool_value(
         &self,
@@ -90,7 +96,7 @@ pub trait FeatureProvider: Send + Sync + 'static {
 // ============================================================
 
 /// The metadata of a feature provider.
-#[derive(Clone, Default, Debug)]
+#[derive(Clone, Default, Debug, PartialEq)]
 pub struct ProviderMetadata {
     /// The name of provider.
     pub name: String,

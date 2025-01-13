@@ -1,16 +1,18 @@
-use std::sync::Arc;
+use std::{future::Future, pin::Pin, sync::Arc};
 
 use crate::{
     provider::{FeatureProvider, ResolutionDetails},
     EvaluationContext, EvaluationDetails, EvaluationError, EvaluationErrorCode, EvaluationOptions,
-    EvaluationResult, StructValue,
+    EvaluationResult, Hook, HookContext, HookHints, HookWrapper, StructValue, Value,
 };
 
 use super::{
-    global_evaluation_context::GlobalEvaluationContext, provider_registry::ProviderRegistry,
+    global_evaluation_context::GlobalEvaluationContext, global_hooks::GlobalHooks,
+    provider_registry::ProviderRegistry,
 };
 
 /// The metadata of OpenFeature client.
+#[derive(Clone, Default, PartialEq, Debug)]
 pub struct ClientMetadata {
     /// The name of client.
     pub name: String,
@@ -23,6 +25,9 @@ pub struct Client {
     provider_registry: ProviderRegistry,
     evaluation_context: EvaluationContext,
     global_evaluation_context: GlobalEvaluationContext,
+    global_hooks: GlobalHooks,
+
+    client_hooks: Vec<HookWrapper>,
 }
 
 impl Client {
@@ -30,13 +35,16 @@ impl Client {
     pub fn new(
         name: impl Into<String>,
         global_evaluation_context: GlobalEvaluationContext,
+        global_hooks: GlobalHooks,
         provider_registry: ProviderRegistry,
     ) -> Self {
         Self {
             metadata: ClientMetadata { name: name.into() },
             global_evaluation_context,
+            global_hooks,
             provider_registry,
             evaluation_context: EvaluationContext::default(),
+            client_hooks: Vec::new(),
         }
     }
 
@@ -52,104 +60,75 @@ impl Client {
 
     /// Evaluate given `flag_key` with corresponding `evaluation_context` and `evaluation_options`
     /// as a bool value.
-    #[allow(unused_variables)]
     pub async fn get_bool_value(
         &self,
         flag_key: &str,
         evaluation_context: Option<&EvaluationContext>,
         evaluation_options: Option<&EvaluationOptions>,
     ) -> EvaluationResult<bool> {
-        let context = self.merge_evaluation_context(evaluation_context).await;
-
-        Ok(self
-            .get_provider()
+        self.get_bool_details(flag_key, evaluation_context, evaluation_options)
             .await
-            .resolve_bool_value(flag_key, &context)
-            .await?
-            .value)
+            .map(|details| details.value)
     }
 
     /// Evaluate given `flag_key` with corresponding `evaluation_context` and `evaluation_options`
     /// as an int (i64) value.
-    #[allow(unused_variables)]
     pub async fn get_int_value(
         &self,
         flag_key: &str,
         evaluation_context: Option<&EvaluationContext>,
         evaluation_options: Option<&EvaluationOptions>,
     ) -> EvaluationResult<i64> {
-        let context = self.merge_evaluation_context(evaluation_context).await;
-
-        Ok(self
-            .get_provider()
+        self.get_int_details(flag_key, evaluation_context, evaluation_options)
             .await
-            .resolve_int_value(flag_key, &context)
-            .await?
-            .value)
+            .map(|details| details.value)
     }
 
     /// Evaluate given `flag_key` with corresponding `evaluation_context` and `evaluation_options`
     /// as a float (f64) value.
     /// If the resolution fails, the `default_value` is returned.
-    #[allow(unused_variables)]
     pub async fn get_float_value(
         &self,
         flag_key: &str,
         evaluation_context: Option<&EvaluationContext>,
         evaluation_options: Option<&EvaluationOptions>,
     ) -> EvaluationResult<f64> {
-        let context = self.merge_evaluation_context(evaluation_context).await;
-
-        Ok(self
-            .get_provider()
+        self.get_float_details(flag_key, evaluation_context, evaluation_options)
             .await
-            .resolve_float_value(flag_key, &context)
-            .await?
-            .value)
+            .map(|details| details.value)
     }
 
     /// Evaluate given `flag_key` with corresponding `evaluation_context` and `evaluation_options`
     /// as a string value.
     /// If the resolution fails, the `default_value` is returned.
-    #[allow(unused_variables)]
     pub async fn get_string_value(
         &self,
         flag_key: &str,
         evaluation_context: Option<&EvaluationContext>,
         evaluation_options: Option<&EvaluationOptions>,
     ) -> EvaluationResult<String> {
-        let context = self.merge_evaluation_context(evaluation_context).await;
-
-        Ok(self
-            .get_provider()
+        self.get_string_details(flag_key, evaluation_context, evaluation_options)
             .await
-            .resolve_string_value(flag_key, &context)
-            .await?
-            .value)
+            .map(|details| details.value)
     }
 
     /// Evaluate given `flag_key` with corresponding `evaluation_context` and `evaluation_options`
     /// as a struct.
     /// If the resolution fails, the `default_value` is returned.
     /// The required type should implement [`From<StructValue>`] trait.
-    #[allow(unused_variables)]
     pub async fn get_struct_value<T: TryFrom<StructValue>>(
         &self,
         flag_key: &str,
         evaluation_context: Option<&EvaluationContext>,
         evaluation_options: Option<&EvaluationOptions>,
     ) -> EvaluationResult<T> {
-        let context = self.merge_evaluation_context(evaluation_context).await;
-
         let result = self
-            .get_provider()
-            .await
-            .resolve_struct_value(flag_key, &context)
+            .get_struct_details(flag_key, evaluation_context, evaluation_options)
             .await?;
 
         match T::try_from(result.value) {
             Ok(t) => Ok(t),
-            Err(error) => Err(EvaluationError {
+            Err(_) => Err(EvaluationError {
                 code: EvaluationErrorCode::TypeMismatch,
                 message: Some("Unable to cast value to required type".to_string()),
             }),
@@ -158,7 +137,6 @@ impl Client {
 
     /// Return the [`EvaluationDetails`] with given `flag_key`, `evaluation_context` and
     /// `evaluation_options`.
-    #[allow(unused_variables)]
     pub async fn get_bool_details(
         &self,
         flag_key: &str,
@@ -167,17 +145,17 @@ impl Client {
     ) -> EvaluationResult<EvaluationDetails<bool>> {
         let context = self.merge_evaluation_context(evaluation_context).await;
 
-        Ok(self
-            .get_provider()
-            .await
-            .resolve_bool_value(flag_key, &context)
-            .await?
-            .into_evaluation_details(flag_key))
+        self.evaluate(
+            flag_key,
+            &context,
+            evaluation_options,
+            call_resolve_bool_value,
+        )
+        .await
     }
 
     /// Return the [`EvaluationDetails`] with given `flag_key`, `evaluation_context` and
     /// `evaluation_options`.
-    #[allow(unused_variables)]
     pub async fn get_int_details(
         &self,
         flag_key: &str,
@@ -186,17 +164,17 @@ impl Client {
     ) -> EvaluationResult<EvaluationDetails<i64>> {
         let context = self.merge_evaluation_context(evaluation_context).await;
 
-        Ok(self
-            .get_provider()
-            .await
-            .resolve_int_value(flag_key, &context)
-            .await?
-            .into_evaluation_details(flag_key))
+        self.evaluate(
+            flag_key,
+            &context,
+            evaluation_options,
+            call_resolve_int_value,
+        )
+        .await
     }
 
     /// Return the [`EvaluationDetails`] with given `flag_key`, `evaluation_context` and
     /// `evaluation_options`.
-    #[allow(unused_variables)]
     pub async fn get_float_details(
         &self,
         flag_key: &str,
@@ -205,17 +183,17 @@ impl Client {
     ) -> EvaluationResult<EvaluationDetails<f64>> {
         let context = self.merge_evaluation_context(evaluation_context).await;
 
-        Ok(self
-            .get_provider()
-            .await
-            .resolve_float_value(flag_key, &context)
-            .await?
-            .into_evaluation_details(flag_key))
+        self.evaluate(
+            flag_key,
+            &context,
+            evaluation_options,
+            call_resolve_float_value,
+        )
+        .await
     }
 
     /// Return the [`EvaluationDetails`] with given `flag_key`, `evaluation_context` and
     /// `evaluation_options`.
-    #[allow(unused_variables)]
     pub async fn get_string_details(
         &self,
         flag_key: &str,
@@ -224,17 +202,17 @@ impl Client {
     ) -> EvaluationResult<EvaluationDetails<String>> {
         let context = self.merge_evaluation_context(evaluation_context).await;
 
-        Ok(self
-            .get_provider()
-            .await
-            .resolve_string_value(flag_key, &context)
-            .await?
-            .into_evaluation_details(flag_key))
+        self.evaluate(
+            flag_key,
+            &context,
+            evaluation_options,
+            call_resolve_string_value,
+        )
+        .await
     }
 
     /// Return the [`EvaluationDetails`] with given `flag_key`, `evaluation_context` and
     /// `evaluation_options`.
-    #[allow(unused_variables)]
     pub async fn get_struct_details<T: TryFrom<StructValue>>(
         &self,
         flag_key: &str,
@@ -244,9 +222,12 @@ impl Client {
         let context = self.merge_evaluation_context(evaluation_context).await;
 
         let result = self
-            .get_provider()
-            .await
-            .resolve_struct_value(flag_key, &context)
+            .evaluate(
+                flag_key,
+                &context,
+                evaluation_options,
+                call_resolve_struct_value,
+            )
             .await?;
 
         match T::try_from(result.value) {
@@ -255,9 +236,9 @@ impl Client {
                 value,
                 reason: result.reason,
                 variant: result.variant,
-                flag_metadata: result.flag_metadata.unwrap_or_default(),
+                flag_metadata: result.flag_metadata,
             }),
-            Err(error) => Err(EvaluationError {
+            Err(_) => Err(EvaluationError {
                 code: EvaluationErrorCode::TypeMismatch,
                 message: Some("Unable to cast value to required type".to_string()),
             }),
@@ -289,6 +270,210 @@ impl Client {
     }
 }
 
+impl Client {
+    /// Add a hook to the client.
+    #[must_use]
+    pub fn with_hook<T: Hook>(mut self, hook: T) -> Self {
+        self.client_hooks.push(HookWrapper::new(hook));
+        self
+    }
+
+    /// Add logging hook to the client.
+    #[must_use]
+    pub fn with_logging_hook(self, include_evaluation_context: bool) -> Self {
+        self.with_hook(crate::LoggingHook {
+            include_evaluation_context,
+        })
+    }
+
+    async fn evaluate<T>(
+        &self,
+        flag_key: &str,
+        context: &EvaluationContext,
+        evaluation_options: Option<&EvaluationOptions>, // INFO: Invocation
+        resolve: impl for<'a> FnOnce(
+            &'a dyn FeatureProvider,
+            &'a str,
+            &'a EvaluationContext,
+        ) -> Pin<
+            Box<dyn Future<Output = EvaluationResult<ResolutionDetails<T>>> + Send + 'a>,
+        >,
+    ) -> EvaluationResult<EvaluationDetails<T>>
+    where
+        T: Into<Value> + Clone + Default,
+    {
+        let provider = self.get_provider().await;
+        let hints = evaluation_options.map(|options| &options.hints);
+
+        let default: Value = T::default().into();
+
+        let mut hook_context = HookContext {
+            flag_key,
+            flag_type: default.get_type(),
+            client_metadata: self.metadata.clone(),
+            provider_metadata: provider.metadata().clone(),
+            evaluation_context: context,
+
+            default_value: Some(default),
+        };
+
+        let global_hooks = self.global_hooks.get().await;
+        let client_hooks = &self.client_hooks[..];
+        let invocation_hooks: &[HookWrapper] = evaluation_options
+            .map(|options| options.hooks.as_ref())
+            .unwrap_or_default();
+        let provider_hooks = provider.hooks();
+
+        // INFO: API(global), Client, Invocation, Provider
+        // https://github.com/open-feature/spec/blob/main/specification/sections/04-hooks.md#requirement-442
+        let before_hooks = global_hooks
+            .iter()
+            .chain(client_hooks.iter())
+            .chain(invocation_hooks.iter())
+            .chain(provider_hooks.iter());
+
+        // INFO: Hooks called after the resolution are in reverse order
+        // Provider, Invocation, Client, API(global)
+        let after_hooks = before_hooks.clone().rev();
+
+        let (context, result) = self
+            .before_hooks(before_hooks.into_iter(), &hook_context, hints)
+            .await;
+        hook_context.evaluation_context = &context;
+
+        // INFO: Result of the resolution or error reason with default value
+        // This bind is defined here to minimize cloning of the `Value`
+        let evaluation_details;
+
+        if let Err(error) = result {
+            self.error_hooks(after_hooks.clone(), &hook_context, &error, hints)
+                .await;
+            evaluation_details = EvaluationDetails::error_reason(flag_key, T::default());
+            self.finally_hooks(
+                after_hooks.into_iter(),
+                &hook_context,
+                &evaluation_details,
+                hints,
+            )
+            .await;
+
+            return Err(error);
+        }
+
+        // INFO: Run the resolution
+        let result = resolve(&*provider, flag_key, &context)
+            .await
+            .map(|details| details.into_evaluation_details(flag_key));
+
+        // INFO: Run the after hooks
+        match result {
+            Ok(ref details) => {
+                let details = details.clone().into_value();
+                if let Err(error) = self
+                    .after_hooks(after_hooks.clone(), &hook_context, &details, hints)
+                    .await
+                {
+                    evaluation_details = EvaluationDetails::error_reason(flag_key, T::default());
+                    self.error_hooks(after_hooks.clone(), &hook_context, &error, hints)
+                        .await;
+                } else {
+                    evaluation_details = details;
+                }
+            }
+            Err(ref error) => {
+                evaluation_details = EvaluationDetails::error_reason(flag_key, T::default());
+                self.error_hooks(after_hooks.clone(), &hook_context, error, hints)
+                    .await;
+            }
+        }
+
+        self.finally_hooks(
+            after_hooks.into_iter(),
+            &hook_context,
+            &evaluation_details,
+            hints,
+        )
+        .await;
+
+        result
+    }
+
+    async fn before_hooks<'a, I>(
+        &self,
+        hooks: I,
+        hook_context: &HookContext<'_>,
+        hints: Option<&HookHints>,
+    ) -> (EvaluationContext, EvaluationResult<()>)
+    where
+        I: Iterator<Item = &'a HookWrapper>,
+    {
+        let mut context = hook_context.evaluation_context.clone();
+        for hook in hooks {
+            let invoke_hook_context = HookContext {
+                evaluation_context: &context,
+                ..hook_context.clone()
+            };
+            match hook.before(&invoke_hook_context, hints).await {
+                Ok(Some(output)) => context = output,
+                Ok(None) => { /* INFO: just continue execution */ }
+                Err(error) => {
+                    drop(invoke_hook_context);
+                    context.merge_missing(hook_context.evaluation_context);
+                    return (context, Err(error));
+                }
+            }
+        }
+
+        context.merge_missing(hook_context.evaluation_context);
+        (context, Ok(()))
+    }
+
+    async fn after_hooks<'a, I>(
+        &self,
+        hooks: I,
+        hook_context: &HookContext<'_>,
+        details: &EvaluationDetails<Value>,
+        hints: Option<&HookHints>,
+    ) -> EvaluationResult<()>
+    where
+        I: Iterator<Item = &'a HookWrapper>,
+    {
+        for hook in hooks {
+            hook.after(hook_context, details, hints).await?;
+        }
+
+        Ok(())
+    }
+
+    async fn error_hooks<'a, I>(
+        &self,
+        hooks: I,
+        hook_context: &HookContext<'_>,
+        error: &EvaluationError,
+        hints: Option<&HookHints>,
+    ) where
+        I: Iterator<Item = &'a HookWrapper>,
+    {
+        for hook in hooks {
+            hook.error(hook_context, error, hints).await;
+        }
+    }
+
+    async fn finally_hooks<'a, I>(
+        &self,
+        hooks: I,
+        hook_context: &HookContext<'_>,
+        evaluation_details: &EvaluationDetails<Value>,
+        hints: Option<&HookHints>,
+    ) where
+        I: Iterator<Item = &'a HookWrapper>,
+    {
+        for hook in hooks {
+            hook.finally(hook_context, evaluation_details, hints).await;
+        }
+    }
+}
+
 impl<T> ResolutionDetails<T> {
     fn into_evaluation_details(self, flag_key: impl Into<String>) -> EvaluationDetails<T> {
         EvaluationDetails {
@@ -301,6 +486,46 @@ impl<T> ResolutionDetails<T> {
     }
 }
 
+fn call_resolve_bool_value<'a>(
+    provider: &'a dyn FeatureProvider,
+    flag_key: &'a str,
+    context: &'a EvaluationContext,
+) -> Pin<Box<dyn Future<Output = EvaluationResult<ResolutionDetails<bool>>> + Send + 'a>> {
+    Box::pin(async move { provider.resolve_bool_value(flag_key, context).await })
+}
+
+fn call_resolve_int_value<'a>(
+    provider: &'a dyn FeatureProvider,
+    flag_key: &'a str,
+    context: &'a EvaluationContext,
+) -> Pin<Box<dyn Future<Output = EvaluationResult<ResolutionDetails<i64>>> + Send + 'a>> {
+    Box::pin(async move { provider.resolve_int_value(flag_key, context).await })
+}
+
+fn call_resolve_float_value<'a>(
+    provider: &'a dyn FeatureProvider,
+    flag_key: &'a str,
+    context: &'a EvaluationContext,
+) -> Pin<Box<dyn Future<Output = EvaluationResult<ResolutionDetails<f64>>> + Send + 'a>> {
+    Box::pin(async move { provider.resolve_float_value(flag_key, context).await })
+}
+
+fn call_resolve_string_value<'a>(
+    provider: &'a dyn FeatureProvider,
+    flag_key: &'a str,
+    context: &'a EvaluationContext,
+) -> Pin<Box<dyn Future<Output = EvaluationResult<ResolutionDetails<String>>> + Send + 'a>> {
+    Box::pin(async move { provider.resolve_string_value(flag_key, context).await })
+}
+
+fn call_resolve_struct_value<'a>(
+    provider: &'a dyn FeatureProvider,
+    flag_key: &'a str,
+    context: &'a EvaluationContext,
+) -> Pin<Box<dyn Future<Output = EvaluationResult<ResolutionDetails<StructValue>>> + Send + 'a>> {
+    Box::pin(async move { provider.resolve_struct_value(flag_key, context).await })
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -308,9 +533,10 @@ mod tests {
 
     use crate::{
         api::{
-            global_evaluation_context::GlobalEvaluationContext, provider_registry::ProviderRegistry,
+            global_evaluation_context::GlobalEvaluationContext, global_hooks::GlobalHooks,
+            provider_registry::ProviderRegistry,
         },
-        provider::{FeatureProvider, MockFeatureProvider, ResolutionDetails},
+        provider::{FeatureProvider, MockFeatureProvider, ProviderMetadata, ResolutionDetails},
         Client, EvaluationReason, FlagMetadata, StructValue, Value,
     };
 
@@ -364,6 +590,10 @@ mod tests {
         // Test bool.
         let mut provider = MockFeatureProvider::new();
         provider.expect_initialize().returning(|_| {});
+        provider.expect_hooks().return_const(vec![]);
+        provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
 
         provider
             .expect_resolve_bool_value()
@@ -464,6 +694,10 @@ mod tests {
     async fn get_details() {
         let mut provider = MockFeatureProvider::new();
         provider.expect_initialize().returning(|_| {});
+        provider.expect_hooks().return_const(vec![]);
+        provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
         provider
             .expect_resolve_int_value()
             .return_const(Ok(ResolutionDetails::builder()
@@ -516,6 +750,10 @@ mod tests {
     async fn get_details_flag_metadata() {
         let mut provider = MockFeatureProvider::new();
         provider.expect_initialize().returning(|_| {});
+        provider.expect_hooks().return_const(vec![]);
+        provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
         provider
             .expect_resolve_bool_value()
             .return_const(Ok(ResolutionDetails::builder()
@@ -544,10 +782,35 @@ mod tests {
     #[test]
     fn static_context_not_applicable() {}
 
+    #[tokio::test]
+    async fn with_hook() {
+        let mut provider = MockFeatureProvider::new();
+        provider.expect_initialize().returning(|_| {});
+
+        let client = create_client(provider).await;
+
+        let client = client.with_hook(crate::LoggingHook::default());
+
+        assert_eq!(client.client_hooks.len(), 1);
+    }
+
+    #[tokio::test]
+    async fn with_logging_hook() {
+        let mut provider = MockFeatureProvider::new();
+        provider.expect_initialize().returning(|_| {});
+
+        let client = create_client(provider).await;
+
+        let client = client.with_logging_hook(false);
+
+        assert_eq!(client.client_hooks.len(), 1);
+    }
+
     fn create_default_client() -> Client {
         Client::new(
             "no_op",
             GlobalEvaluationContext::default(),
+            GlobalHooks::default(),
             ProviderRegistry::default(),
         )
     }
@@ -559,6 +822,7 @@ mod tests {
         Client::new(
             "custom",
             GlobalEvaluationContext::default(),
+            GlobalHooks::default(),
             provider_registry,
         )
     }

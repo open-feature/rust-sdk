@@ -2,6 +2,7 @@
 //  EvaluationError
 // ============================================================
 
+use std::error::Error as StdError;
 use std::fmt::{Display, Formatter};
 use typed_builder::TypedBuilder;
 
@@ -59,3 +60,5 @@ impl Display for EvaluationErrorCode {
         write!(f, "{code}")
     }
 }
+
+impl StdError for EvaluationErrorCode {}
