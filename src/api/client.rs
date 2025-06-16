@@ -20,6 +20,7 @@ pub struct ClientMetadata {
 
 /// The OpenFeature client.
 /// Create it through the [`OpenFeature`] struct.
+#[allow(clippy::struct_field_names)]
 pub struct Client {
     metadata: ClientMetadata,
     provider_registry: ProviderRegistry,
