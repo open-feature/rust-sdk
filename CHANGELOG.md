@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.6](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.5...open-feature-v0.2.6) (2025-06-19)
+
+
+### 🐛 Bug Fixes
+
+* **deps:** update rust crate typed-builder to 0.21.0 ([#98](https://github.com/open-feature/rust-sdk/issues/98)) ([c9699e9](https://github.com/open-feature/rust-sdk/commit/c9699e9b64ceb165e7914ba7c2bf27b5a3ae0dee))
+
+
+### 📚 Documentation
+
+* fix typo on the readme ([97edee6](https://github.com/open-feature/rust-sdk/commit/97edee669a79388fa67807d1e362e0a382e3c1a9))
+
 ## [0.2.5](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.4...open-feature-v0.2.5) (2025-01-13)
 
 
