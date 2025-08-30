@@ -12,11 +12,11 @@ impl GlobalEvaluationContext {
         Self(Arc::new(RwLock::new(evaluation_context)))
     }
 
-    pub async fn get(&self) -> RwLockReadGuard<EvaluationContext> {
+    pub async fn get(&self) -> RwLockReadGuard<'_, EvaluationContext> {
         self.0.read().await
     }
 
-    pub async fn get_mut(&self) -> RwLockWriteGuard<EvaluationContext> {
+    pub async fn get_mut(&self) -> RwLockWriteGuard<'_, EvaluationContext> {
         self.0.write().await
     }
 }
