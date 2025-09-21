@@ -8,11 +8,11 @@ use crate::HookWrapper;
 pub struct GlobalHooks(Arc<RwLock<Vec<HookWrapper>>>);
 
 impl GlobalHooks {
-    pub async fn get(&self) -> RwLockReadGuard<Vec<HookWrapper>> {
+    pub async fn get(&self) -> RwLockReadGuard<'_, Vec<HookWrapper>> {
         self.0.read().await
     }
 
-    pub async fn get_mut(&self) -> RwLockWriteGuard<Vec<HookWrapper>> {
+    pub async fn get_mut(&self) -> RwLockWriteGuard<'_, Vec<HookWrapper>> {
         self.0.write().await
     }
 }
