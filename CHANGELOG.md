@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.2.6](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.5...open-feature-v0.2.6) (2025-09-27)
+
+
+### 🐛 Bug Fixes
+
+* **deps:** update rust crate darling to 0.21.0 ([#104](https://github.com/open-feature/rust-sdk/issues/104)) ([9751eff](https://github.com/open-feature/rust-sdk/commit/9751eff032b0fe52b879403722f9c798ca598808))
+* **deps:** update rust crate typed-builder to 0.21.0 ([#98](https://github.com/open-feature/rust-sdk/issues/98)) ([c9699e9](https://github.com/open-feature/rust-sdk/commit/c9699e9b64ceb165e7914ba7c2bf27b5a3ae0dee))
+
+
+### 🧹 Chore
+
+* **deps:** update actions/checkout action to v5 ([#105](https://github.com/open-feature/rust-sdk/issues/105)) ([ab535c9](https://github.com/open-feature/rust-sdk/commit/ab535c9fe01ce73cf4058c4d98320e8260bd2150))
+
+
+### 📚 Documentation
+
+* fix typo on the readme ([97edee6](https://github.com/open-feature/rust-sdk/commit/97edee669a79388fa67807d1e362e0a382e3c1a9))
+
 ## [0.2.5](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.4...open-feature-v0.2.5) (2025-01-13)
 
 
