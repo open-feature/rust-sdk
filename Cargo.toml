@@ -22,7 +22,7 @@ mockall = { version = "0.13.0", optional = true }
 serde_json = { version = "1.0.116", optional = true }
 time = "0.3.36"
 tokio = { version = "1.40", features = ["full"] }
-typed-builder = "0.21.0"
+typed-builder = "0.22.0"
 
 log = { package = "log", version = "0.4", optional = true }
 
