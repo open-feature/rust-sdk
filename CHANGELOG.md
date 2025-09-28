@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.7](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.6...open-feature-v0.2.7) (2025-09-28)
+
+
+### 🐛 Bug Fixes
+
+* **deps:** update rust crate typed-builder to 0.22.0 ([#108](https://github.com/open-feature/rust-sdk/issues/108)) ([2d37078](https://github.com/open-feature/rust-sdk/commit/2d370781dcdf9c132f00a97f4faaa57e825f1db4))
+
+
+### 🧹 Chore
+
+* **deps:** update amannn/action-semantic-pull-request action to v6 ([#106](https://github.com/open-feature/rust-sdk/issues/106)) ([6792c03](https://github.com/open-feature/rust-sdk/commit/6792c039b571f457c6bd1de222f623faebef2a58))
+
 ## [0.2.6](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.5...open-feature-v0.2.6) (2025-09-27)
 
 
