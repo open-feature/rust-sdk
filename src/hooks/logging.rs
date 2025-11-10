@@ -102,7 +102,7 @@ impl LoggingHook {
 
 #[cfg(feature = "structured-logging")]
 mod structured {
-    use super::*;
+    use super::{LoggingHook, HookContext, EvaluationDetails, Value, EvaluationError};
     use log::{kv::Value as LogValue, Level, Record};
 
     const DOMAIN_KEY: &str = "domain";
@@ -154,7 +154,7 @@ mod structured {
             // See issue https://github.com/rust-lang/rust/issues/92698
             log::logger().log(
                 &Record::builder()
-                    .args(format_args!("{}", msg))
+                    .args(format_args!("{msg}"))
                     .level(level)
                     .target("open_feature")
                     .module_path_static(Some(module_path!()))
@@ -188,9 +188,9 @@ mod structured {
         }
     }
 
-    fn evaluation_details_to_kvs<'a>(
-        details: &'a EvaluationDetails<Value>,
-    ) -> Vec<(&'static str, LogValue<'a>)> {
+    fn evaluation_details_to_kvs(
+        details: &EvaluationDetails<Value>,
+    ) -> Vec<(&'static str, LogValue<'_>)> {
         let kvs = vec![
             (REASON_KEY, LogValue::from_debug(&details.reason)),
             (VARIANT_KEY, LogValue::from_debug(&details.variant)),
@@ -200,7 +200,7 @@ mod structured {
         kvs
     }
 
-    fn error_to_kvs<'a>(error: &'a EvaluationError) -> Vec<(&'static str, LogValue<'a>)> {
+    fn error_to_kvs(error: &EvaluationError) -> Vec<(&'static str, LogValue<'_>)> {
         let kvs = vec![(ERROR_MESSAGE_KEY, LogValue::from_debug(&error.message))];
 
         kvs

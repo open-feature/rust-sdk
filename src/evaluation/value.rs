@@ -258,7 +258,7 @@ mod tests {
 
         let is_male = alex.fields.get("is_male").unwrap();
         assert!(is_male.is_bool());
-        assert_eq!(false, is_male.as_bool().unwrap());
+        assert!(!is_male.as_bool().unwrap());
 
         let id = alex.fields.get("id").unwrap();
         assert!(id.is_i64());

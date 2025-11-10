@@ -622,10 +622,7 @@ mod tests {
 
         let client = create_client(provider).await;
 
-        assert_eq!(
-            client.get_bool_value("key", None, None).await.unwrap(),
-            true
-        );
+        assert!(client.get_bool_value("key", None, None).await.unwrap());
 
         assert_eq!(client.get_int_value("key", None, None).await.unwrap(), 123);
 

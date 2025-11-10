@@ -29,7 +29,7 @@ fn json_value_to_value(value: &serde_json::Value) -> EvaluationResult<Value> {
         serde_json::Value::Array(array) => Ok(Value::Array(
             array
                 .iter()
-                .map(|x| json_value_to_value(x))
+                .map(json_value_to_value)
                 .collect::<Result<Vec<_>, _>>()?,
         )),
         serde_json::Value::Object(object) => {

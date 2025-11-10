@@ -95,7 +95,7 @@ mod tests {
     fn merge_missing_given_targeting_key() {
         let mut context = EvaluationContext::default()
             .with_targeting_key("Targeting Key")
-            .to_owned();
+            .clone();
 
         let expected = context.clone();
 
@@ -122,7 +122,7 @@ mod tests {
                 .with_targeting_key("Targeting Key")
                 .with_custom_field("Key", "Value")
                 .with_custom_field("Another Key", "Value")
-        )
+        );
     }
 
     #[test]

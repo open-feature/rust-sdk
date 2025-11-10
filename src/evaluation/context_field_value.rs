@@ -228,7 +228,7 @@ mod tests {
             .with_custom_field("Int", 42)
             .with_custom_field("Float", 42.0)
             .with_custom_field("String", "StringValue")
-            .with_custom_field("DateTime", now.clone())
+            .with_custom_field("DateTime", now)
             .with_custom_field(
                 "Struct",
                 EvaluationContextFieldValue::new_struct(EvaluationReason::Cached),
@@ -237,7 +237,7 @@ mod tests {
         // Assert bool
         if let EvaluationContextFieldValue::Bool(value) = context.custom_fields.get("Bool").unwrap()
         {
-            assert_eq!(true, *value);
+            assert!(*value);
         } else {
             panic!()
         }
@@ -284,6 +284,6 @@ mod tests {
             assert_eq!(EvaluationReason::Cached, *v);
         } else {
             panic!()
-        };
+        }
     }
 }
