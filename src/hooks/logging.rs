@@ -102,7 +102,7 @@ impl LoggingHook {
 
 #[cfg(feature = "structured-logging")]
 mod structured {
-    use super::{LoggingHook, HookContext, EvaluationDetails, Value, EvaluationError};
+    use super::{EvaluationDetails, EvaluationError, HookContext, LoggingHook, Value};
     use log::{kv::Value as LogValue, Level, Record};
 
     const DOMAIN_KEY: &str = "domain";
