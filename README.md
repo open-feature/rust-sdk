@@ -16,7 +16,7 @@
     <img alt="Specification" src="https://img.shields.io/static/v1?label=specification&message=v0.5.2&color=yellow&style=for-the-badge" />
   </a>
   <!-- x-release-please-start-version -->
-  <a href="https://github.com/open-feature/rust-sdk/releases/tag/v0.2.7">
+  <a href="https://github.com/open-feature/rust-sdk/releases/tag/open-feature-v0.2.7">
     <img alt="Release" src="https://img.shields.io/static/v1?label=release&message=v0.2.7&color=blue&style=for-the-badge" />
   </a>
   <!-- x-release-please-end -->
