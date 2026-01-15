@@ -199,8 +199,33 @@ mod tests {
         number = "1.1.2.3",
         text = "The provider mutator function MUST invoke the shutdown function on the previously registered provider once it's no longer being used to resolve flag values."
     )]
-    #[test]
-    fn invoke_shutdown_on_old_provider_checked_by_type_system() {}
+    #[tokio::test]
+    async fn invoke_shutdown_on_old_provider() {
+        use std::sync::Arc;
+        use tokio::sync::Notify;
+        use tokio::time::{timeout, Duration};
+
+        let shutdown_notify = Arc::new(Notify::new());
+        let shutdown_notify_for_provider = shutdown_notify.clone();
+
+        let mut old_provider = MockFeatureProvider::new();
+        old_provider.expect_initialize().returning(|_| {});
+        old_provider
+            .expect_shutdown()
+            .returning(move || shutdown_notify_for_provider.notify_one())
+            .once();
+
+        let mut new_provider = MockFeatureProvider::new();
+        new_provider.expect_initialize().returning(|_| {});
+
+        let mut api = OpenFeature::default();
+        api.set_provider(old_provider).await;
+        api.set_provider(new_provider).await;
+
+        timeout(Duration::from_millis(200), shutdown_notify.notified())
+            .await
+            .expect("previous provider shutdown not invoked");
+    }
 
     #[spec(
         number = "1.1.3",
@@ -321,10 +346,28 @@ mod tests {
     )]
     #[tokio::test]
     async fn shutdown() {
+        use std::sync::Arc;
+        use tokio::sync::Notify;
+        use tokio::time::{timeout, Duration};
+
+        let shutdown_notify = Arc::new(Notify::new());
+        let shutdown_notify_for_provider = shutdown_notify.clone();
+
         let mut api = OpenFeature::default();
-        api.set_provider(NoOpProvider::default()).await;
+        let mut provider = MockFeatureProvider::new();
+        provider.expect_initialize().returning(|_| {});
+        provider
+            .expect_shutdown()
+            .returning(move || shutdown_notify_for_provider.notify_one())
+            .once();
+
+        api.set_provider(provider).await;
 
         api.shutdown().await;
+
+        timeout(Duration::from_millis(200), shutdown_notify.notified())
+            .await
+            .expect("shutdown did not invoke provider shutdown");
     }
 
     #[spec(
