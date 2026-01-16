@@ -31,7 +31,7 @@
     <img alt="Crates.io" src="https://img.shields.io/crates/v/open-feature" />
   </a>
   <a href="https://www.rust-lang.org/tools/install">
-    <img alt="Min rust version" src="https://img.shields.io/badge/rust-%3E=1.70.0-blue.svg" />
+    <img alt="Min rust version" src="https://img.shields.io/badge/rust-%3E=1.77.0-blue.svg" />
   </a>
   <a href="https://www.repostatus.org/#wip">
     <img alt="Repo status" src="https://www.repostatus.org/badges/latest/wip.svg" />
@@ -47,7 +47,7 @@
 
 ### Requirements
 
-This package was built with Rust version `1.70.0`. Earlier versions might work, but is not guaranteed.
+This package was built with Rust version `1.77.0`. Earlier versions might work, but is not guaranteed.
 
 ### Install
 
