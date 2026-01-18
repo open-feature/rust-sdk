@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.2.8](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.7...open-feature-v0.2.8) (2026-01-18)
+
+
+### 🐛 Bug Fixes
+
+* **deps:** update rust crate darling to 0.23.0 ([#119](https://github.com/open-feature/rust-sdk/issues/119)) ([596daa8](https://github.com/open-feature/rust-sdk/commit/596daa8c7c766d0634031800034a6d17b01c8ebc))
+* **deps:** update rust crate mockall to 0.14.0 ([#118](https://github.com/open-feature/rust-sdk/issues/118)) ([aa3a6fb](https://github.com/open-feature/rust-sdk/commit/aa3a6fbae6d28718bf79de36f8650006d0024ca8))
+
+
+### 🧹 Chore
+
+* Bump min rust version ([#125](https://github.com/open-feature/rust-sdk/issues/125)) ([7f74461](https://github.com/open-feature/rust-sdk/commit/7f7446137509f499a29c87c3ba228e1c4430d7c8))
+* **deps:** replace google-github-actions/release-please-action action with googleapis/release-please-action v4 ([#112](https://github.com/open-feature/rust-sdk/issues/112)) ([44d20fb](https://github.com/open-feature/rust-sdk/commit/44d20fb6de6c95f202ce541126482c450ecb6404))
+* **deps:** update actions/checkout action to v6 ([#117](https://github.com/open-feature/rust-sdk/issues/117)) ([58461b8](https://github.com/open-feature/rust-sdk/commit/58461b835f51a0df25cb00177ed2c54d4cfbf29b))
+* update license copyright and add .cursor to gitignore ([#115](https://github.com/open-feature/rust-sdk/issues/115)) ([7b975f1](https://github.com/open-feature/rust-sdk/commit/7b975f13c21c7d2787f0342bd21d8ce02e64121d))
+
+
+### 📚 Documentation
+
+* update rust sdk release link in README ([#121](https://github.com/open-feature/rust-sdk/issues/121)) ([4efe245](https://github.com/open-feature/rust-sdk/commit/4efe245f4cd687feca40c2632fa7cd2ff566465c))
+
 ## [0.2.7](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.6...open-feature-v0.2.7) (2025-09-28)
 
 
