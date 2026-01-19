@@ -45,6 +45,10 @@ pub trait FeatureProvider: Send + Sync + 'static {
         ProviderStatus::Ready
     }
 
+    /// The provider MAY define a mechanism to gracefully shutdown and dispose of resources.
+    #[allow(unused_variables)]
+    async fn shutdown(&self) {}
+
     /// The provider interface MUST define a metadata member or accessor, containing a name field
     /// or accessor of type string, which identifies the provider implementation.
     fn metadata(&self) -> &ProviderMetadata;
