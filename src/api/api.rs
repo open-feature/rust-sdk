@@ -33,12 +33,12 @@ pub struct OpenFeature {
 impl OpenFeature {
     /// Get the singleton of [`OpenFeature`].
     pub async fn singleton() -> RwLockReadGuard<'static, Self> {
-        singleton_lock().read().await
+        get_singleton().read().await
     }
 
     /// Get a mutable singleton of [`OpenFeature`].
     pub async fn singleton_mut() -> RwLockWriteGuard<'static, Self> {
-        singleton_lock().write().await
+        get_singleton().write().await
     }
 
     /// Set the global evaluation context.
