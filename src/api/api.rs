@@ -16,7 +16,7 @@ use super::{
 /// The client should always use this instance to access OpenFeature APIs.
 static SINGLETON: OnceLock<RwLock<OpenFeature>> = OnceLock::new();
 
-fn singleton_lock() -> &'static RwLock<OpenFeature> {
+fn get_singleton() -> &'static RwLock<OpenFeature> {
     SINGLETON.get_or_init(|| RwLock::new(OpenFeature::default()))
 }
 
