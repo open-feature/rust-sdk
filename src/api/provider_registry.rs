@@ -1,7 +1,9 @@
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::{borrow::Borrow, collections::HashMap};
 
 use tokio::sync::RwLock;
+use tokio::task::JoinHandle;
 
 use crate::provider::{FeatureProvider, NoOpProvider};
 
@@ -32,20 +34,26 @@ impl ProviderRegistry {
     }
 
     pub async fn set_default<T: FeatureProvider>(&self, mut provider: T) {
-        let mut map = self.providers.write().await;
-        map.remove("");
+        let old_provider = self.providers.write().await.remove("");
+
+        if let Some(old_provider) = old_provider {
+            old_provider.shutdown_in_background();
+        }
 
         provider
             .initialize(self.global_evaluation_context.get().await.borrow())
             .await;
 
-        map.insert(String::default(), FeatureProviderWrapper::new(provider));
+        self.providers
+            .write()
+            .await
+            .insert(String::default(), FeatureProviderWrapper::new(provider));
     }
 
     pub async fn set_named<T: FeatureProvider>(&self, name: &str, mut provider: T) {
         // Drop the already registered provider if any.
-        if self.get_named(name).await.is_some() {
-            self.providers.write().await.remove(name);
+        if let Some(old_provider) = self.providers.write().await.remove(name) {
+            old_provider.shutdown_in_background();
         }
 
         provider
@@ -74,7 +82,21 @@ impl ProviderRegistry {
     }
 
     pub async fn clear(&self) {
+        let providers: Vec<FeatureProviderWrapper> =
+            self.providers.read().await.values().cloned().collect();
+
+        let mut shutdown_handles = Vec::with_capacity(providers.len());
+        for provider in providers {
+            if let Some(handle) = provider.shutdown_in_background() {
+                shutdown_handles.push(handle);
+            }
+        }
+
         self.providers.write().await.clear();
+
+        for handle in shutdown_handles {
+            let _ = handle.await;
+        }
     }
 }
 
@@ -89,14 +111,44 @@ impl Default for ProviderRegistry {
 // ============================================================
 
 #[derive(Clone)]
-pub struct FeatureProviderWrapper(Arc<dyn FeatureProvider>);
+pub struct FeatureProviderWrapper(Arc<ProviderEntry>);
 
 impl FeatureProviderWrapper {
     pub fn new(provider: impl FeatureProvider) -> Self {
-        Self(Arc::new(provider))
+        Self(Arc::new(ProviderEntry::new(provider)))
     }
 
     pub fn get(&self) -> Arc<dyn FeatureProvider> {
-        self.0.clone()
+        self.0.provider.clone()
+    }
+
+    pub fn shutdown_in_background(&self) -> Option<JoinHandle<()>> {
+        if self
+            .0
+            .shutdown_started
+            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+            .is_ok()
+        {
+            let provider = self.get();
+            Some(tokio::spawn(async move {
+                provider.shutdown().await;
+            }))
+        } else {
+            None
+        }
+    }
+}
+
+struct ProviderEntry {
+    provider: Arc<dyn FeatureProvider>,
+    shutdown_started: AtomicBool,
+}
+
+impl ProviderEntry {
+    fn new(provider: impl FeatureProvider) -> Self {
+        Self {
+            provider: Arc::new(provider),
+            shutdown_started: AtomicBool::new(false),
+        }
     }
 }
