@@ -1,4 +1,5 @@
-use lazy_static::lazy_static;
+use std::sync::OnceLock;
+
 use tokio::sync::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use crate::{
@@ -11,14 +12,16 @@ use super::{
     provider_registry::ProviderRegistry,
 };
 
-lazy_static! {
-    /// The singleton instance of [`OpenFeature`] struct.
-    /// The client should always use this instance to access OpenFeature APIs.
-    static ref SINGLETON: RwLock<OpenFeature> = RwLock::new(OpenFeature::default());
+/// The singleton instance of [`OpenFeature`] struct.
+/// The client should always use this instance to access OpenFeature APIs.
+static SINGLETON: OnceLock<RwLock<OpenFeature>> = OnceLock::new();
+
+fn get_singleton() -> &'static RwLock<OpenFeature> {
+    SINGLETON.get_or_init(|| RwLock::new(OpenFeature::default()))
 }
 
 /// THE struct of the OpenFeature API.
-/// Access it via the [`SINGLETON`] instance.
+/// Access it via [`OpenFeature::singleton()`] or [`OpenFeature::singleton_mut()`].
 #[derive(Default)]
 pub struct OpenFeature {
     evaluation_context: GlobalEvaluationContext,
@@ -30,12 +33,12 @@ pub struct OpenFeature {
 impl OpenFeature {
     /// Get the singleton of [`OpenFeature`].
     pub async fn singleton() -> RwLockReadGuard<'static, Self> {
-        SINGLETON.read().await
+        get_singleton().read().await
     }
 
     /// Get a mutable singleton of [`OpenFeature`].
     pub async fn singleton_mut() -> RwLockWriteGuard<'static, Self> {
-        SINGLETON.write().await
+        get_singleton().write().await
     }
 
     /// Set the global evaluation context.
