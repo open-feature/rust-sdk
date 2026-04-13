@@ -31,7 +31,7 @@
     <img alt="Crates.io" src="https://img.shields.io/crates/v/open-feature" />
   </a>
   <a href="https://www.rust-lang.org/tools/install">
-    <img alt="Min rust version" src="https://img.shields.io/badge/rust-%3E=1.77.0-blue.svg" />
+    <img alt="Min rust version" src="https://img.shields.io/badge/rust-%3E=1.80.1-blue.svg" />
   </a>
   <a href="https://www.repostatus.org/#wip">
     <img alt="Repo status" src="https://www.repostatus.org/badges/latest/wip.svg" />
@@ -47,7 +47,7 @@
 
 ### Requirements
 
-This package was built with Rust version `1.77.0`. Earlier versions might work, but is not guaranteed.
+This package was built with Rust version `1.80.1`. Earlier versions might work, but is not guaranteed.
 
 ### Install
 
@@ -72,13 +72,13 @@ async fn example() -> Result<(), Error> {
     api.set_provider(NoOpProvider::default()).await;
 
     // create a client
-    let client = api.get_client();
+    let client = api.create_client();
 
     // get a bool flag value
     let is_feature_enabled = client
         .get_bool_value("v2_enabled", None, None)
-        .unwrap_or(false)
-        .await;
+        .await
+        .unwrap_or(false);
 
     Ok(())
 }
@@ -139,7 +139,7 @@ async fn extended_example() {
 
 It is possible to extract a struct from the provider. Internally, this SDK defines a type `StructValue` to store any structure value. The `client.get_struct_value()` functions takes a type parameter `T`. It will try to parse `StructValue` resolved by the provider to `T`, as long as `T` implements trait `TryFrom<StructValue>`.
 
-You can pass in a type that satisfies this trait bound. When the conversion fails, it returns an `Err` with `EvaluationReason::TypeMismatch`.
+You can pass in a type that satisfies this trait bound. When the conversion fails, it returns an `Err` with `EvaluationErrorCode::TypeMismatch`.
 
 ### API Reference
 
@@ -220,12 +220,11 @@ Once you've added a hook as a dependency, it can be registered at the global, cl
 ```rust
 let mut api = OpenFeature::singleton_mut().await;
 
-// Set a global hook.
-api.set_hook(MyHook::default()).await;
+// Add a global hook.
+api.add_hook(MyHook::default()).await;
 
-// Create a client and set a client level hook.
-let client = api.create_client();
-client.set_hook(MyHook::default());
+// Create a client and add a client level hook.
+let client = api.create_client().with_hook(MyHook::default());
 
 // Get a flag value with a hook.
 let eval = EvaluationOptions::default().with_hook(MyHook::default());
@@ -264,7 +263,7 @@ Both **text** and **structured** logging are supported.
 To enable **structured** logging, enable feature `structured-logging` in your `Cargo.toml`:
 
 ```toml
-open-feature = { version = "0.2.4", features = ["structured-logging"] }
+open-feature = { version = "0.3.0", features = ["structured-logging"] }
 ```
 
 Example of a logging hook usage you can find in [examples/logging.rs](https://github.com/open-feature/rust-sdk/blob/main/examples/logging.rs).
@@ -332,7 +331,7 @@ This should only be called when your application is in the process of shutting d
 ```rust
 // This will clean all the registered providers and invoke their `shutdown()` function.
 let api = OpenFeature::singleton_mut().await;
-api.shutdown();
+api.shutdown().await;
 ```
 
 ## Extending
@@ -393,7 +392,7 @@ impl Hook for MyHook {
     async fn finally<'a>(
         &self,
         context: &HookContext<'a>,
-        detaild: &EvaluationDetails<Value>,
+        evaluation_details: &EvaluationDetails<Value>,
         hints: Option<&'a HookHints>,
     ) {
         todo!()
