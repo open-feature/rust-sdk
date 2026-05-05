@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.3.0...open-feature-v0.3.1) (2026-05-05)
+
+
+### 📚 Documentation
+
+* fix inaccuracies in README code examples and descriptions ([#129](https://github.com/open-feature/rust-sdk/issues/129)) ([abe65b8](https://github.com/open-feature/rust-sdk/commit/abe65b862149347b7a08385c60f738eebafd444f))
+
 ## [0.3.0](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.7...open-feature-v0.3.0) (2026-02-24)
 
 
