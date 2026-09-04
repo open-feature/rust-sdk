@@ -10,5 +10,5 @@ proc-macro = true
 
 [dependencies]
 darling = "0.23.0"
-syn = "2.0.103" # needed for `darling`
+syn = "3.0.0" # needed for `darling`
 
