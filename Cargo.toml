@@ -26,10 +26,10 @@ typed-builder = "0.22.0"
 log = { package = "log", version = "0.4", optional = true }
 
 [dev-dependencies]
-env_logger = "0.11.5"
-structured-logger = "1.0.3"
+env_logger = "=0.11.11"
+structured-logger = "=1.0.5"
 spec = { path = "spec" }
-tokio = { version = "1.40", features = ["sync", "rt-multi-thread", "macros"] }
+tokio = { version = "=1.53.1", features = ["sync", "rt-multi-thread", "macros"] }
 
 [features]
 default = ["test-util", "dep:log"]
