@@ -32,20 +32,25 @@ impl ProviderRegistry {
     }
 
     pub async fn set_default<T: FeatureProvider>(&self, mut provider: T) {
-        let mut map = self.providers.write().await;
-        map.remove("");
+        // Shutdown the old provider before replacing it.
+        if let Some(old_provider) = self.providers.write().await.remove("") {
+            old_provider.get().shutdown().await;
+        }
 
         provider
             .initialize(self.global_evaluation_context.get().await.borrow())
             .await;
 
-        map.insert(String::default(), FeatureProviderWrapper::new(provider));
+        self.providers
+            .write()
+            .await
+            .insert(String::default(), FeatureProviderWrapper::new(provider));
     }
 
     pub async fn set_named<T: FeatureProvider>(&self, name: &str, mut provider: T) {
-        // Drop the already registered provider if any.
-        if self.get_named(name).await.is_some() {
-            self.providers.write().await.remove(name);
+        // Shutdown the old provider before replacing it.
+        if let Some(old_provider) = self.providers.write().await.remove(name) {
+            old_provider.get().shutdown().await;
         }
 
         provider
@@ -74,7 +79,10 @@ impl ProviderRegistry {
     }
 
     pub async fn clear(&self) {
-        self.providers.write().await.clear();
+        let providers: Vec<_> = self.providers.write().await.drain().collect();
+        for (_, provider) in providers {
+            provider.get().shutdown().await;
+        }
     }
 }
 
