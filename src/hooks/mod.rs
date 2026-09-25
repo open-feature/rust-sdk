@@ -5,6 +5,9 @@ use crate::{
     EvaluationError, Type, Value,
 };
 
+mod data;
+pub use data::HookData;
+
 mod logging;
 pub use logging::LoggingHook;
 
@@ -93,8 +96,20 @@ pub struct HookHints {
 // ============================================================
 
 /// Context for hooks.
+///
+/// Implementing a [`Hook`] does not require constructing this type — the SDK builds it and passes a
+/// `&HookContext` into each stage. Code that *does* build one with a struct literal (tests, custom
+/// hook harnesses) must populate every field, including [`data`](Self::data):
+///
+/// ```ignore
+/// HookContext {
+///     // ...other fields...
+///     data: HookData::default(),
+/// }
+/// ```
+///
 #[allow(missing_docs)]
-#[derive(Clone, PartialEq, Debug)]
+#[derive(Clone)]
 pub struct HookContext<'a> {
     pub flag_key: &'a str,
     pub flag_type: Type,
@@ -102,6 +117,37 @@ pub struct HookContext<'a> {
     pub provider_metadata: ProviderMetadata,
     pub default_value: Option<Value>,
     pub client_metadata: ClientMetadata,
+    /// Mutable, per-hook-instance data shared across this hook's stages within a single evaluation.
+    ///
+    /// See [`HookData`] for details on lifetime and isolation semantics.
+    pub data: HookData,
+}
+
+// `HookData` holds type-erased values that are neither comparable nor necessarily `Debug`, so both
+// impls deliberately exclude it. Two hook contexts are equal when their immutable fields match.
+impl PartialEq for HookContext<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        self.flag_key == other.flag_key
+            && self.flag_type == other.flag_type
+            && self.evaluation_context == other.evaluation_context
+            && self.provider_metadata == other.provider_metadata
+            && self.default_value == other.default_value
+            && self.client_metadata == other.client_metadata
+    }
+}
+
+impl std::fmt::Debug for HookContext<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("HookContext")
+            .field("flag_key", &self.flag_key)
+            .field("flag_type", &self.flag_type)
+            .field("evaluation_context", &self.evaluation_context)
+            .field("provider_metadata", &self.provider_metadata)
+            .field("default_value", &self.default_value)
+            .field("client_metadata", &self.client_metadata)
+            .field("data", &self.data)
+            .finish()
+    }
 }
 
 #[cfg(test)]
@@ -118,7 +164,7 @@ mod tests {
 
     #[spec(
         number = "4.1.1",
-        text = "Hook context MUST provide: the flag key, flag value type, evaluation context, and the default value."
+        text = "Hook context MUST provide: the flag key, flag value type, evaluation context, default value, and hook data."
     )]
     #[spec(
         number = "4.1.2",
@@ -137,6 +183,7 @@ mod tests {
             provider_metadata: ProviderMetadata::default(),
             default_value: Some(Value::Bool(true)),
             client_metadata: ClientMetadata::default(),
+            data: HookData::default(),
         };
 
         assert_eq!(context.flag_key, "flag_key");
@@ -145,6 +192,36 @@ mod tests {
         assert_eq!(context.provider_metadata, ProviderMetadata::default());
         assert_eq!(context.default_value, Some(Value::Bool(true)));
         assert_eq!(context.client_metadata, ClientMetadata::default());
+        assert!(context.data.is_empty());
+    }
+
+    #[spec(
+        number = "4.1.5",
+        text = "The hook data MUST be mutable. Either the hook data reference itself must be mutable, or it must allow mutation of its contents."
+    )]
+    #[spec(
+        number = "4.6.1",
+        text = "hook data MUST be a structure supporting the definition of arbitrary properties, with keys of type string, and values of any type."
+    )]
+    #[test]
+    fn hook_data_arbitrary_mutable_content() {
+        // Content is mutable through a shared `&` reference (interior mutability), and values may be
+        // of any `'static + Send + Sync` type, not just the restricted `Value` variants.
+        let data = HookData::default();
+        data.set("string", "value".to_string());
+        data.set("int", 42_i64);
+        data.set("tuple", (1_i32, "two".to_string()));
+
+        assert_eq!(data.get::<String>("string").as_deref(), Some("value"));
+        assert_eq!(data.get::<i64>("int"), Some(42));
+        assert_eq!(
+            data.get::<(i32, String)>("tuple"),
+            Some((1, "two".to_string()))
+        );
+
+        // Mutation of existing content is observable.
+        data.set("int", 43_i64);
+        assert_eq!(data.get::<i64>("int"), Some(43));
     }
 
     #[spec(
@@ -259,6 +336,7 @@ mod tests {
                     default_value: Some(Value::Bool(false)),
                     provider_metadata: ProviderMetadata::default(),
                     client_metadata: client_metadata.clone(),
+                    data: HookData::default(),
                 };
 
                 assert_eq!(ctx, &hook_ctx_1);
@@ -283,6 +361,7 @@ mod tests {
                     default_value: Some(Value::Bool(false)),
                     provider_metadata: ProviderMetadata::default(),
                     client_metadata: client_metadata.clone(),
+                    data: HookData::default(),
                 };
 
                 assert_eq!(ctx, &hook_ctx_1);
@@ -890,5 +969,379 @@ mod tests {
             code: EvaluationErrorCode::General("error".to_string()),
             message: None,
         })
+    }
+
+    #[spec(
+        number = "4.3.2",
+        text = "Hook data MUST be created before the first stage invoked in a hook for a specific evaluation and propagated between each stage of the hook. The hook data is not shared between different hooks."
+    )]
+    #[tokio::test]
+    async fn hook_data_shared_across_stages_success() {
+        struct StateSharingHook {
+            stages_run: Arc<std::sync::Mutex<Vec<String>>>,
+        }
+
+        #[async_trait::async_trait]
+        impl Hook for StateSharingHook {
+            async fn before<'a>(
+                &self,
+                context: &HookContext<'a>,
+                _hints: Option<&'a HookHints>,
+            ) -> Result<Option<EvaluationContext>, EvaluationError> {
+                context
+                    .data
+                    .set("shared_key", "hello from before".to_string());
+                self.stages_run.lock().unwrap().push("before".to_string());
+                Ok(None)
+            }
+
+            async fn after<'a>(
+                &self,
+                context: &HookContext<'a>,
+                _details: &EvaluationDetails<Value>,
+                _hints: Option<&'a HookHints>,
+            ) -> Result<(), EvaluationError> {
+                let val = context.data.get::<String>("shared_key");
+                assert_eq!(val.as_deref(), Some("hello from before"));
+                self.stages_run.lock().unwrap().push("after".to_string());
+                Ok(())
+            }
+
+            async fn error<'a>(
+                &self,
+                context: &HookContext<'a>,
+                _error: &EvaluationError,
+                _hints: Option<&'a HookHints>,
+            ) {
+                let val = context.data.get::<String>("shared_key");
+                assert_eq!(val.as_deref(), Some("hello from before"));
+                self.stages_run.lock().unwrap().push("error".to_string());
+            }
+
+            async fn finally<'a>(
+                &self,
+                context: &HookContext<'a>,
+                _evaluation_details: &EvaluationDetails<Value>,
+                _hints: Option<&'a HookHints>,
+            ) {
+                let val = context.data.get::<String>("shared_key");
+                assert_eq!(val.as_deref(), Some("hello from before"));
+                self.stages_run.lock().unwrap().push("finally".to_string());
+            }
+        }
+
+        let stages = Arc::new(std::sync::Mutex::new(Vec::new()));
+        let hook = StateSharingHook {
+            stages_run: Arc::clone(&stages),
+        };
+
+        let mut api = OpenFeature::default();
+        let client = api.create_named_client("test").with_hook(hook);
+
+        let mut mock_provider = MockFeatureProvider::default();
+        mock_provider.expect_hooks().return_const(vec![]);
+        mock_provider.expect_initialize().return_const(());
+        mock_provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
+        mock_provider
+            .expect_resolve_bool_value()
+            .return_const(Ok(ResolutionDetails::new(true)));
+
+        api.set_provider(mock_provider).await;
+        drop(api);
+
+        let result = client.get_bool_value("flag", None, None).await;
+        assert!(result.is_ok());
+
+        let stages_run = stages.lock().unwrap();
+        assert_eq!(*stages_run, vec!["before", "after", "finally"]);
+    }
+
+    #[spec(
+        number = "4.3.2",
+        text = "Hook data MUST be created before the first stage invoked in a hook for a specific evaluation and propagated between each stage of the hook. The hook data is not shared between different hooks."
+    )]
+    #[tokio::test]
+    async fn hook_data_shared_across_stages_error() {
+        struct StateSharingHook {
+            stages_run: Arc<std::sync::Mutex<Vec<String>>>,
+        }
+
+        #[async_trait::async_trait]
+        impl Hook for StateSharingHook {
+            async fn before<'a>(
+                &self,
+                context: &HookContext<'a>,
+                _hints: Option<&'a HookHints>,
+            ) -> Result<Option<EvaluationContext>, EvaluationError> {
+                context.data.set("shared_key", "error context".to_string());
+                self.stages_run.lock().unwrap().push("before".to_string());
+                Ok(None)
+            }
+
+            async fn after<'a>(
+                &self,
+                context: &HookContext<'a>,
+                _details: &EvaluationDetails<Value>,
+                _hints: Option<&'a HookHints>,
+            ) -> Result<(), EvaluationError> {
+                let val = context.data.get::<String>("shared_key");
+                assert_eq!(val.as_deref(), Some("error context"));
+                self.stages_run.lock().unwrap().push("after".to_string());
+                Ok(())
+            }
+
+            async fn error<'a>(
+                &self,
+                context: &HookContext<'a>,
+                _error: &EvaluationError,
+                _hints: Option<&'a HookHints>,
+            ) {
+                let val = context.data.get::<String>("shared_key");
+                assert_eq!(val.as_deref(), Some("error context"));
+                self.stages_run.lock().unwrap().push("error".to_string());
+            }
+
+            async fn finally<'a>(
+                &self,
+                context: &HookContext<'a>,
+                _evaluation_details: &EvaluationDetails<Value>,
+                _hints: Option<&'a HookHints>,
+            ) {
+                let val = context.data.get::<String>("shared_key");
+                assert_eq!(val.as_deref(), Some("error context"));
+                self.stages_run.lock().unwrap().push("finally".to_string());
+            }
+        }
+
+        let stages = Arc::new(std::sync::Mutex::new(Vec::new()));
+        let hook = StateSharingHook {
+            stages_run: Arc::clone(&stages),
+        };
+
+        let mut api = OpenFeature::default();
+        let client = api.create_named_client("test").with_hook(hook);
+
+        let mut mock_provider = MockFeatureProvider::default();
+        mock_provider.expect_hooks().return_const(vec![]);
+        mock_provider.expect_initialize().return_const(());
+        mock_provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
+        mock_provider
+            .expect_resolve_bool_value()
+            .return_const(Err(EvaluationError {
+                code: EvaluationErrorCode::FlagNotFound,
+                message: Some("flag not found".to_string()),
+            }));
+
+        api.set_provider(mock_provider).await;
+        drop(api);
+
+        let result = client.get_bool_value("flag", None, None).await;
+        assert!(result.is_err());
+
+        let stages_run = stages.lock().unwrap();
+        assert_eq!(*stages_run, vec!["before", "error", "finally"]);
+    }
+
+    #[spec(
+        number = "4.3.2",
+        text = "Hook data MUST be created before the first stage invoked in a hook for a specific evaluation and propagated between each stage of the hook. The hook data is not shared between different hooks."
+    )]
+    #[tokio::test]
+    async fn hook_data_isolated_between_hooks() {
+        // Each hook writes its own `id` under the SAME key in `before`, then in `after` asserts it
+        // reads back exactly what it wrote — proving hooks do not share a hook data instance.
+        struct IsolationHook {
+            id: &'static str,
+            violations: Arc<std::sync::Mutex<Vec<String>>>,
+            checks: Arc<std::sync::atomic::AtomicUsize>,
+        }
+
+        #[async_trait::async_trait]
+        impl Hook for IsolationHook {
+            async fn before<'a>(
+                &self,
+                context: &HookContext<'a>,
+                _hints: Option<&'a HookHints>,
+            ) -> Result<Option<EvaluationContext>, EvaluationError> {
+                context.data.set("owner", self.id.to_string());
+                Ok(None)
+            }
+
+            async fn after<'a>(
+                &self,
+                context: &HookContext<'a>,
+                _details: &EvaluationDetails<Value>,
+                _hints: Option<&'a HookHints>,
+            ) -> Result<(), EvaluationError> {
+                // A leak from another hook would surface a different owner here.
+                if context.data.get::<String>("owner").as_deref() != Some(self.id) {
+                    self.violations.lock().unwrap().push(self.id.to_string());
+                }
+                self.checks
+                    .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                Ok(())
+            }
+
+            async fn error<'a>(
+                &self,
+                _context: &HookContext<'a>,
+                _error: &EvaluationError,
+                _hints: Option<&'a HookHints>,
+            ) {
+            }
+
+            async fn finally<'a>(
+                &self,
+                _context: &HookContext<'a>,
+                _evaluation_details: &EvaluationDetails<Value>,
+                _hints: Option<&'a HookHints>,
+            ) {
+            }
+        }
+
+        let violations = Arc::new(std::sync::Mutex::new(Vec::new()));
+        let checks = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+
+        let mut api = OpenFeature::default();
+        let client = api
+            .create_named_client("test")
+            .with_hook(IsolationHook {
+                id: "hook_a",
+                violations: Arc::clone(&violations),
+                checks: Arc::clone(&checks),
+            })
+            .with_hook(IsolationHook {
+                id: "hook_b",
+                violations: Arc::clone(&violations),
+                checks: Arc::clone(&checks),
+            });
+
+        let mut mock_provider = MockFeatureProvider::default();
+        mock_provider.expect_hooks().return_const(vec![]);
+        mock_provider.expect_initialize().return_const(());
+        mock_provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
+        mock_provider
+            .expect_resolve_bool_value()
+            .return_const(Ok(ResolutionDetails::new(true)));
+
+        api.set_provider(mock_provider).await;
+        drop(api);
+
+        let result = client.get_bool_value("flag", None, None).await;
+        assert!(result.is_ok());
+
+        // Without this the test would pass vacuously: `violations` is also empty when no hook ran.
+        assert_eq!(
+            checks.load(std::sync::atomic::Ordering::SeqCst),
+            2,
+            "expected both hooks to reach `after` and check their data"
+        );
+        let violations = violations.lock().unwrap();
+        assert!(
+            violations.is_empty(),
+            "hooks observed another hook's data: {violations:?}"
+        );
+    }
+
+    #[spec(
+        number = "4.3.2",
+        text = "Hook data MUST be created before the first stage invoked in a hook for a specific evaluation and propagated between each stage of the hook. The hook data is not shared between different hooks."
+    )]
+    #[tokio::test]
+    async fn hook_data_not_shared_between_evaluations() {
+        // The SAME hook instance is reused across evaluations, but each evaluation must start with
+        // a fresh, empty `HookData`. A `before` stage that observes a marker left by a previous
+        // evaluation would prove data leaked across evaluations.
+        struct PerEvaluationHook {
+            leaked: Arc<std::sync::atomic::AtomicBool>,
+            evaluations: Arc<std::sync::atomic::AtomicUsize>,
+        }
+
+        #[async_trait::async_trait]
+        impl Hook for PerEvaluationHook {
+            async fn before<'a>(
+                &self,
+                context: &HookContext<'a>,
+                _hints: Option<&'a HookHints>,
+            ) -> Result<Option<EvaluationContext>, EvaluationError> {
+                self.evaluations
+                    .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                // Nothing from a prior evaluation should be visible here.
+                if context.data.contains_key("marker") {
+                    self.leaked.store(true, std::sync::atomic::Ordering::SeqCst);
+                }
+                context.data.set("marker", true);
+                Ok(None)
+            }
+
+            async fn after<'a>(
+                &self,
+                _context: &HookContext<'a>,
+                _details: &EvaluationDetails<Value>,
+                _hints: Option<&'a HookHints>,
+            ) -> Result<(), EvaluationError> {
+                Ok(())
+            }
+
+            async fn error<'a>(
+                &self,
+                _context: &HookContext<'a>,
+                _error: &EvaluationError,
+                _hints: Option<&'a HookHints>,
+            ) {
+            }
+
+            async fn finally<'a>(
+                &self,
+                _context: &HookContext<'a>,
+                _evaluation_details: &EvaluationDetails<Value>,
+                _hints: Option<&'a HookHints>,
+            ) {
+            }
+        }
+
+        let leaked = Arc::new(std::sync::atomic::AtomicBool::new(false));
+        let evaluations = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+
+        let mut api = OpenFeature::default();
+        let client = api
+            .create_named_client("test")
+            .with_hook(PerEvaluationHook {
+                leaked: Arc::clone(&leaked),
+                evaluations: Arc::clone(&evaluations),
+            });
+
+        let mut mock_provider = MockFeatureProvider::default();
+        mock_provider.expect_hooks().return_const(vec![]);
+        mock_provider.expect_initialize().return_const(());
+        mock_provider
+            .expect_metadata()
+            .return_const(ProviderMetadata::default());
+        mock_provider
+            .expect_resolve_bool_value()
+            .return_const(Ok(ResolutionDetails::new(true)));
+
+        api.set_provider(mock_provider).await;
+        drop(api);
+
+        // Two evaluations with the same client (and thus the same hook instance).
+        assert!(client.get_bool_value("flag", None, None).await.is_ok());
+        assert!(client.get_bool_value("flag", None, None).await.is_ok());
+
+        assert_eq!(
+            evaluations.load(std::sync::atomic::Ordering::SeqCst),
+            2,
+            "expected the hook to run for both evaluations"
+        );
+        assert!(
+            !leaked.load(std::sync::atomic::Ordering::SeqCst),
+            "hook data leaked from one evaluation into the next"
+        );
     }
 }
