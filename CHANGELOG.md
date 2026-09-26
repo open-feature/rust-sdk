@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.3.1](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.3.0...open-feature-v0.3.1) (2026-09-26)
+
+
+### 🧹 Chore
+
+* **deps:** update actions-rust-lang/setup-rust-toolchain action to v2 ([#142](https://github.com/open-feature/rust-sdk/issues/142)) ([9dacd98](https://github.com/open-feature/rust-sdk/commit/9dacd98cd473234b69ba3c5f79a895aeb4307298))
+* **deps:** update actions/checkout action to v7 ([#133](https://github.com/open-feature/rust-sdk/issues/133)) ([17ef17d](https://github.com/open-feature/rust-sdk/commit/17ef17d85e7b67db00dbbb1e634502c6ae6dc039))
+* **deps:** update amannn/action-semantic-pull-request action to v6.1.1 ([#144](https://github.com/open-feature/rust-sdk/issues/144)) ([679d7fe](https://github.com/open-feature/rust-sdk/commit/679d7feec10395cd4cc4a27d8c94191af2011ca0))
+* **deps:** update marocchino/sticky-pull-request-comment action to v3 ([#130](https://github.com/open-feature/rust-sdk/issues/130)) ([ca0ef3f](https://github.com/open-feature/rust-sdk/commit/ca0ef3f46716466401fd9fa908f023bb7b08b9f2))
+* **deps:** update rust crate darling to 0.24.0 ([#138](https://github.com/open-feature/rust-sdk/issues/138)) ([78eda39](https://github.com/open-feature/rust-sdk/commit/78eda3987771b38a3dc585b80aa9253492d15f43))
+* **deps:** update rust crate mockall to 0.15.0 ([#134](https://github.com/open-feature/rust-sdk/issues/134)) ([d6af85e](https://github.com/open-feature/rust-sdk/commit/d6af85ec870d3c2ebe9a04fa7de76f99b16d1bf6))
+* **deps:** update rust crate syn to v2.0.119 ([#122](https://github.com/open-feature/rust-sdk/issues/122)) ([8cb7217](https://github.com/open-feature/rust-sdk/commit/8cb72176283b65df2473fe7c7e63698e89c76910))
+* **deps:** update taiki-e/install-action action to v2.87.12 ([#147](https://github.com/open-feature/rust-sdk/issues/147)) ([bce1220](https://github.com/open-feature/rust-sdk/commit/bce1220c292396ac4cbde45ad6c85894e207636c))
+* **deps:** update taiki-e/install-action action to v2.87.13 ([#148](https://github.com/open-feature/rust-sdk/issues/148)) ([3275d67](https://github.com/open-feature/rust-sdk/commit/3275d67dea043ae488bb720c781a5a1206e15547))
+* **deps:** update taiki-e/install-action action to v2.87.14 ([#149](https://github.com/open-feature/rust-sdk/issues/149)) ([f6247d5](https://github.com/open-feature/rust-sdk/commit/f6247d540500cade765b9f37a3d4b3adc7f0e0ef))
+* **deps:** update taiki-e/install-action action to v2.87.15 ([#151](https://github.com/open-feature/rust-sdk/issues/151)) ([1ad7ac0](https://github.com/open-feature/rust-sdk/commit/1ad7ac0a3d5bd99e5e40223e7bbeb9ca1e79590e))
+* **deps:** update taiki-e/install-action action to v2.87.16 ([#152](https://github.com/open-feature/rust-sdk/issues/152)) ([b3459c2](https://github.com/open-feature/rust-sdk/commit/b3459c2a4a31a93b2a743dea3ca884518ad04ab4))
+* **deps:** update taiki-e/install-action action to v2.87.17 ([#154](https://github.com/open-feature/rust-sdk/issues/154)) ([f946576](https://github.com/open-feature/rust-sdk/commit/f946576d6d742fe8e30e5d7a99733b4170a7bc09))
+* **deps:** update taiki-e/install-action action to v2.87.18 ([#155](https://github.com/open-feature/rust-sdk/issues/155)) ([249c844](https://github.com/open-feature/rust-sdk/commit/249c844eae92aca82bd72e5abb255a82f7f278fb))
+* **deps:** update taiki-e/install-action action to v2.87.19 ([#156](https://github.com/open-feature/rust-sdk/issues/156)) ([a27b36c](https://github.com/open-feature/rust-sdk/commit/a27b36c7a81f588754769a1d17bcc8f48ae0bfbf))
+* extend from org renovate config ([#143](https://github.com/open-feature/rust-sdk/issues/143)) ([397b2fe](https://github.com/open-feature/rust-sdk/commit/397b2feadd7378ec0e2ae61e78b0149079ab9bf2))
+* standardize/update release please config ([#153](https://github.com/open-feature/rust-sdk/issues/153)) ([d9484d8](https://github.com/open-feature/rust-sdk/commit/d9484d8d8ee046c775c48a6dce0de2a7819a97f9))
+
+
+### 📚 Documentation
+
+* fix inaccuracies in README code examples and descriptions ([#129](https://github.com/open-feature/rust-sdk/issues/129)) ([abe65b8](https://github.com/open-feature/rust-sdk/commit/abe65b862149347b7a08385c60f738eebafd444f))
+
 ## [0.3.0](https://github.com/open-feature/rust-sdk/compare/open-feature-v0.2.7...open-feature-v0.3.0) (2026-02-24)
 
 
