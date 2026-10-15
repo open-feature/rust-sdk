@@ -198,12 +198,6 @@ mod tests {
         api.set_provider(provider).await;
     }
 
-    #[spec(
-        number = "1.1.2.3",
-        text = "The provider mutator function MUST invoke the shutdown function on the previously registered provider once it's no longer being used to resolve flag values."
-    )]
-    #[test]
-    fn invoke_shutdown_on_old_provider_checked_by_type_system() {}
 
     #[spec(
         number = "1.1.3",
@@ -323,11 +317,76 @@ mod tests {
         text = "The API MUST define a shutdown function which, when called, must call the respective shutdown function on the active provider."
     )]
     #[tokio::test]
-    async fn shutdown() {
+    async fn shutdown_calls_provider_shutdown() {
+        let mut provider = MockFeatureProvider::new();
+        provider.expect_initialize().returning(|_| {});
+        provider.expect_shutdown().once().returning(|| {});
+
         let mut api = OpenFeature::default();
-        api.set_provider(NoOpProvider::default()).await;
+        api.set_provider(provider).await;
 
         api.shutdown().await;
+    }
+
+    #[spec(
+        number = "1.6.1",
+        text = "The API MUST define a shutdown function which, when called, must call the respective shutdown function on the active provider."
+    )]
+    #[tokio::test]
+    async fn shutdown_calls_shutdown_on_named_providers() {
+        let mut default_provider = MockFeatureProvider::new();
+        default_provider.expect_initialize().returning(|_| {});
+        default_provider.expect_shutdown().once().returning(|| {});
+
+        let mut named_provider = MockFeatureProvider::new();
+        named_provider.expect_initialize().returning(|_| {});
+        named_provider.expect_shutdown().once().returning(|| {});
+
+        let mut api = OpenFeature::default();
+        api.set_provider(default_provider).await;
+        api.set_named_provider("test", named_provider).await;
+
+        api.shutdown().await;
+    }
+
+    #[spec(
+        number = "1.1.2.3",
+        text = "The provider mutator function MUST invoke the shutdown function on the previously registered provider once it's no longer being used to resolve flag values."
+    )]
+    #[tokio::test]
+    async fn set_provider_calls_shutdown_on_old_provider() {
+        let mut old_provider = MockFeatureProvider::new();
+        old_provider.expect_initialize().returning(|_| {});
+        old_provider.expect_shutdown().once().returning(|| {});
+
+        let mut new_provider = MockFeatureProvider::new();
+        new_provider.expect_initialize().returning(|_| {});
+
+        let mut api = OpenFeature::default();
+        api.set_provider(old_provider).await;
+
+        // When we set a new provider, the old one's shutdown should be called
+        api.set_provider(new_provider).await;
+    }
+
+    #[spec(
+        number = "1.1.2.3",
+        text = "The provider mutator function MUST invoke the shutdown function on the previously registered provider once it's no longer being used to resolve flag values."
+    )]
+    #[tokio::test]
+    async fn set_named_provider_calls_shutdown_on_old_provider() {
+        let mut old_provider = MockFeatureProvider::new();
+        old_provider.expect_initialize().returning(|_| {});
+        old_provider.expect_shutdown().once().returning(|| {});
+
+        let mut new_provider = MockFeatureProvider::new();
+        new_provider.expect_initialize().returning(|_| {});
+
+        let mut api = OpenFeature::default();
+        api.set_named_provider("test", old_provider).await;
+
+        // When we set a new provider with the same name, the old one's shutdown should be called
+        api.set_named_provider("test", new_provider).await;
     }
 
     #[spec(

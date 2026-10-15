@@ -89,6 +89,13 @@ pub trait FeatureProvider: Send + Sync + 'static {
         flag_key: &str,
         evaluation_context: &EvaluationContext,
     ) -> EvaluationResult<ResolutionDetails<StructValue>>;
+
+    /// The provider MAY define a shutdown function which performs any cleanup necessary
+    /// before the provider is disposed of. This may include flushing telemetry events,
+    /// closing connections, or other resource cleanup.
+    ///
+    /// See [spec 2.5.1](https://openfeature.dev/specification/sections/providers#requirement-251).
+    async fn shutdown(&self) {}
 }
 
 // ============================================================
