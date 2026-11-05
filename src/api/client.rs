@@ -280,6 +280,7 @@ impl Client {
     }
 
     /// Add logging hook to the client.
+    #[cfg(feature = "log")]
     #[must_use]
     pub fn with_logging_hook(self, include_evaluation_context: bool) -> Self {
         self.with_hook(crate::LoggingHook {
