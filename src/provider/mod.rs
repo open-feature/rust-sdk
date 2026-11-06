@@ -4,9 +4,10 @@ pub use details::ResolutionDetails;
 
 /// Feature provider trait.
 mod feature_provider;
-pub use feature_provider::{
-    FeatureProvider, MockFeatureProvider, ProviderMetadata, ProviderStatus,
-};
+pub use feature_provider::{FeatureProvider, ProviderMetadata, ProviderStatus};
+
+#[cfg(feature = "test-util")]
+pub use feature_provider::MockFeatureProvider;
 
 /// The default no-op provider.
 mod no_op_provider;
