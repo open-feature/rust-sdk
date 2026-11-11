@@ -3,7 +3,7 @@ use std::{future::Future, pin::Pin, sync::Arc};
 use crate::{
     provider::{FeatureProvider, ResolutionDetails},
     EvaluationContext, EvaluationDetails, EvaluationError, EvaluationErrorCode, EvaluationOptions,
-    EvaluationResult, Hook, HookContext, HookHints, HookWrapper, StructValue, Value,
+    EvaluationResult, Hook, HookContext, HookData, HookHints, HookWrapper, StructValue, Value,
 };
 
 use super::{
@@ -316,6 +316,8 @@ impl Client {
             evaluation_context: context,
 
             default_value: Some(default),
+            // Placeholder; each hook is invoked with its own isolated `HookData` (see below).
+            data: HookData::default(),
         };
 
         let global_hooks = self.global_hooks.get().await;
@@ -327,18 +329,27 @@ impl Client {
 
         // INFO: API(global), Client, Invocation, Provider
         // https://github.com/open-feature/spec/blob/main/specification/sections/04-hooks.md#requirement-442
-        let before_hooks = global_hooks
+        let ordered_hooks: Vec<&HookWrapper> = global_hooks
             .iter()
             .chain(client_hooks.iter())
             .chain(invocation_hooks.iter())
-            .chain(provider_hooks.iter());
+            .chain(provider_hooks.iter())
+            .collect();
+
+        // INFO: Each hook instance gets its own `HookData`, shared across that hook's stages for
+        // this evaluation, isolated from every other hook.
+        // https://github.com/open-feature/spec/blob/main/specification/sections/04-hooks.md#46-hook-data
+        let hook_data: Vec<HookData> = ordered_hooks.iter().map(|_| HookData::default()).collect();
+
+        // INFO: (hook, its data) in before order: API(global), Client, Invocation, Provider
+        let before_hooks = || ordered_hooks.iter().copied().zip(hook_data.iter());
 
         // INFO: Hooks called after the resolution are in reverse order
         // Provider, Invocation, Client, API(global)
-        let after_hooks = before_hooks.clone().rev();
+        let after_hooks = || before_hooks().rev();
 
         let (context, result) = self
-            .before_hooks(before_hooks.into_iter(), &hook_context, hints)
+            .before_hooks(before_hooks(), &hook_context, hints)
             .await;
         hook_context.evaluation_context = &context;
 
@@ -347,16 +358,11 @@ impl Client {
         let evaluation_details;
 
         if let Err(error) = result {
-            self.error_hooks(after_hooks.clone(), &hook_context, &error, hints)
+            self.error_hooks(after_hooks(), &hook_context, &error, hints)
                 .await;
             evaluation_details = EvaluationDetails::error_reason(flag_key, T::default());
-            self.finally_hooks(
-                after_hooks.into_iter(),
-                &hook_context,
-                &evaluation_details,
-                hints,
-            )
-            .await;
+            self.finally_hooks(after_hooks(), &hook_context, &evaluation_details, hints)
+                .await;
 
             return Err(error);
         }
@@ -371,11 +377,11 @@ impl Client {
             Ok(ref details) => {
                 let details = details.clone().into_value();
                 if let Err(error) = self
-                    .after_hooks(after_hooks.clone(), &hook_context, &details, hints)
+                    .after_hooks(after_hooks(), &hook_context, &details, hints)
                     .await
                 {
                     evaluation_details = EvaluationDetails::error_reason(flag_key, T::default());
-                    self.error_hooks(after_hooks.clone(), &hook_context, &error, hints)
+                    self.error_hooks(after_hooks(), &hook_context, &error, hints)
                         .await;
                 } else {
                     evaluation_details = details;
@@ -383,18 +389,13 @@ impl Client {
             }
             Err(ref error) => {
                 evaluation_details = EvaluationDetails::error_reason(flag_key, T::default());
-                self.error_hooks(after_hooks.clone(), &hook_context, error, hints)
+                self.error_hooks(after_hooks(), &hook_context, error, hints)
                     .await;
             }
         }
 
-        self.finally_hooks(
-            after_hooks.into_iter(),
-            &hook_context,
-            &evaluation_details,
-            hints,
-        )
-        .await;
+        self.finally_hooks(after_hooks(), &hook_context, &evaluation_details, hints)
+            .await;
 
         result
     }
@@ -406,12 +407,13 @@ impl Client {
         hints: Option<&HookHints>,
     ) -> (EvaluationContext, EvaluationResult<()>)
     where
-        I: Iterator<Item = &'a HookWrapper>,
+        I: Iterator<Item = (&'a HookWrapper, &'a HookData)>,
     {
         let mut context = hook_context.evaluation_context.clone();
-        for hook in hooks {
+        for (hook, data) in hooks {
             let invoke_hook_context = HookContext {
                 evaluation_context: &context,
+                data: data.clone(),
                 ..hook_context.clone()
             };
             match hook.before(&invoke_hook_context, hints).await {
@@ -437,10 +439,14 @@ impl Client {
         hints: Option<&HookHints>,
     ) -> EvaluationResult<()>
     where
-        I: Iterator<Item = &'a HookWrapper>,
+        I: Iterator<Item = (&'a HookWrapper, &'a HookData)>,
     {
-        for hook in hooks {
-            hook.after(hook_context, details, hints).await?;
+        for (hook, data) in hooks {
+            let invoke_hook_context = HookContext {
+                data: data.clone(),
+                ..hook_context.clone()
+            };
+            hook.after(&invoke_hook_context, details, hints).await?;
         }
 
         Ok(())
@@ -453,10 +459,14 @@ impl Client {
         error: &EvaluationError,
         hints: Option<&HookHints>,
     ) where
-        I: Iterator<Item = &'a HookWrapper>,
+        I: Iterator<Item = (&'a HookWrapper, &'a HookData)>,
     {
-        for hook in hooks {
-            hook.error(hook_context, error, hints).await;
+        for (hook, data) in hooks {
+            let invoke_hook_context = HookContext {
+                data: data.clone(),
+                ..hook_context.clone()
+            };
+            hook.error(&invoke_hook_context, error, hints).await;
         }
     }
 
@@ -467,10 +477,15 @@ impl Client {
         evaluation_details: &EvaluationDetails<Value>,
         hints: Option<&HookHints>,
     ) where
-        I: Iterator<Item = &'a HookWrapper>,
+        I: Iterator<Item = (&'a HookWrapper, &'a HookData)>,
     {
-        for hook in hooks {
-            hook.finally(hook_context, evaluation_details, hints).await;
+        for (hook, data) in hooks {
+            let invoke_hook_context = HookContext {
+                data: data.clone(),
+                ..hook_context.clone()
+            };
+            hook.finally(&invoke_hook_context, evaluation_details, hints)
+                .await;
         }
     }
 }
