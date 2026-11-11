@@ -32,7 +32,7 @@ spec = { path = "spec" }
 tokio = { version = "1.40", features = ["sync", "rt-multi-thread", "macros"] }
 
 [features]
-default = ["test-util", "dep:log"]
+default = ["test-util", "log"]
 test-util = ["dep:mockall"]
 serde_json = ["dep:serde_json"]
 structured-logging = ["log?/kv"]
