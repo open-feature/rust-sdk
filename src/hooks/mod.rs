@@ -5,7 +5,9 @@ use crate::{
     EvaluationError, Type, Value,
 };
 
+#[cfg(feature = "log")]
 mod logging;
+#[cfg(feature = "log")]
 pub use logging::LoggingHook;
 
 // ============================================================
