@@ -70,7 +70,13 @@ impl HookData {
     ///
     /// Returns `&self` so calls can be chained.
     pub fn set<T: Any + Send>(&self, key: impl Into<String>, value: T) -> &Self {
-        self.lock().insert(key.into(), Box::new(value));
+        // INFO: Convert the key and drop the replaced value outside the lock. Both run arbitrary
+        // user code (`Into::into`, `Drop`), and holding the lock across it would deadlock a
+        // callback into this same `HookData`. Binding the replaced value keeps it alive past the
+        // statement that releases the guard; `let _ = ...` would drop it under the lock.
+        let key = key.into();
+        let replaced = self.lock().insert(key, Box::new(value));
+        drop(replaced);
         self
     }
 
@@ -128,7 +134,9 @@ impl HookData {
 
     /// Remove the value stored at `key`.
     pub fn remove(&self, key: &str) {
-        self.lock().remove(key);
+        // INFO: As in `set`, the removed value's destructor must not run under the lock.
+        let removed = self.lock().remove(key);
+        drop(removed);
     }
 
     /// Return the number of values currently stored.
@@ -373,5 +381,38 @@ mod tests {
         assert_eq!(data.get::<i64>("key"), Some(1));
         data.set("other", 2_i64);
         assert_eq!(data.get::<i64>("other"), Some(2));
+    }
+
+    #[test]
+    fn replaced_values_are_dropped_outside_the_lock() {
+        use std::sync::atomic::{AtomicBool, Ordering};
+
+        static LOCK_HELD: AtomicBool = AtomicBool::new(false);
+
+        struct Probe(&'static HookData);
+
+        impl Drop for Probe {
+            fn drop(&mut self) {
+                // `try_lock` only fails while `set`/`remove` still holds the store's lock.
+                LOCK_HELD.store(self.0.data.try_lock().is_err(), Ordering::SeqCst);
+            }
+        }
+
+        // Leaked on purpose: a stored value is `'static`, so it cannot borrow a local `HookData`.
+        let data: &'static HookData = Box::leak(Box::new(HookData::new()));
+
+        data.set("probe", Probe(data));
+        // Replacing the entry drops the first probe.
+        data.set("probe", Probe(data));
+        assert!(
+            !LOCK_HELD.load(Ordering::SeqCst),
+            "`set` dropped the replaced value while holding the lock"
+        );
+
+        data.remove("probe");
+        assert!(
+            !LOCK_HELD.load(Ordering::SeqCst),
+            "`remove` dropped the value while holding the lock"
+        );
     }
 }
