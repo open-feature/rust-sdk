@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 
-use crate::{EvaluationContext, EvaluationResult, StructValue};
+use crate::{EvaluationContext, EvaluationResult, StructValue, TrackingEventDetails};
 
 use super::ResolutionDetails;
 
@@ -43,6 +43,16 @@ pub trait FeatureProvider: Send + Sync + 'static {
     /// Providers without this field can be assumed to be ready immediately.
     fn status(&self) -> ProviderStatus {
         ProviderStatus::Ready
+    }
+
+    /// Records a tracking event for the given `event_name`, associating a user action with the
+    /// given evaluation `context` and tracking `details` (spec 6.1.4).
+    ///
+    /// This is a fire-and-forget operation and returns no value. The default implementation is a
+    /// no-op; providers that support experimentation or analytics should override it (a provider
+    /// that performs I/O should do so without blocking the caller, e.g. on a background task).
+    #[allow(unused_variables)]
+    fn track(&self, event_name: &str, context: &EvaluationContext, details: &TrackingEventDetails) {
     }
 
     /// The provider interface MUST define a metadata member or accessor, containing a name field
