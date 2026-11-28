@@ -201,6 +201,10 @@ mod tests {
         number = "2.5.1",
         text = "The provider MAY define a mechanism to gracefully shutdown and dispose of resources."
     )]
-    #[test]
-    fn shutdown_covered_by_drop_trait() {}
+    #[tokio::test]
+    async fn shutdown() {
+        let provider = NoOpProvider::default();
+        // NoOpProvider has a default empty shutdown implementation
+        provider.shutdown().await;
+    }
 }
